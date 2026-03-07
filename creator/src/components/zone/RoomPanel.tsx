@@ -1,9 +1,13 @@
+import { useState, useCallback } from "react";
 import type { WorldFile, ExitValue } from "@/types/world";
+import { updateRoom, deleteRoom, deleteExit } from "@/lib/zoneEdits";
 
 interface RoomPanelProps {
   zoneId: string;
   roomId: string;
   world: WorldFile;
+  onWorldChange: (world: WorldFile) => void;
+  onRoomDeleted: () => void;
 }
 
 function resolveExitTarget(exit: string | ExitValue): {
@@ -23,9 +27,17 @@ function resolveExitTarget(exit: string | ExitValue): {
   };
 }
 
-export function RoomPanel({ zoneId, roomId, world }: RoomPanelProps) {
+export function RoomPanel({
+  zoneId,
+  roomId,
+  world,
+  onWorldChange,
+  onRoomDeleted,
+}: RoomPanelProps) {
   const room = world.rooms[roomId];
   if (!room) return null;
+
+  const isStartRoom = roomId === world.startRoom;
 
   const exits = Object.entries(room.exits ?? {}).map(([dir, val]) => ({
     direction: dir,
@@ -46,22 +58,51 @@ export function RoomPanel({ zoneId, roomId, world }: RoomPanelProps) {
     ([, g]) => g.room === roomId,
   );
   const quests = Object.entries(world.quests ?? {}).filter(([, q]) => {
-    // Quest giver mob is in this room
     const giverMob = Object.entries(world.mobs ?? {}).find(
       ([mobId]) => mobId === q.giver || `${zoneId}:${mobId}` === q.giver,
     );
     return giverMob && giverMob[1].room === roomId;
   });
 
+  const handleFieldChange = useCallback(
+    (field: "title" | "description" | "station", value: string) => {
+      const patch =
+        field === "station" && value === ""
+          ? { station: undefined }
+          : { [field]: value };
+      onWorldChange(updateRoom(world, roomId, patch));
+    },
+    [world, roomId, onWorldChange],
+  );
+
+  const handleDeleteExit = useCallback(
+    (direction: string) => {
+      onWorldChange(deleteExit(world, roomId, direction));
+    },
+    [world, roomId, onWorldChange],
+  );
+
+  const handleDeleteRoom = useCallback(() => {
+    try {
+      const next = deleteRoom(world, roomId);
+      onWorldChange(next);
+      onRoomDeleted();
+    } catch {
+      // Cannot delete start room — error is swallowed, button is hidden anyway
+    }
+  }, [world, roomId, onWorldChange, onRoomDeleted]);
+
   return (
     <div className="flex w-72 shrink-0 flex-col overflow-y-auto border-l border-border-default bg-bg-secondary">
       {/* Header */}
       <div className="border-b border-border-default px-4 py-3">
-        <h3 className="text-sm font-semibold text-text-primary">
-          {room.title}
-        </h3>
+        <EditableField
+          value={room.title}
+          onCommit={(v) => handleFieldChange("title", v)}
+          className="text-sm font-semibold text-text-primary"
+        />
         <p className="mt-0.5 text-xs text-text-muted">{roomId}</p>
-        {roomId === world.startRoom && (
+        {isStartRoom && (
           <span className="mt-1 inline-block rounded bg-accent/20 px-1.5 py-0.5 text-[10px] font-medium text-accent">
             Start Room
           </span>
@@ -70,9 +111,10 @@ export function RoomPanel({ zoneId, roomId, world }: RoomPanelProps) {
 
       {/* Description */}
       <Section title="Description">
-        <p className="text-xs leading-relaxed text-text-secondary">
-          {room.description}
-        </p>
+        <EditableTextArea
+          value={room.description}
+          onCommit={(v) => handleFieldChange("description", v)}
+        />
       </Section>
 
       {/* Exits */}
@@ -83,7 +125,7 @@ export function RoomPanel({ zoneId, roomId, world }: RoomPanelProps) {
           <table className="w-full text-xs">
             <tbody>
               {exits.map((exit) => (
-                <tr key={exit.direction} className="border-b border-border-muted last:border-0">
+                <tr key={exit.direction} className="group border-b border-border-muted last:border-0">
                   <td className="py-1 pr-2 font-medium text-text-primary">
                     {exit.direction.toUpperCase()}
                   </td>
@@ -93,9 +135,18 @@ export function RoomPanel({ zoneId, roomId, world }: RoomPanelProps) {
                     </span>
                     {exit.hasDoor && (
                       <span className="ml-1 text-status-warning">
-                        {exit.isLocked ? "🔒" : "🚪"}
+                        {exit.isLocked ? "\uD83D\uDD12" : "\uD83D\uDEAA"}
                       </span>
                     )}
+                  </td>
+                  <td className="w-6 py-1 text-right">
+                    <button
+                      onClick={() => handleDeleteExit(exit.direction)}
+                      className="invisible text-text-muted transition-colors hover:text-status-danger group-hover:visible"
+                      title="Delete exit"
+                    >
+                      &times;
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -105,11 +156,14 @@ export function RoomPanel({ zoneId, roomId, world }: RoomPanelProps) {
       </Section>
 
       {/* Station */}
-      {room.station && (
-        <Section title="Crafting Station">
-          <p className="text-xs text-status-info">{room.station}</p>
-        </Section>
-      )}
+      <Section title="Crafting Station">
+        <EditableField
+          value={room.station ?? ""}
+          onCommit={(v) => handleFieldChange("station", v)}
+          placeholder="none"
+          className="text-xs text-status-info"
+        />
+      </Section>
 
       {/* Mobs */}
       {mobs.length > 0 && (
@@ -191,20 +245,137 @@ export function RoomPanel({ zoneId, roomId, world }: RoomPanelProps) {
       )}
 
       {/* Media */}
-      {(room.image || room.music || room.ambient) && (
-        <Section title="Media">
-          {room.image && (
-            <p className="text-xs text-text-muted">Image: {room.image}</p>
-          )}
-          {room.music && (
-            <p className="text-xs text-text-muted">Music: {room.music}</p>
-          )}
-          {room.ambient && (
-            <p className="text-xs text-text-muted">Ambient: {room.ambient}</p>
-          )}
-        </Section>
+      <Section title="Media">
+        {room.image && (
+          <p className="text-xs text-text-muted">Image: {room.image}</p>
+        )}
+        {room.music && (
+          <p className="text-xs text-text-muted">Music: {room.music}</p>
+        )}
+        {room.ambient && (
+          <p className="text-xs text-text-muted">Ambient: {room.ambient}</p>
+        )}
+        {room.audio && (
+          <p className="text-xs text-text-muted">Audio: {room.audio}</p>
+        )}
+        {!room.image && !room.music && !room.ambient && !room.audio && (
+          <p className="text-xs text-text-muted">None</p>
+        )}
+      </Section>
+
+      {/* Delete Room */}
+      {!isStartRoom && (
+        <div className="px-4 py-3">
+          <button
+            onClick={handleDeleteRoom}
+            className="w-full rounded border border-status-danger/40 px-2 py-1.5 text-xs text-status-danger transition-colors hover:bg-status-danger/10"
+          >
+            Delete Room
+          </button>
+        </div>
       )}
     </div>
+  );
+}
+
+// ─── Inline editing components ───────────────────────────────────────
+
+function EditableField({
+  value,
+  onCommit,
+  placeholder,
+  className,
+}: {
+  value: string;
+  onCommit: (value: string) => void;
+  placeholder?: string;
+  className?: string;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(value);
+
+  if (!editing) {
+    return (
+      <div
+        className={`cursor-text rounded px-1 -mx-1 hover:bg-bg-tertiary ${className ?? ""}`}
+        onClick={() => {
+          setDraft(value);
+          setEditing(true);
+        }}
+        title="Click to edit"
+      >
+        {value || <span className="text-text-muted">{placeholder ?? "empty"}</span>}
+      </div>
+    );
+  }
+
+  return (
+    <input
+      autoFocus
+      className={`w-full rounded border border-accent/50 bg-bg-primary px-1 -mx-1 outline-none ${className ?? ""}`}
+      value={draft}
+      onChange={(e) => setDraft(e.target.value)}
+      onBlur={() => {
+        setEditing(false);
+        if (draft !== value) onCommit(draft);
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") {
+          setEditing(false);
+          if (draft !== value) onCommit(draft);
+        }
+        if (e.key === "Escape") {
+          setEditing(false);
+          setDraft(value);
+        }
+      }}
+    />
+  );
+}
+
+function EditableTextArea({
+  value,
+  onCommit,
+}: {
+  value: string;
+  onCommit: (value: string) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(value);
+
+  if (!editing) {
+    return (
+      <div
+        className="cursor-text rounded px-1 -mx-1 text-xs leading-relaxed text-text-secondary hover:bg-bg-tertiary"
+        onClick={() => {
+          setDraft(value);
+          setEditing(true);
+        }}
+        title="Click to edit"
+      >
+        {value || <span className="text-text-muted">empty</span>}
+      </div>
+    );
+  }
+
+  return (
+    <textarea
+      autoFocus
+      rows={4}
+      className="w-full resize-y rounded border border-accent/50 bg-bg-primary px-1 -mx-1 text-xs leading-relaxed text-text-secondary outline-none"
+      value={draft}
+      onChange={(e) => setDraft(e.target.value)}
+      onBlur={() => {
+        setEditing(false);
+        if (draft !== value) onCommit(draft);
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Escape") {
+          setEditing(false);
+          setDraft(value);
+        }
+      }}
+    />
   );
 }
 

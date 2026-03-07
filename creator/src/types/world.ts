@@ -38,6 +38,7 @@ export interface RoomFile {
   video?: string;
   music?: string;
   ambient?: string;
+  audio?: string;
 }
 
 export interface ExitValue {
