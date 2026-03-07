@@ -55,6 +55,7 @@ export function AssetGallery({ onClose }: { onClose: () => void }) {
   const [deleting, setDeleting] = useState(false);
   const [imageCache, setImageCache] = useState<Record<string, string>>({});
   const [syncResult, setSyncResult] = useState<SyncProgress | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const hasR2 = !!(settings?.r2_account_id && settings?.r2_bucket && settings?.r2_access_key_id);
   const unsyncedCount = assets.filter((a) => a.sync_status !== "synced").length;
@@ -349,6 +350,31 @@ export function AssetGallery({ onClose }: { onClose: () => void }) {
                       {selected.sync_status === "synced" ? "Synced to R2" : "Local only"}
                     </p>
                   </div>
+
+                  {selected.sync_status === "synced" && settings?.r2_custom_domain && (
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wider text-text-muted">
+                        R2 URL
+                      </p>
+                      <div className="flex items-center gap-1">
+                        <p className="min-w-0 flex-1 truncate font-mono text-[10px] text-accent">
+                          {`${settings.r2_custom_domain.replace(/\/$/, "")}/${selected.file_name}`}
+                        </p>
+                        <button
+                          onClick={() => {
+                            const url = `${settings.r2_custom_domain.replace(/\/$/, "")}/${selected.file_name}`;
+                            navigator.clipboard.writeText(url);
+                            setCopiedId(selected.id);
+                            setTimeout(() => setCopiedId(null), 1500);
+                          }}
+                          className="shrink-0 rounded px-1.5 py-0.5 text-[10px] text-text-muted transition-colors hover:bg-bg-elevated hover:text-text-secondary"
+                          title="Copy URL"
+                        >
+                          {copiedId === selected.id ? "Copied" : "Copy"}
+                        </button>
+                      </div>
+                    </div>
+                  )}
 
                   {selected.context?.zone && (
                     <div>
