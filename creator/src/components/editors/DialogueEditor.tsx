@@ -50,16 +50,19 @@ export function DialogueEditor({
   const handleDeleteNode = useCallback(
     (nodeId: string) => {
       if (nodeId === "root") return; // never delete root
-      const next = { ...dialogue };
-      delete next[nodeId];
-      // Clean up choices that point to the deleted node
-      for (const node of Object.values(next)) {
-        if (node.choices) {
-          for (const choice of node.choices) {
-            if (choice.next === nodeId) {
-              choice.next = undefined;
-            }
-          }
+      const next: Record<string, DialogueNodeFile> = {};
+      for (const [id, node] of Object.entries(dialogue)) {
+        if (id === nodeId) continue;
+        // Deep-copy choices to avoid mutating the original
+        if (node.choices?.some((c) => c.next === nodeId)) {
+          next[id] = {
+            ...node,
+            choices: node.choices.map((c) =>
+              c.next === nodeId ? { ...c, next: undefined } : c,
+            ),
+          };
+        } else {
+          next[id] = node;
         }
       }
       patchDialogue(Object.keys(next).length > 0 ? next : undefined);
@@ -72,17 +75,17 @@ export function DialogueEditor({
       if (!newId || newId === oldId || dialogue[newId]) return;
       const next: Record<string, DialogueNodeFile> = {};
       for (const [id, node] of Object.entries(dialogue)) {
-        next[id === oldId ? newId : id] = node;
-      }
-      // Update all choice references
-      for (const node of Object.values(next)) {
-        if (node.choices) {
-          for (const choice of node.choices) {
-            if (choice.next === oldId) {
-              choice.next = newId;
-            }
-          }
-        }
+        // Deep-copy choices to avoid mutating the original
+        const updated =
+          node.choices?.some((c) => c.next === oldId)
+            ? {
+                ...node,
+                choices: node.choices!.map((c) =>
+                  c.next === oldId ? { ...c, next: newId } : c,
+                ),
+              }
+            : node;
+        next[id === oldId ? newId : id] = updated;
       }
       patchDialogue(next);
     },
@@ -273,12 +276,9 @@ function DialogueNodeCard({
             <label className="mb-0.5 block text-[10px] text-text-muted">
               NPC text
             </label>
-            <textarea
-              className="w-full resize-y rounded border border-border-default bg-bg-secondary px-1.5 py-1 text-xs leading-relaxed text-text-primary outline-none focus:border-accent/50"
-              rows={2}
+            <NodeTextArea
               value={node.text}
-              onChange={(e) => onUpdateText(e.target.value)}
-              placeholder="What the NPC says..."
+              onCommit={onUpdateText}
             />
           </div>
 
@@ -304,6 +304,42 @@ function DialogueNodeCard({
         </div>
       )}
     </div>
+  );
+}
+
+// ─── Node Text Area (commit-on-blur) ────────────────────────────────
+
+function NodeTextArea({
+  value,
+  onCommit,
+}: {
+  value: string;
+  onCommit: (text: string) => void;
+}) {
+  const [draft, setDraft] = useState(value);
+  const [focused, setFocused] = useState(false);
+
+  if (!focused && draft !== value) {
+    setDraft(value);
+  }
+
+  const commit = () => {
+    if (draft !== value) onCommit(draft);
+  };
+
+  return (
+    <textarea
+      className="w-full resize-y rounded border border-border-default bg-bg-secondary px-1.5 py-1 text-xs leading-relaxed text-text-primary outline-none focus:border-accent/50"
+      rows={2}
+      value={draft}
+      onChange={(e) => setDraft(e.target.value)}
+      onFocus={() => setFocused(true)}
+      onBlur={() => {
+        setFocused(false);
+        commit();
+      }}
+      placeholder="What the NPC says..."
+    />
   );
 }
 
@@ -345,7 +381,7 @@ function ChoiceRow({ choice, nextOptions, onUpdate, onDelete }: ChoiceRowProps) 
           }`}
           title="Toggle conditions"
         >
-          {hasConditions ? "\u2699\uFE0F" : "\u2699"}
+          &#x2699;
         </button>
         <IconButton onClick={onDelete} title="Remove choice" danger>
           &times;
