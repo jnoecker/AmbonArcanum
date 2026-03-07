@@ -118,15 +118,24 @@ export function EntityArtGenerator({
   /** Enhance a prompt via LLM, injecting entity context, style guide, and zone vibe. */
   const enhancePrompt = async (prompt: string): Promise<string> => {
     const systemPrompt = getEnhanceSystemPrompt(artStyle);
-    const parts: string[] = [prompt];
-    if (entityContext) {
-      parts.push(`\nEntity details:\n${entityContext}`);
-    }
-    if (vibe) {
-      parts.push(`\nZone atmosphere/vibe to weave into the image prompt:\n${vibe}`);
-    }
-    const userPrompt = parts.join("\n");
+    const parts: string[] = [];
 
+    // When we have rich entity context, lead with that so the LLM
+    // prioritizes the actual entity description over the style template
+    if (entityContext) {
+      parts.push(`Generate an image prompt for this entity:\n${entityContext}`);
+      if (vibe) {
+        parts.push(`\nZone atmosphere/vibe:\n${vibe}`);
+      }
+      parts.push(`\nReference style template (adapt but prioritize the entity description above):\n${prompt}`);
+    } else {
+      parts.push(prompt);
+      if (vibe) {
+        parts.push(`\nZone atmosphere/vibe to weave into the image prompt:\n${vibe}`);
+      }
+    }
+
+    const userPrompt = parts.join("\n");
     return invoke<string>("llm_complete", { systemPrompt, userPrompt });
   };
 

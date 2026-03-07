@@ -153,11 +153,18 @@ export function BatchArtGenerator({
           let finalPrompt = basePrompt;
           try {
             const systemPrompt = getEnhanceSystemPrompt(artStyle);
-            const contextBlock = context ? `\n\nEntity details:\n${context}` : "";
-            const vibeContext = vibe ? `\n\nZone atmosphere/vibe:\n${vibe}` : "";
+            let userPrompt: string;
+            if (context) {
+              const parts = [`Generate an image prompt for this entity:\n${context}`];
+              if (vibe) parts.push(`\nZone atmosphere/vibe:\n${vibe}`);
+              parts.push(`\nReference style template (adapt but prioritize the entity description above):\n${basePrompt}`);
+              userPrompt = parts.join("\n");
+            } else {
+              userPrompt = vibe ? `${basePrompt}\n\nZone atmosphere/vibe:\n${vibe}` : basePrompt;
+            }
             finalPrompt = await invoke<string>("llm_complete", {
               systemPrompt,
-              userPrompt: `${basePrompt}${contextBlock}${vibeContext}`,
+              userPrompt,
             });
           } catch {
             // Fall back to base prompt

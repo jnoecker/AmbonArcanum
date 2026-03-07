@@ -93,6 +93,7 @@ export function mobPrompt(_mobId: string, mob: MobFile, style: ArtStyle = "gentl
   const preamble = getPreamble(style);
   const tier = mob.tier ?? "standard";
   const level = mob.level ?? 1;
+  const mobDesc = mob.description ? ` ${mob.description}.` : "";
 
   if (style === "gentle_magic") {
     const tierDesc: Record<string, string> = {
@@ -105,7 +106,7 @@ export function mobPrompt(_mobId: string, mob: MobFile, style: ArtStyle = "gentl
 
     return `${preamble}
 
-Portrait of ${desc} known as "${mob.name}", level ${level}. Depicted with soft organic forms and gentle curves, ambient lavender and pale blue light diffusing around its silhouette, floating motes of warm gold light, subtle magical glow emanating naturally from within, dreamlike atmospheric haze, dusty rose and moss green accents, painterly, luminous, vertical portrait composition`;
+Portrait of ${desc} known as "${mob.name}", level ${level}.${mobDesc} Depicted with soft organic forms and gentle curves, ambient lavender and pale blue light diffusing around the figure, floating motes of warm gold light, subtle magical glow emanating naturally from within, dreamlike atmospheric haze, dusty rose and moss green accents, painterly, luminous, vertical portrait composition`;
   }
 
   const tierDesc: Record<string, string> = {
@@ -118,7 +119,7 @@ Portrait of ${desc} known as "${mob.name}", level ${level}. Depicted with soft o
 
   return `${preamble}
 
-Archetypal portrait of ${desc} known as "${mob.name}", level ${level}. Depicted as a symbolic form rendered in flowing energy rather than literal anatomy — the essence of the creature expressed through baroque light scrollwork, aurum-gold highlights on key features, deep indigo background with blue-violet nebula wisps, ornate frame edges dissolving into darkness, painterly, luminous, vertical portrait composition`;
+Portrait of ${desc} known as "${mob.name}", level ${level}.${mobDesc} Rendered with aurum-gold highlights on key features, deep indigo background with blue-violet nebula wisps, baroque energy accents framing the figure, ornate frame edges dissolving into darkness, painterly, luminous, vertical portrait composition`;
 }
 
 /** Build a full prompt for an item image. */
