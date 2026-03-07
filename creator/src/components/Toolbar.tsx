@@ -25,12 +25,12 @@ const STATUS_LABELS: Record<string, string> = {
 export function Toolbar() {
   const project = useProjectStore((s) => s.project);
   const status = useServerStore((s) => s.status);
-  const zones = useZoneStore((s) => s.zones);
+  const dirtyCount = useZoneStore(
+    (s) => Array.from(s.zones.values()).filter((z) => z.dirty).length,
+  );
   const { startServer, stopServer } = useServerManager();
   const [errors, setErrors] = useState<string[] | null>(null);
   const [saving, setSaving] = useState(false);
-
-  const dirtyCount = Array.from(zones.values()).filter((z) => z.dirty).length;
 
   const handleStart = async () => {
     const result = await startServer();

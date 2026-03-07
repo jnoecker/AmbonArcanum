@@ -69,7 +69,14 @@ function ZoneEditorInner({ zoneId }: ZoneEditorProps) {
             .catch((err) => console.error("Save failed:", err))
             .finally(() => setSaving(false));
         }
-      } else if (e.key === "z" && !e.shiftKey) {
+        return;
+      }
+
+      // Skip undo/redo when typing in an input or textarea
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA") return;
+
+      if (e.key === "z" && !e.shiftKey) {
         e.preventDefault();
         undo(zoneId);
       } else if ((e.key === "z" && e.shiftKey) || e.key === "y") {
