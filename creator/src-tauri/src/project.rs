@@ -74,13 +74,20 @@ pub struct LegacyImage {
     pub relative_path: String,
 }
 
-/// List all image files under <mudDir>/src/main/resources/images/.
+/// List all image files under the MUD project's resource directories.
+/// Checks both src/main/resources/world/images/ and src/main/resources/images/.
 #[tauri::command]
 pub fn list_legacy_images(mud_dir: String) -> Vec<LegacyImage> {
-    let images_dir = PathBuf::from(&mud_dir).join("src/main/resources/images");
+    let base = PathBuf::from(&mud_dir).join("src/main/resources");
+    let candidates = [
+        base.join("world/images"),
+        base.join("images"),
+    ];
     let mut results = Vec::new();
-    if images_dir.is_dir() {
-        collect_images(&images_dir, &images_dir, &mut results);
+    for dir in &candidates {
+        if dir.is_dir() {
+            collect_images(dir, dir, &mut results);
+        }
     }
     results
 }

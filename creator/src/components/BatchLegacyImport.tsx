@@ -109,7 +109,10 @@ export function BatchLegacyImport({ onClose }: { onClose: () => void }) {
           {!targets && !scanning && (
             <div className="flex flex-col items-center gap-3 py-6">
               <p className="text-sm text-text-secondary">
-                Scan the server&rsquo;s <code className="rounded bg-bg-primary px-1 py-0.5 font-mono text-[11px]">images/</code> directory and import all artwork into the asset library for R2 sync.
+                Scan the server&rsquo;s images directory and import all artwork into the asset library for R2 sync.
+              </p>
+              <p className="rounded bg-bg-primary px-3 py-1.5 font-mono text-[10px] text-text-muted">
+                {mudDir}/src/main/resources/world/images/
               </p>
               <button
                 onClick={handleScan}

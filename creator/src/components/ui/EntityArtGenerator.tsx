@@ -56,7 +56,7 @@ export function EntityArtGenerator({
     if (importedRef.current.has(currentImage)) return;
     importedRef.current.add(currentImage);
 
-    const sourcePath = `${mudDir}/src/main/resources/images/${currentImage}`;
+    const sourcePath = `${mudDir}/src/main/resources/world/images/${currentImage}`;
     importAsset(sourcePath, assetType ?? "background", context).catch(() => {});
   }, [currentImage, mudDir, assetType, context, importAsset]);
 

@@ -22,7 +22,8 @@ export function useImageSrc(filePath: string | undefined): string | null {
   const resolvedPath = useMemo(() => {
     if (!filePath) return undefined;
     if (!isLegacyImagePath(filePath)) return filePath;
-    if (mudDir) return `${mudDir}/src/main/resources/images/${filePath}`;
+    // Legacy relative path — try world/images/ first (primary location)
+    if (mudDir) return `${mudDir}/src/main/resources/world/images/${filePath}`;
     return undefined;
   }, [filePath, mudDir]);
 
