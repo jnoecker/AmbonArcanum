@@ -15,6 +15,7 @@ import {
 import "@xyflow/react/dist/style.css";
 
 import { useZoneStore } from "@/stores/zoneStore";
+import { useProjectStore } from "@/stores/projectStore";
 import { zoneToGraph } from "@/lib/zoneToGraph";
 import { compassLayout } from "@/lib/dagreLayout";
 import { addRoom, addExit, generateRoomId } from "@/lib/zoneEdits";
@@ -74,6 +75,20 @@ function ZoneEditorInner({ zoneId }: ZoneEditorProps) {
       setSelectedEntity(null);
     }
   }, [zoneState, selectedEntity]);
+
+  // Consume pending navigation from sidebar
+  const consumeNavigation = useProjectStore((s) => s.consumeNavigation);
+  useEffect(() => {
+    const nav = consumeNavigation();
+    if (!nav || nav.zoneId !== zoneId) return;
+    if (nav.entityKind && nav.entityId) {
+      setSelectedEntity({ kind: nav.entityKind as EntitySelection["kind"], id: nav.entityId });
+      setSelectedRoomId(null);
+    } else if (nav.roomId) {
+      setSelectedRoomId(nav.roomId);
+      setSelectedEntity(null);
+    }
+  }, [zoneId, consumeNavigation]);
 
   // Rebuild graph when WorldFile changes
   const { layoutNodes, layoutEdges } = useMemo(() => {
