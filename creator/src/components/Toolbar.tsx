@@ -35,7 +35,22 @@ export function Toolbar() {
 
   const handleRestart = async () => {
     await stopServer();
-    setTimeout(handleStart, 500);
+    // Wait for the server to actually reach stopped/error state before restarting
+    await new Promise<void>((resolve) => {
+      const unsub = useServerStore.subscribe((state) => {
+        if (state.status === "stopped" || state.status === "error") {
+          unsub();
+          resolve();
+        }
+      });
+      // If already stopped (synchronous kill), resolve immediately
+      const current = useServerStore.getState().status;
+      if (current === "stopped" || current === "error") {
+        unsub();
+        resolve();
+      }
+    });
+    await handleStart();
   };
 
   return (

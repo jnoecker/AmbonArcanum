@@ -1,4 +1,4 @@
-import { useCallback, useRef } from "react";
+import { useCallback } from "react";
 import { Command, type Child } from "@tauri-apps/plugin-shell";
 import { useProjectStore } from "@/stores/projectStore";
 import { useServerStore } from "@/stores/serverStore";
@@ -10,6 +10,9 @@ export interface StartResult {
   preflightErrors?: string[];
 }
 
+// Module-level so the server handle survives component remounts
+let activeChild: Child | null = null;
+
 export function useServerManager() {
   const project = useProjectStore((s) => s.project);
   const config = useConfigStore((s) => s.config);
@@ -17,8 +20,6 @@ export function useServerManager() {
   const setPid = useServerStore((s) => s.setPid);
   const setLastError = useServerStore((s) => s.setLastError);
   const addLog = useServerStore((s) => s.addLog);
-
-  const childRef = useRef<Child | null>(null);
 
   const startServer = useCallback(async (): Promise<StartResult> => {
     if (!project) return { success: false, preflightErrors: ["No project open"] };
@@ -70,7 +71,7 @@ export function useServerManager() {
       command.on("close", (data) => {
         addLog("INFO", `Server process exited with code ${data.code}`);
         setPid(null);
-        childRef.current = null;
+        activeChild = null;
 
         const currentStatus = useServerStore.getState().status;
         if (currentStatus === "stopping") {
@@ -90,7 +91,7 @@ export function useServerManager() {
       });
 
       const child = await command.spawn();
-      childRef.current = child;
+      activeChild = child;
       setPid(child.pid);
       addLog("INFO", `Server process started (PID: ${child.pid})`);
       return { success: true };
@@ -104,7 +105,7 @@ export function useServerManager() {
   }, [project, config, setStatus, setPid, setLastError, addLog]);
 
   const stopServer = useCallback(async () => {
-    const child = childRef.current;
+    const child = activeChild;
     if (!child) {
       setStatus("stopped");
       return;

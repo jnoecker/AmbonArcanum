@@ -1,6 +1,8 @@
 import { create } from "zustand";
 import type { ServerStatus } from "@/types/project";
 
+const MAX_LOG_ENTRIES = 10_000;
+
 export interface LogEntry {
   id: number;
   timestamp: Date;
@@ -44,13 +46,18 @@ export const useServerStore = create<ServerStore>((set, get) => ({
   addLog: (level, text) => {
     const { nextLogId } = get();
     const detectedLevel = level === "STDOUT" ? parseLogLevel(text) : level;
-    set((state) => ({
-      logs: [
+    set((state) => {
+      const newLogs = [
         ...state.logs,
         { id: nextLogId, timestamp: new Date(), level: detectedLevel, text },
-      ],
-      nextLogId: nextLogId + 1,
-    }));
+      ];
+      return {
+        logs: newLogs.length > MAX_LOG_ENTRIES
+          ? newLogs.slice(newLogs.length - MAX_LOG_ENTRIES)
+          : newLogs,
+        nextLogId: nextLogId + 1,
+      };
+    });
   },
 
   clearLogs: () => set({ logs: [], nextLogId: 1 }),

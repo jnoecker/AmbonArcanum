@@ -23,7 +23,6 @@ export function Console() {
   const [autoScroll, setAutoScroll] = useState(true);
 
   const scrollRef = useRef<HTMLDivElement>(null);
-  const isUserScrolling = useRef(false);
 
   const filteredLogs = logs.filter((log) => {
     if (!filterLevels.has(log.level)) return false;
@@ -36,13 +35,7 @@ export function Console() {
     const el = scrollRef.current;
     if (!el) return;
     const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 40;
-    if (!atBottom) {
-      isUserScrolling.current = true;
-      setAutoScroll(false);
-    } else {
-      isUserScrolling.current = false;
-      setAutoScroll(true);
-    }
+    setAutoScroll(atBottom);
   }, []);
 
   useEffect(() => {

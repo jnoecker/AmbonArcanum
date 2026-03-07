@@ -37,20 +37,24 @@ async function detectJava(): Promise<{ version: string | null; error: string | n
 }
 
 /**
- * Check if a port is in use by attempting `netstat` lookup.
+ * Check which ports from a list are in use via a single `netstat` call.
  */
-async function checkPort(port: number): Promise<boolean> {
+async function findPortConflicts(
+  ports: { port: number; label: string }[],
+): Promise<PortConflict[]> {
   try {
     const output = await Command.create("cmd", [
       "/C", "netstat", "-ano", "-p", "TCP",
     ]).execute();
     const lines = output.stdout.split("\n");
-    return lines.some((line) =>
-      line.includes(`:${port} `) && line.includes("LISTENING"),
+    return ports.filter(({ port }) =>
+      lines.some((line) =>
+        line.includes(`:${port} `) && line.includes("LISTENING"),
+      ),
     );
   } catch {
-    // If netstat fails, assume port is free
-    return false;
+    // If netstat fails, assume ports are free
+    return [];
   }
 }
 
@@ -61,15 +65,13 @@ export async function runPreflightChecks(
   telnetPort: number,
   webPort: number,
 ): Promise<PreflightResult> {
-  const java = await detectJava();
-
-  const portConflicts: PortConflict[] = [];
-  if (await checkPort(telnetPort)) {
-    portConflicts.push({ port: telnetPort, label: "Telnet" });
-  }
-  if (await checkPort(webPort)) {
-    portConflicts.push({ port: webPort, label: "Web" });
-  }
+  const [java, portConflicts] = await Promise.all([
+    detectJava(),
+    findPortConflicts([
+      { port: telnetPort, label: "Telnet" },
+      { port: webPort, label: "Web" },
+    ]),
+  ]);
 
   return {
     passed: java.error === null && portConflicts.length === 0,
