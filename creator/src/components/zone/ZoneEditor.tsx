@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState, useCallback, useRef } from "react";
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -9,6 +9,7 @@ import {
   useEdgesState,
   type OnSelectionChangeParams,
   type NodeMouseHandler,
+  type Connection,
   BackgroundVariant,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
@@ -16,6 +17,8 @@ import "@xyflow/react/dist/style.css";
 import { useZoneStore } from "@/stores/zoneStore";
 import { zoneToGraph } from "@/lib/zoneToGraph";
 import { compassLayout } from "@/lib/dagreLayout";
+import { addRoom, addExit, generateRoomId } from "@/lib/zoneEdits";
+import type { WorldFile } from "@/types/world";
 import { RoomNode } from "./RoomNode";
 import { CrossZoneNode } from "./CrossZoneNode";
 import { RoomPanel } from "./RoomPanel";
@@ -31,17 +34,69 @@ interface ZoneEditorProps {
 
 function ZoneEditorInner({ zoneId }: ZoneEditorProps) {
   const zoneState = useZoneStore((s) => s.zones.get(zoneId));
+  const updateZone = useZoneStore((s) => s.updateZone);
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
+  const [showAddRoom, setShowAddRoom] = useState(false);
+  const [newRoomId, setNewRoomId] = useState("");
+  const addRoomInputRef = useRef<HTMLInputElement>(null);
 
-  const { initialNodes, initialEdges } = useMemo(() => {
-    if (!zoneState) return { initialNodes: [], initialEdges: [] };
+  // Rebuild graph when WorldFile changes
+  const { layoutNodes, layoutEdges } = useMemo(() => {
+    if (!zoneState) return { layoutNodes: [], layoutEdges: [] };
     const { nodes: rawNodes, edges } = zoneToGraph(zoneState.data);
     const nodes = compassLayout(rawNodes, zoneState.data);
-    return { initialNodes: nodes, initialEdges: edges };
+    return { layoutNodes: nodes, layoutEdges: edges };
   }, [zoneState]);
 
-  const [nodes, , onNodesChange] = useNodesState(initialNodes);
-  const [edges, , onEdgesChange] = useEdgesState(initialEdges);
+  const [nodes, setNodes, onNodesChange] = useNodesState(layoutNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(layoutEdges);
+
+  // Keep nodes/edges in sync with layout when WorldFile changes,
+  // but preserve positions of existing nodes.
+  const prevWorldRef = useRef<WorldFile | null>(null);
+  if (zoneState && zoneState.data !== prevWorldRef.current) {
+    prevWorldRef.current = zoneState.data;
+    // Merge: keep existing node positions, add new nodes from layout
+    const existingPositions = new Map(
+      nodes.map((n) => [n.id, n.position]),
+    );
+    const merged = layoutNodes.map((n) => ({
+      ...n,
+      position: existingPositions.get(n.id) ?? n.position,
+    }));
+    setNodes(merged);
+    setEdges(layoutEdges);
+  }
+
+  const applyWorldChange = useCallback(
+    (next: WorldFile) => {
+      updateZone(zoneId, next);
+    },
+    [zoneId, updateZone],
+  );
+
+  // ─── Connection (exit creation) ──────────────────────────────────
+  const onConnect = useCallback(
+    (connection: Connection) => {
+      if (!zoneState) return;
+      const { source, target, sourceHandle } = connection;
+      if (!source || !target) return;
+
+      // Only allow room-to-room connections
+      if (target.startsWith("xzone:")) return;
+
+      // Extract direction from sourceHandle (e.g. "source-n" → "n")
+      const dir = sourceHandle?.replace("source-", "") ?? "n";
+
+      try {
+        const next = addExit(zoneState.data, source, dir, target);
+        applyWorldChange(next);
+      } catch {
+        // Exit already exists or invalid — ignore
+      }
+    },
+    [zoneState, applyWorldChange],
+  );
 
   const onSelectionChange = useCallback(
     ({ nodes: selected }: OnSelectionChangeParams) => {
@@ -60,6 +115,29 @@ function ZoneEditorInner({ zoneId }: ZoneEditorProps) {
   const onPaneClick = useCallback(() => {
     setSelectedRoomId(null);
   }, []);
+
+  // ─── Add room ────────────────────────────────────────────────────
+  const handleStartAddRoom = useCallback(() => {
+    if (!zoneState) return;
+    setNewRoomId(generateRoomId(zoneState.data));
+    setShowAddRoom(true);
+    setTimeout(() => addRoomInputRef.current?.select(), 0);
+  }, [zoneState]);
+
+  const handleConfirmAddRoom = useCallback(() => {
+    if (!zoneState || !newRoomId.trim()) return;
+    try {
+      const next = addRoom(zoneState.data, newRoomId.trim(), {
+        title: "New Room",
+        description: "",
+      });
+      applyWorldChange(next);
+      setShowAddRoom(false);
+      setSelectedRoomId(newRoomId.trim());
+    } catch {
+      // Room ID already exists
+    }
+  }, [zoneState, newRoomId, applyWorldChange]);
 
   if (!zoneState) {
     return (
@@ -84,6 +162,48 @@ function ZoneEditorInner({ zoneId }: ZoneEditorProps) {
         {zoneState.dirty && (
           <span className="text-xs text-accent">modified</span>
         )}
+
+        <div className="ml-auto flex items-center gap-2">
+          {showAddRoom ? (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleConfirmAddRoom();
+              }}
+              className="flex items-center gap-1"
+            >
+              <input
+                ref={addRoomInputRef}
+                value={newRoomId}
+                onChange={(e) => setNewRoomId(e.target.value)}
+                className="h-6 w-40 rounded border border-border-default bg-bg-primary px-1.5 text-xs text-text-primary outline-none focus:border-accent"
+                placeholder="room_id"
+                autoFocus
+              />
+              <button
+                type="submit"
+                className="h-6 rounded bg-accent/20 px-2 text-xs text-accent hover:bg-accent/30"
+              >
+                Add
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowAddRoom(false)}
+                className="h-6 rounded px-1.5 text-xs text-text-muted hover:text-text-primary"
+              >
+                Cancel
+              </button>
+            </form>
+          ) : (
+            <button
+              onClick={handleStartAddRoom}
+              className="h-6 rounded bg-accent/20 px-2 text-xs text-accent hover:bg-accent/30"
+              title="Add Room"
+            >
+              + Room
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Map + Panel */}
@@ -94,6 +214,7 @@ function ZoneEditorInner({ zoneId }: ZoneEditorProps) {
             edges={edges}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
+            onConnect={onConnect}
             nodeTypes={nodeTypes}
             onSelectionChange={onSelectionChange}
             onNodeClick={onNodeClick}
@@ -130,6 +251,8 @@ function ZoneEditorInner({ zoneId }: ZoneEditorProps) {
             zoneId={zoneId}
             roomId={selectedRoomId}
             world={zoneState.data}
+            onWorldChange={applyWorldChange}
+            onRoomDeleted={() => setSelectedRoomId(null)}
           />
         )}
       </div>

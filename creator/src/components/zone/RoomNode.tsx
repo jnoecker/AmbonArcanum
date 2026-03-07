@@ -50,7 +50,7 @@ export function RoomNode({ data, selected }: NodeProps<RoomNodeType>) {
           position={h.position}
           id={`source-${h.id}`}
           style={{ ...handleStyle, ...h.style }}
-          isConnectable={false}
+          isConnectable
         />
       ))}
       {HANDLES.map((h) => (
@@ -60,7 +60,7 @@ export function RoomNode({ data, selected }: NodeProps<RoomNodeType>) {
           position={h.position}
           id={`target-${h.id}`}
           style={{ ...handleStyle, ...h.style }}
-          isConnectable={false}
+          isConnectable
         />
       ))}
 
