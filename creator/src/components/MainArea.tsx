@@ -25,18 +25,6 @@ export function MainArea() {
     }
     case "config":
       return <ConfigEditor />;
-    case "classes":
-      return (
-        <div className="flex flex-1 items-center justify-center text-text-muted">
-          Class designer (Phase 5)
-        </div>
-      );
-    case "races":
-      return (
-        <div className="flex flex-1 items-center justify-center text-text-muted">
-          Race designer (Phase 5)
-        </div>
-      );
     default:
       return null;
   }
