@@ -56,8 +56,21 @@ export function EntityArtGenerator({
     if (importedRef.current.has(currentImage)) return;
     importedRef.current.add(currentImage);
 
-    const sourcePath = `${mudDir}/src/main/resources/world/images/${currentImage}`;
-    importAsset(sourcePath, assetType ?? "background", context).catch(() => {});
+    // Try world/images/ first, fall back to images/
+    const candidates = [
+      `${mudDir}/src/main/resources/world/images/${currentImage}`,
+      `${mudDir}/src/main/resources/images/${currentImage}`,
+    ];
+    (async () => {
+      for (const sourcePath of candidates) {
+        try {
+          await importAsset(sourcePath, assetType ?? "background", context);
+          return;
+        } catch {
+          // Try next candidate
+        }
+      }
+    })();
   }, [currentImage, mudDir, assetType, context, importAsset]);
 
   // Reset edited prompt when style changes

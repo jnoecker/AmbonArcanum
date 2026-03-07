@@ -19,34 +19,44 @@ export function useImageSrc(filePath: string | undefined): string | null {
   const mudDir = useProjectStore((s) => s.project?.mudDir);
   const [src, setSrc] = useState<string | null>(null);
 
-  const resolvedPath = useMemo(() => {
-    if (!filePath) return undefined;
-    if (!isLegacyImagePath(filePath)) return filePath;
-    // Legacy relative path — try world/images/ first (primary location)
-    if (mudDir) return `${mudDir}/src/main/resources/world/images/${filePath}`;
-    return undefined;
+  const candidates = useMemo(() => {
+    if (!filePath) return [];
+    if (!isLegacyImagePath(filePath)) return [filePath];
+    if (!mudDir) return [];
+    // Try world/images/ first, fall back to images/
+    return [
+      `${mudDir}/src/main/resources/world/images/${filePath}`,
+      `${mudDir}/src/main/resources/images/${filePath}`,
+    ];
   }, [filePath, mudDir]);
 
   useEffect(() => {
-    if (!resolvedPath) {
+    if (candidates.length === 0) {
       setSrc(null);
       return;
     }
 
     let cancelled = false;
 
-    invoke<string>("read_image_data_url", { path: resolvedPath })
-      .then((dataUrl) => {
-        if (!cancelled) setSrc(dataUrl);
-      })
-      .catch(() => {
-        if (!cancelled) setSrc(null);
-      });
+    // Try each candidate path in order
+    (async () => {
+      for (const path of candidates) {
+        if (cancelled) return;
+        try {
+          const dataUrl = await invoke<string>("read_image_data_url", { path });
+          if (!cancelled) setSrc(dataUrl);
+          return;
+        } catch {
+          // Try next candidate
+        }
+      }
+      if (!cancelled) setSrc(null);
+    })();
 
     return () => {
       cancelled = true;
     };
-  }, [resolvedPath]);
+  }, [candidates]);
 
   return src;
 }
