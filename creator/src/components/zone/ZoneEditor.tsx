@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback, useRef } from "react";
+import { useMemo, useState, useCallback, useRef, useEffect } from "react";
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -18,6 +18,7 @@ import { useZoneStore } from "@/stores/zoneStore";
 import { zoneToGraph } from "@/lib/zoneToGraph";
 import { compassLayout } from "@/lib/dagreLayout";
 import { addRoom, addExit, generateRoomId } from "@/lib/zoneEdits";
+import { saveZone } from "@/lib/saveZone";
 import type { WorldFile } from "@/types/world";
 import { RoomNode } from "./RoomNode";
 import { CrossZoneNode } from "./CrossZoneNode";
@@ -42,12 +43,43 @@ interface ZoneEditorProps {
 function ZoneEditorInner({ zoneId }: ZoneEditorProps) {
   const zoneState = useZoneStore((s) => s.zones.get(zoneId));
   const updateZone = useZoneStore((s) => s.updateZone);
+  const undo = useZoneStore((s) => s.undo);
+  const redo = useZoneStore((s) => s.redo);
+  const canUndo = useZoneStore((s) => s.canUndo(zoneId));
+  const canRedo = useZoneStore((s) => s.canRedo(zoneId));
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
   const [showAddRoom, setShowAddRoom] = useState(false);
   const [newRoomId, setNewRoomId] = useState("");
   const addRoomInputRef = useRef<HTMLInputElement>(null);
   const [pendingConnection, setPendingConnection] =
     useState<PendingConnection | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  // ─── Keyboard shortcuts ──────────────────────────────────────────
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      const mod = e.ctrlKey || e.metaKey;
+      if (!mod) return;
+
+      if (e.key === "s") {
+        e.preventDefault();
+        if (zoneState?.dirty && !saving) {
+          setSaving(true);
+          saveZone(zoneId)
+            .catch((err) => console.error("Save failed:", err))
+            .finally(() => setSaving(false));
+        }
+      } else if (e.key === "z" && !e.shiftKey) {
+        e.preventDefault();
+        undo(zoneId);
+      } else if ((e.key === "z" && e.shiftKey) || e.key === "y") {
+        e.preventDefault();
+        redo(zoneId);
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [zoneId, zoneState?.dirty, saving, undo, redo]);
 
   // Rebuild graph when WorldFile changes
   const { layoutNodes, layoutEdges } = useMemo(() => {
@@ -163,6 +195,19 @@ function ZoneEditorInner({ zoneId }: ZoneEditorProps) {
     }
   }, [zoneState, newRoomId, applyWorldChange]);
 
+  // ─── Save ────────────────────────────────────────────────────────
+  const handleSave = useCallback(async () => {
+    if (!zoneState?.dirty || saving) return;
+    setSaving(true);
+    try {
+      await saveZone(zoneId);
+    } catch (err) {
+      console.error("Save failed:", err);
+    } finally {
+      setSaving(false);
+    }
+  }, [zoneId, zoneState?.dirty, saving]);
+
   if (!zoneState) {
     return (
       <div className="flex flex-1 items-center justify-center text-text-muted">
@@ -186,6 +231,36 @@ function ZoneEditorInner({ zoneId }: ZoneEditorProps) {
         {zoneState.dirty && (
           <span className="text-xs text-accent">modified</span>
         )}
+
+        {/* Undo / Redo */}
+        <div className="flex items-center gap-0.5">
+          <button
+            onClick={() => undo(zoneId)}
+            disabled={!canUndo}
+            className="h-6 w-6 rounded text-xs text-text-muted transition-colors enabled:hover:bg-bg-elevated enabled:hover:text-text-primary disabled:opacity-30"
+            title="Undo (Ctrl+Z)"
+          >
+            &#x21B6;
+          </button>
+          <button
+            onClick={() => redo(zoneId)}
+            disabled={!canRedo}
+            className="h-6 w-6 rounded text-xs text-text-muted transition-colors enabled:hover:bg-bg-elevated enabled:hover:text-text-primary disabled:opacity-30"
+            title="Redo (Ctrl+Shift+Z)"
+          >
+            &#x21B7;
+          </button>
+        </div>
+
+        {/* Save */}
+        <button
+          onClick={handleSave}
+          disabled={!zoneState.dirty || saving}
+          className="h-6 rounded px-2 text-xs transition-colors enabled:bg-accent/20 enabled:text-accent enabled:hover:bg-accent/30 disabled:text-text-muted disabled:opacity-30"
+          title="Save (Ctrl+S)"
+        >
+          {saving ? "Saving..." : "Save"}
+        </button>
 
         <div className="ml-auto flex items-center gap-2">
           {showAddRoom ? (
