@@ -2,6 +2,21 @@ import { writeTextFile } from "@tauri-apps/plugin-fs";
 import { stringify } from "yaml";
 import { useZoneStore } from "@/stores/zoneStore";
 
+const YAML_OPTS = {
+  lineWidth: 120,
+  defaultKeyType: "PLAIN" as const,
+  defaultStringType: "PLAIN" as const,
+};
+
+/**
+ * Serialize a zone's data to YAML without writing to disk.
+ */
+export function serializeZone(zoneId: string): string {
+  const zone = useZoneStore.getState().zones.get(zoneId);
+  if (!zone) throw new Error(`Zone "${zoneId}" not found`);
+  return stringify(zone.data, YAML_OPTS);
+}
+
 /**
  * Save a single zone to its YAML file.
  * Uses yaml stringify for clean output.
@@ -11,12 +26,7 @@ export async function saveZone(zoneId: string): Promise<void> {
   const zone = state.zones.get(zoneId);
   if (!zone) throw new Error(`Zone "${zoneId}" not found`);
 
-  const yaml = stringify(zone.data, {
-    lineWidth: 120,
-    defaultKeyType: "PLAIN",
-    defaultStringType: "PLAIN",
-  });
-
+  const yaml = serializeZone(zoneId);
   await writeTextFile(zone.filePath, yaml);
   state.markClean(zoneId);
 }
