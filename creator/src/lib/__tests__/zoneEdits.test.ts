@@ -227,6 +227,16 @@ describe("deleteMob", () => {
     const next = deleteMob(world, "rat");
     expect(next.mobs?.rat).toBeUndefined();
   });
+
+  it("clears quest giver references pointing to the deleted mob", () => {
+    let world = makeWorld();
+    world = addQuest(world, "quest1", {
+      name: "Kill Rats",
+      giver: "rat",
+    });
+    const next = deleteMob(world, "rat");
+    expect(next.quests?.quest1?.giver).toBe("");
+  });
 });
 
 // ─── Item CRUD ────────────────────────────────────────────────────────
@@ -239,6 +249,19 @@ describe("addItem", () => {
       room: "room1",
     });
     expect(next.items?.shield?.displayName).toBe("Shield");
+  });
+
+  it("allows adding an item without a room", () => {
+    const world = makeWorld();
+    const next = addItem(world, "gem", { displayName: "Gem" });
+    expect(next.items?.gem?.displayName).toBe("Gem");
+  });
+
+  it("throws if room does not exist", () => {
+    const world = makeWorld();
+    expect(() =>
+      addItem(world, "shield", { displayName: "Shield", room: "no_room" }),
+    ).toThrow("does not exist");
   });
 });
 

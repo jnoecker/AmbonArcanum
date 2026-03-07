@@ -226,6 +226,15 @@ export function deleteMob(world: WorldFile, mobId: string): WorldFile {
   }
   const next = clone(world);
   delete next.mobs![mobId];
+
+  // Clear quest giver references pointing to this mob
+  if (next.quests) {
+    for (const quest of Object.values(next.quests)) {
+      if (quest.giver === mobId) {
+        quest.giver = "";
+      }
+    }
+  }
   return next;
 }
 
@@ -238,6 +247,9 @@ export function addItem(
 ): WorldFile {
   if (world.items?.[itemId]) {
     throw new Error(`Item "${itemId}" already exists`);
+  }
+  if (item.room && !world.rooms[item.room]) {
+    throw new Error(`Room "${item.room}" does not exist`);
   }
   const next = clone(world);
   if (!next.items) next.items = {};

@@ -90,6 +90,22 @@ function ZoneEditorInner({ zoneId }: ZoneEditorProps) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [zoneId, zoneState?.dirty, saving, undo, redo]);
 
+  // Auto-close entity panel if the selected entity was removed (e.g. by undo)
+  useEffect(() => {
+    if (!selectedEntity || !zoneState) return;
+    const { kind, id } = selectedEntity;
+    const collection =
+      kind === "mob" ? "mobs" :
+      kind === "item" ? "items" :
+      kind === "shop" ? "shops" :
+      kind === "quest" ? "quests" :
+      kind === "gatheringNode" ? "gatheringNodes" :
+      kind === "recipe" ? "recipes" : null;
+    if (collection && !zoneState.data[collection]?.[id]) {
+      setSelectedEntity(null);
+    }
+  }, [zoneState, selectedEntity]);
+
   // Rebuild graph when WorldFile changes
   const { layoutNodes, layoutEdges } = useMemo(() => {
     if (!zoneState) return { layoutNodes: [], layoutEdges: [] };

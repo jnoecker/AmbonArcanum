@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import type { WorldFile, ItemFile, ItemOnUse } from "@/types/world";
 import { updateItem, deleteItem } from "@/lib/zoneEdits";
 import {
@@ -254,14 +254,52 @@ function AddStatRow({
   existingStats: string[];
   onAdd: (statId: string) => void;
 }) {
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState("");
+
+  const handleSubmit = () => {
+    const id = value.trim().toUpperCase();
+    if (id && !existingStats.includes(id)) {
+      onAdd(id);
+    }
+    setValue("");
+    setEditing(false);
+  };
+
+  if (editing) {
+    return (
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleSubmit();
+        }}
+        className="mt-1 flex items-center gap-1"
+      >
+        <input
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          placeholder="e.g. STR, DEX"
+          autoFocus
+          className="h-5 flex-1 rounded border border-border-default bg-bg-primary px-1.5 text-[10px] text-text-primary outline-none focus:border-accent"
+          onBlur={handleSubmit}
+        />
+        <button
+          type="button"
+          onClick={() => {
+            setValue("");
+            setEditing(false);
+          }}
+          className="text-[10px] text-text-muted hover:text-text-primary"
+        >
+          &times;
+        </button>
+      </form>
+    );
+  }
+
   return (
     <button
-      onClick={() => {
-        const id = prompt("Stat ID (e.g. STR, DEX):");
-        if (id && !existingStats.includes(id.toUpperCase())) {
-          onAdd(id.toUpperCase());
-        }
-      }}
+      onClick={() => setEditing(true)}
       className="mt-1 rounded border border-border-default px-2 py-0.5 text-[10px] text-text-muted transition-colors hover:bg-bg-tertiary hover:text-text-primary"
     >
       + Add Stat Bonus
