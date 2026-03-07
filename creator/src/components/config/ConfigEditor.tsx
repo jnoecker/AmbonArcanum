@@ -97,18 +97,20 @@ export function ConfigEditor() {
             </button>
           ))}
         </div>
-        <div className="ml-auto flex items-center gap-2 px-3">
-          {dirty && (
-            <span className="text-xs text-accent">modified</span>
-          )}
-          <button
-            onClick={handleSave}
-            disabled={!dirty || saving}
-            className="h-6 rounded px-2 text-xs transition-colors enabled:bg-accent/20 enabled:text-accent enabled:hover:bg-accent/30 disabled:text-text-muted disabled:opacity-30"
-          >
-            {saving ? "Saving..." : "Save Config"}
-          </button>
-        </div>
+        {activeTab !== "apiSettings" && (
+          <div className="ml-auto flex items-center gap-2 px-3">
+            {dirty && (
+              <span className="text-xs text-accent">modified</span>
+            )}
+            <button
+              onClick={handleSave}
+              disabled={!dirty || saving}
+              className="h-6 rounded px-2 text-xs transition-colors enabled:bg-accent/20 enabled:text-accent enabled:hover:bg-accent/30 disabled:text-text-muted disabled:opacity-30"
+            >
+              {saving ? "Saving..." : "Save Config"}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Panel content */}

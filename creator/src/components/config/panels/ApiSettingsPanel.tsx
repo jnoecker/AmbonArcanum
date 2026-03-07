@@ -22,6 +22,7 @@ export function ApiSettingsPanel() {
   const [draft, setDraft] = useState<Settings | null>(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadSettings();
@@ -39,10 +40,13 @@ export function ApiSettingsPanel() {
 
   const handleSave = async () => {
     setSaving(true);
+    setError(null);
     try {
       await saveSettings(draft);
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
+    } catch (e) {
+      setError(String(e));
     } finally {
       setSaving(false);
     }
@@ -373,18 +377,26 @@ export function ApiSettingsPanel() {
         </div>
       </div>
 
-      {/* Save */}
-      <div className="flex items-center gap-2">
-        <button
-          onClick={handleSave}
-          disabled={!isDirty || saving}
-          className="rounded bg-gradient-to-r from-accent-muted to-accent px-4 py-1.5 text-xs font-medium text-accent-emphasis transition-all hover:shadow-[var(--glow-aurum)] hover:brightness-110 disabled:opacity-50"
-        >
-          {saving ? "Saving..." : "Save Settings"}
-        </button>
-        {saved && (
-          <span className="text-xs text-status-success">Saved</span>
-        )}
+      {/* Save — sticky at bottom */}
+      <div className="sticky bottom-0 -mx-6 border-t border-border-default bg-bg-secondary px-6 py-3">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleSave}
+            disabled={!isDirty || saving}
+            className="rounded bg-gradient-to-r from-accent-muted to-accent px-4 py-1.5 text-xs font-medium text-accent-emphasis transition-all hover:shadow-[var(--glow-aurum)] hover:brightness-110 disabled:opacity-50"
+          >
+            {saving ? "Saving..." : "Save Settings"}
+          </button>
+          {saved && (
+            <span className="text-xs text-status-success">Saved</span>
+          )}
+          {isDirty && (
+            <span className="text-xs text-accent">modified</span>
+          )}
+          {error && (
+            <span className="text-xs text-status-error">{error}</span>
+          )}
+        </div>
       </div>
     </div>
   );
