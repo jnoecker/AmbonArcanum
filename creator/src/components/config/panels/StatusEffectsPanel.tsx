@@ -1,6 +1,7 @@
 import type { ConfigPanelProps } from "./types";
 import type { StatusEffectDefinitionConfig } from "@/types/config";
 import type { StatMap } from "@/types/world";
+import { useStatMods } from "@/lib/useStatMods";
 import {
   FieldRow,
   NumberInput,
@@ -98,17 +99,10 @@ export function StatusEffectsPanel({ config, onChange }: ConfigPanelProps) {
                     min={100}
                   />
                 </FieldRow>
-                <FieldRow label="Tick Min">
+                <FieldRow label="Tick Value">
                   <NumberInput
-                    value={e.tickMinValue}
-                    onCommit={(v) => patch({ tickMinValue: v ?? 1 })}
-                    min={0}
-                  />
-                </FieldRow>
-                <FieldRow label="Tick Max">
-                  <NumberInput
-                    value={e.tickMaxValue}
-                    onCommit={(v) => patch({ tickMaxValue: v ?? 3 })}
+                    value={e.tickValue}
+                    onCommit={(v) => patch({ tickValue: v ?? 1 })}
                     min={0}
                   />
                 </FieldRow>
@@ -148,23 +142,9 @@ function StatModsEditor({
   statIds: string[];
   onChange: (mods: StatMap | undefined) => void;
 }) {
-  const mods = statMods ?? {};
+  const { mods, addMod, removeMod, updateMod } = useStatMods(statMods, onChange);
   const modKeys = Object.keys(mods);
   const available = statIds.filter((id) => !(id in mods));
-
-  const addMod = (statId: string) => {
-    onChange({ ...mods, [statId]: 1 });
-  };
-
-  const removeMod = (statId: string) => {
-    const next = { ...mods };
-    delete next[statId];
-    onChange(Object.keys(next).length > 0 ? next : undefined);
-  };
-
-  const updateMod = (statId: string, value: number) => {
-    onChange({ ...mods, [statId]: value });
-  };
 
   return (
     <div className="mt-1 border-t border-border-muted pt-1.5">

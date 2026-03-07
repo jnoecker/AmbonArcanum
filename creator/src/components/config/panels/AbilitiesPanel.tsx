@@ -59,7 +59,7 @@ export function AbilitiesPanel({ config, onChange }: ConfigPanelProps) {
         cooldownMs: 0,
         levelRequired: 1,
         targetType: "ENEMY",
-        effect: { type: "DIRECT_DAMAGE", minDamage: 1, maxDamage: 3 },
+        effect: { type: "DIRECT_DAMAGE", value: 3 },
       })}
       renderSummary={(_id, a) => a.effect.type}
       renderDetail={(_id, a, patch) => (
@@ -107,8 +107,8 @@ export function AbilitiesPanel({ config, onChange }: ConfigPanelProps) {
           </FieldRow>
           <FieldRow label="Req. Class">
             <SelectInput
-              value={a.requiredClass ?? ""}
-              onCommit={(v) => patch({ requiredClass: v || undefined })}
+              value={a.classRestriction ?? ""}
+              onCommit={(v) => patch({ classRestriction: v || undefined })}
               options={classOptions}
               allowEmpty
               placeholder="-- any class --"
@@ -129,49 +129,17 @@ export function AbilitiesPanel({ config, onChange }: ConfigPanelProps) {
                 />
               </FieldRow>
               {(a.effect.type === "DIRECT_DAMAGE" ||
-                a.effect.type === "AREA_DAMAGE") && (
-                <>
-                  <FieldRow label="Min Damage">
-                    <NumberInput
-                      value={a.effect.minDamage}
-                      onCommit={(v) =>
-                        patchEffect(a, patch, { minDamage: v ?? 1 })
-                      }
-                      min={0}
-                    />
-                  </FieldRow>
-                  <FieldRow label="Max Damage">
-                    <NumberInput
-                      value={a.effect.maxDamage}
-                      onCommit={(v) =>
-                        patchEffect(a, patch, { maxDamage: v ?? 3 })
-                      }
-                      min={0}
-                    />
-                  </FieldRow>
-                </>
-              )}
-              {a.effect.type === "DIRECT_HEAL" && (
-                <>
-                  <FieldRow label="Min Heal">
-                    <NumberInput
-                      value={a.effect.minHeal}
-                      onCommit={(v) =>
-                        patchEffect(a, patch, { minHeal: v ?? 1 })
-                      }
-                      min={0}
-                    />
-                  </FieldRow>
-                  <FieldRow label="Max Heal">
-                    <NumberInput
-                      value={a.effect.maxHeal}
-                      onCommit={(v) =>
-                        patchEffect(a, patch, { maxHeal: v ?? 3 })
-                      }
-                      min={0}
-                    />
-                  </FieldRow>
-                </>
+                a.effect.type === "AREA_DAMAGE" ||
+                a.effect.type === "DIRECT_HEAL") && (
+                <FieldRow label="Value">
+                  <NumberInput
+                    value={a.effect.value}
+                    onCommit={(v) =>
+                      patchEffect(a, patch, { value: v ?? 1 })
+                    }
+                    min={0}
+                  />
+                </FieldRow>
               )}
               {a.effect.type === "APPLY_STATUS" && (
                 <FieldRow label="Status Effect">
