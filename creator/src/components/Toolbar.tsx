@@ -5,11 +5,13 @@ import { useZoneStore } from "@/stores/zoneStore";
 import { useValidationStore } from "@/stores/validationStore";
 import { useServerManager } from "@/lib/useServerManager";
 import { saveAllZones } from "@/lib/saveZone";
+import { saveConfig } from "@/lib/saveConfig";
 import { validateAllZones } from "@/lib/validateZone";
 import { validateConfig } from "@/lib/validateConfig";
 import { useConfigStore } from "@/stores/configStore";
 import { ErrorDialog } from "./ErrorDialog";
 import { ValidationPanel } from "./ValidationPanel";
+import { DiffModal } from "./ui/DiffModal";
 
 const STATUS_COLORS: Record<string, string> = {
   stopped: "bg-server-stopped",
@@ -38,8 +40,10 @@ export function Toolbar() {
   const openValidationPanel = useValidationStore((s) => s.openPanel);
   const hasConfig = useConfigStore((s) => !!s.config);
   const { startServer, stopServer } = useServerManager();
+  const configDirty = useConfigStore((s) => s.dirty);
   const [errors, setErrors] = useState<string[] | null>(null);
   const [saving, setSaving] = useState(false);
+  const [showDiff, setShowDiff] = useState(false);
 
   const handleStart = async () => {
     const result = await startServer();
@@ -114,20 +118,11 @@ export function Toolbar() {
 
       {/* Right side actions */}
       <button
-        onClick={async () => {
-          setSaving(true);
-          try {
-            await saveAllZones();
-          } catch (err) {
-            console.error("Save failed:", err);
-          } finally {
-            setSaving(false);
-          }
-        }}
-        disabled={dirtyCount === 0 || saving}
+        onClick={() => setShowDiff(true)}
+        disabled={(dirtyCount === 0 && !configDirty) || saving}
         className="rounded px-3 py-1 text-xs font-medium transition-colors enabled:bg-bg-elevated enabled:text-text-primary enabled:hover:bg-bg-hover disabled:cursor-not-allowed disabled:opacity-40"
       >
-        {saving ? "Saving..." : dirtyCount > 0 ? `Save All (${dirtyCount})` : "Save All"}
+        {saving ? "Saving..." : dirtyCount > 0 || configDirty ? `Save All (${dirtyCount + (configDirty ? 1 : 0)})` : "Save All"}
       </button>
       <button
         onClick={() => {
@@ -149,6 +144,27 @@ export function Toolbar() {
       </button>
 
       <ValidationPanel />
+
+      {showDiff && (
+        <DiffModal
+          onCancel={() => setShowDiff(false)}
+          onConfirm={async () => {
+            setShowDiff(false);
+            setSaving(true);
+            try {
+              await saveAllZones();
+              const mudDir = useProjectStore.getState().project?.mudDir;
+              if (mudDir && useConfigStore.getState().dirty) {
+                await saveConfig(mudDir);
+              }
+            } catch (err) {
+              console.error("Save failed:", err);
+            } finally {
+              setSaving(false);
+            }
+          }}
+        />
+      )}
 
       {errors && (
         <ErrorDialog
