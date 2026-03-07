@@ -1,12 +1,12 @@
 [package]
-name = "ambon-creator"
+name = "ambon-arcanum"
 version = "0.1.0"
-description = "AmbonMUD Creator - World building and server management tool"
+description = "Ambon Arcanum - World building and server management tool"
 authors = []
 edition = "2021"
 
 [lib]
-name = "ambon_creator_lib"
+name = "ambon_arcanum_lib"
 crate-type = ["lib", "cdylib", "staticlib"]
 
 [build-dependencies]

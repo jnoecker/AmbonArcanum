@@ -62,7 +62,7 @@ Point it at an AmbonMUD project directory and it becomes the single tool for bui
 
 - [Bun](https://bun.sh/) (package manager and script runner)
 - [Rust](https://rustup.rs/) (for the Tauri backend)
-- An AmbonMUD project directory to point the Creator at
+- An AmbonMUD project directory to point Ambon Arcanum at
 
 ## Getting Started
 
@@ -83,7 +83,7 @@ bun run tauri build
 
 ```
 AmbonArcanum/
-  creator/                    # Tauri application
+  creator/                    # Ambon Arcanum (Tauri application)
     src/                      # React frontend
       components/
         config/panels/        #   Config editor panels (stats, abilities, classes, etc.)

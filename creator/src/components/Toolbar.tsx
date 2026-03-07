@@ -79,7 +79,7 @@ export function Toolbar() {
     <div className="flex h-11 shrink-0 items-center gap-3 border-b border-border-default bg-bg-secondary px-4">
       {/* Project name */}
       <span className="font-display text-sm font-semibold tracking-wide text-accent-emphasis">
-        {project?.name ?? "AmbonMUD Creator"}
+        {project?.name ?? "Ambon Arcanum"}
       </span>
 
       <div className="mx-2 h-4 w-px bg-border-default" />
