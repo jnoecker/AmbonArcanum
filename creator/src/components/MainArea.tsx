@@ -1,6 +1,7 @@
 import { useProjectStore } from "@/stores/projectStore";
 import { Console } from "./Console";
 import { ZoneEditor } from "./zone/ZoneEditor";
+import { ConfigEditor } from "./config/ConfigEditor";
 
 export function MainArea() {
   const tabs = useProjectStore((s) => s.tabs);
@@ -23,11 +24,7 @@ export function MainArea() {
       return <ZoneEditor key={zoneId} zoneId={zoneId} />;
     }
     case "config":
-      return (
-        <div className="flex flex-1 items-center justify-center text-text-muted">
-          Config editor (Phase 4)
-        </div>
-      );
+      return <ConfigEditor />;
     case "classes":
       return (
         <div className="flex flex-1 items-center justify-center text-text-muted">
