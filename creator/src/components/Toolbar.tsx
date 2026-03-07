@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { useProjectStore } from "@/stores/projectStore";
 import { useServerStore } from "@/stores/serverStore";
 import { useServerManager } from "@/lib/useServerManager";
+import { ErrorDialog } from "./ErrorDialog";
 
 const STATUS_COLORS: Record<string, string> = {
   stopped: "bg-server-stopped",
@@ -22,6 +24,19 @@ export function Toolbar() {
   const project = useProjectStore((s) => s.project);
   const status = useServerStore((s) => s.status);
   const { startServer, stopServer } = useServerManager();
+  const [errors, setErrors] = useState<string[] | null>(null);
+
+  const handleStart = async () => {
+    const result = await startServer();
+    if (!result.success && result.preflightErrors) {
+      setErrors(result.preflightErrors);
+    }
+  };
+
+  const handleRestart = async () => {
+    await stopServer();
+    setTimeout(handleStart, 500);
+  };
 
   return (
     <div className="flex h-11 shrink-0 items-center gap-3 border-b border-border-default bg-bg-secondary px-4">
@@ -35,7 +50,7 @@ export function Toolbar() {
       {/* Server controls */}
       <div className="flex items-center gap-2">
         <button
-          onClick={startServer}
+          onClick={handleStart}
           disabled={status !== "stopped" && status !== "error"}
           className="rounded px-3 py-1 text-xs font-medium text-text-primary transition-colors enabled:bg-bg-elevated enabled:hover:bg-bg-hover disabled:cursor-not-allowed disabled:opacity-40"
         >
@@ -49,11 +64,7 @@ export function Toolbar() {
           Stop
         </button>
         <button
-          onClick={async () => {
-            await stopServer();
-            // Small delay before restart
-            setTimeout(startServer, 500);
-          }}
+          onClick={handleRestart}
           disabled={status !== "running"}
           className="rounded px-3 py-1 text-xs font-medium text-text-primary transition-colors enabled:bg-bg-elevated enabled:hover:bg-bg-hover disabled:cursor-not-allowed disabled:opacity-40"
         >
@@ -78,6 +89,14 @@ export function Toolbar() {
       <button className="rounded px-3 py-1 text-xs font-medium text-text-primary transition-colors hover:bg-bg-elevated">
         Validate
       </button>
+
+      {errors && (
+        <ErrorDialog
+          title="Pre-flight Check Failed"
+          messages={errors}
+          onClose={() => setErrors(null)}
+        />
+      )}
     </div>
   );
 }

@@ -1,7 +1,17 @@
+import { useState } from "react";
 import { useOpenProject } from "@/lib/useOpenProject";
+import { ErrorDialog } from "./ErrorDialog";
 
 export function WelcomeScreen() {
   const openProject = useOpenProject();
+  const [errors, setErrors] = useState<string[] | null>(null);
+
+  const handleOpen = async () => {
+    const result = await openProject();
+    if (result && !result.success && result.errors) {
+      setErrors(result.errors);
+    }
+  };
 
   return (
     <div className="flex h-screen items-center justify-center bg-bg-primary">
@@ -15,12 +25,20 @@ export function WelcomeScreen() {
           </p>
         </div>
         <button
-          onClick={openProject}
+          onClick={handleOpen}
           className="rounded-lg bg-accent px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-accent-emphasis"
         >
           Open AmbonMUD Project
         </button>
       </div>
+
+      {errors && (
+        <ErrorDialog
+          title="Invalid AmbonMUD Directory"
+          messages={errors}
+          onClose={() => setErrors(null)}
+        />
+      )}
     </div>
   );
 }

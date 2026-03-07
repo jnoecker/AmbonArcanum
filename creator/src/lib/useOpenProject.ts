@@ -13,6 +13,11 @@ interface ValidationResult {
   gradle_wrapper: string;
 }
 
+export interface OpenProjectResult {
+  success: boolean;
+  errors?: string[];
+}
+
 export function useOpenProject() {
   const setProject = useProjectStore((s) => s.setProject);
   const loadZone = useZoneStore((s) => s.loadZone);
@@ -20,9 +25,9 @@ export function useOpenProject() {
   const setConfig = useConfigStore((s) => s.setConfig);
   const clearConfig = useConfigStore((s) => s.clearConfig);
 
-  return useCallback(async () => {
+  return useCallback(async (): Promise<OpenProjectResult | null> => {
     const selected = await open({ directory: true, multiple: false });
-    if (!selected) return;
+    if (!selected) return null; // User cancelled
 
     const mudDir = selected as string;
 
@@ -32,9 +37,7 @@ export function useOpenProject() {
     });
 
     if (!result.valid) {
-      // TODO: replace with proper error dialog
-      console.error("Invalid AmbonMUD directory:", result.errors);
-      return;
+      return { success: false, errors: result.errors };
     }
 
     // Clear previous state
@@ -62,5 +65,6 @@ export function useOpenProject() {
     };
 
     setProject(project);
+    return { success: true };
   }, [setProject, loadZone, clearZones, setConfig, clearConfig]);
 }
