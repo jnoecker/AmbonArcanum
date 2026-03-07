@@ -61,6 +61,7 @@ export function QuestEditor({
 
   // ─── Objective helpers ────────────────────────────────────────
   const {
+    items: objectives,
     add: handleAddObjective,
     update: handleUpdateObjective,
     remove: handleDeleteObjective,

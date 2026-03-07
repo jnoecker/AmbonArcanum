@@ -39,5 +39,5 @@ export function useArrayField<T>(
     [arr, onUpdate, clearOnEmpty],
   );
 
-  return { add, update, remove } as const;
+  return { items: arr, add, update, remove } as const;
 }

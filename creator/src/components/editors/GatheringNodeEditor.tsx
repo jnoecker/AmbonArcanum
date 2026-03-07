@@ -52,6 +52,7 @@ export function GatheringNodeEditor({
 
   // ─── Yield helpers ────────────────────────────────────────────
   const {
+    items: yields,
     add: handleAddYield,
     update: handleUpdateYield,
     remove: handleDeleteYield,

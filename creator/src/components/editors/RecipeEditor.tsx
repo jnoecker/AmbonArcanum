@@ -53,6 +53,7 @@ export function RecipeEditor({
 
   // ─── Material helpers ─────────────────────────────────────────
   const {
+    items: materials,
     add: handleAddMaterial,
     update: handleUpdateMaterial,
     remove: handleDeleteMaterial,
