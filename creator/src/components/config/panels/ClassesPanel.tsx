@@ -28,14 +28,15 @@ export function ClassesPanel({ config, onChange }: ConfigPanelProps) {
   );
 
   const filteredIds = useMemo(() => {
-    if (!search.trim()) return classIds;
+    const ids = Object.keys(classes);
+    if (!search.trim()) return ids;
     const q = search.toLowerCase();
-    return classIds.filter(
+    return ids.filter(
       (id) =>
         id.toLowerCase().includes(q) ||
         classes[id]!.displayName.toLowerCase().includes(q),
     );
-  }, [classIds, classes, search]);
+  }, [classes, search]);
 
   const patchClass = (id: string, p: Partial<ClassDefinitionConfig>) =>
     onChange({
@@ -270,11 +271,15 @@ function HpManaCurve({
     return `M${points.join("L")}`;
   };
 
-  // Y-axis ticks
+  // Y-axis ticks (deduplicate to avoid duplicate keys when maxVal is small)
   const tickCount = 4;
-  const yTicks = Array.from({ length: tickCount + 1 }, (_, i) =>
-    Math.round((maxVal / tickCount) * i),
-  );
+  const yTicks = [
+    ...new Set(
+      Array.from({ length: tickCount + 1 }, (_, i) =>
+        Math.round((maxVal / tickCount) * i),
+      ),
+    ),
+  ];
 
   return (
     <div className="mt-1 border-t border-border-muted pt-1.5">

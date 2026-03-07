@@ -20,14 +20,15 @@ export function RacesPanel({ config, onChange }: ConfigPanelProps) {
   const statIds = Object.keys(statDefs);
 
   const filteredIds = useMemo(() => {
-    if (!search.trim()) return raceIds;
+    const ids = Object.keys(races);
+    if (!search.trim()) return ids;
     const q = search.toLowerCase();
-    return raceIds.filter(
+    return ids.filter(
       (id) =>
         id.toLowerCase().includes(q) ||
         races[id]!.displayName.toLowerCase().includes(q),
     );
-  }, [raceIds, races, search]);
+  }, [races, search]);
 
   const patchRace = (id: string, p: Partial<RaceDefinitionConfig>) =>
     onChange({
