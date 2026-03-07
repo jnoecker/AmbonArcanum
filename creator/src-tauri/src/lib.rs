@@ -22,6 +22,7 @@ pub fn run() {
             assets::list_assets,
             assets::delete_asset,
             assets::get_assets_dir,
+            assets::import_asset,
             r2::sync_assets,
             r2::get_sync_status,
             r2::resolve_asset_url,
