@@ -161,6 +161,9 @@ export async function saveConfig(mudDir: string): Promise<void> {
     setIn(engine, ["characterCreation", "startingGold"], config.characterCreation.startingGold);
   }
 
+  // ─── Images ────────────────────────────────────────────────
+  setIn(root, ["images", "baseUrl"], config.images.baseUrl);
+
   // ─── Progression ────────────────────────────────────────────
   setIn(root, ["progression", "maxLevel"], config.progression.maxLevel);
   setIn(root, ["progression", "xp", "baseXp"], config.progression.xp.baseXp);
