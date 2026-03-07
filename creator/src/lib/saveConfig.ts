@@ -66,6 +66,66 @@ export async function saveConfig(mudDir: string): Promise<void> {
     setIn(engine, ["group", "maxSize"], config.group.maxSize);
     setIn(engine, ["group", "inviteTimeoutMs"], config.group.inviteTimeoutMs);
     setIn(engine, ["group", "xpBonusPerMember"], config.group.xpBonusPerMember);
+
+    // Stats
+    saveMapSection(engine, ["stats", "definitions"], config.stats.definitions,
+      (def) => ({
+        displayName: def.displayName,
+        abbreviation: def.abbreviation,
+        description: def.description,
+        baseStat: def.baseStat,
+      }),
+    );
+    const b = config.stats.bindings;
+    for (const [key, val] of Object.entries(b)) {
+      setIn(engine, ["stats", "bindings", key], val);
+    }
+
+    // Abilities
+    saveMapSection(engine, ["abilities", "definitions"], config.abilities,
+      (a) => {
+        const effect: Record<string, unknown> = { type: a.effect.type };
+        if (a.effect.minDamage != null) effect.minDamage = a.effect.minDamage;
+        if (a.effect.maxDamage != null) effect.maxDamage = a.effect.maxDamage;
+        if (a.effect.minHeal != null) effect.minHeal = a.effect.minHeal;
+        if (a.effect.maxHeal != null) effect.maxHeal = a.effect.maxHeal;
+        if (a.effect.statusEffectId) effect.statusEffectId = a.effect.statusEffectId;
+        if (a.effect.flatThreat != null) effect.flatThreat = a.effect.flatThreat;
+        if (a.effect.margin != null) effect.margin = a.effect.margin;
+        const obj: Record<string, unknown> = {
+          displayName: a.displayName,
+          manaCost: a.manaCost,
+          cooldownMs: a.cooldownMs,
+          levelRequired: a.levelRequired,
+          targetType: a.targetType,
+          effect,
+        };
+        if (a.description) obj.description = a.description;
+        if (a.requiredClass) obj.requiredClass = a.requiredClass;
+        if (a.image) obj.image = a.image;
+        return obj;
+      },
+    );
+
+    // Status Effects
+    saveMapSection(engine, ["statusEffects", "definitions"], config.statusEffects,
+      (e) => {
+        const obj: Record<string, unknown> = {
+          displayName: e.displayName,
+          effectType: e.effectType,
+          durationMs: e.durationMs,
+        };
+        if (e.tickIntervalMs != null) obj.tickIntervalMs = e.tickIntervalMs;
+        if (e.tickMinValue != null) obj.tickMinValue = e.tickMinValue;
+        if (e.tickMaxValue != null) obj.tickMaxValue = e.tickMaxValue;
+        if (e.shieldAmount != null) obj.shieldAmount = e.shieldAmount;
+        if (e.stackBehavior) obj.stackBehavior = e.stackBehavior;
+        if (e.maxStacks != null) obj.maxStacks = e.maxStacks;
+        if (e.statMods && Object.keys(e.statMods).length > 0)
+          obj.statMods = e.statMods;
+        return obj;
+      },
+    );
   }
 
   // ─── Progression ────────────────────────────────────────────
@@ -82,6 +142,24 @@ export async function saveConfig(mudDir: string): Promise<void> {
 
   await writeTextFile(configPath, doc.toString());
   state.markClean();
+}
+
+/**
+ * Replace a map section (like abilities.definitions) wholesale.
+ * Navigates to the parent, then sets the definitions map to a plain JS object
+ * which the YAML library serializes as a mapping.
+ */
+function saveMapSection<T>(
+  node: any,
+  path: string[],
+  data: Record<string, T>,
+  toPlain: (item: T) => Record<string, unknown>,
+): void {
+  const plain: Record<string, unknown> = {};
+  for (const [id, item] of Object.entries(data)) {
+    plain[id] = toPlain(item);
+  }
+  setIn(node, path, plain);
 }
 
 /**

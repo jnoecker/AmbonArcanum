@@ -11,9 +11,15 @@ import { EconomyPanel } from "./panels/EconomyPanel";
 import { RegenPanel } from "./panels/RegenPanel";
 import { CraftingPanel } from "./panels/CraftingPanel";
 import { GroupPanel } from "./panels/GroupPanel";
+import { StatsPanel } from "./panels/StatsPanel";
+import { AbilitiesPanel } from "./panels/AbilitiesPanel";
+import { StatusEffectsPanel } from "./panels/StatusEffectsPanel";
 
 const CONFIG_TABS = [
   { id: "server", label: "Server" },
+  { id: "stats", label: "Stats" },
+  { id: "abilities", label: "Abilities" },
+  { id: "statusEffects", label: "Status FX" },
   { id: "combat", label: "Combat" },
   { id: "mobTiers", label: "Mob Tiers" },
   { id: "progression", label: "Progression" },
@@ -110,6 +116,15 @@ export function ConfigEditor() {
         <div className="mx-auto max-w-2xl px-6 py-4">
           {activeTab === "server" && (
             <ServerPanel config={config} onChange={handleChange} />
+          )}
+          {activeTab === "stats" && (
+            <StatsPanel config={config} onChange={handleChange} />
+          )}
+          {activeTab === "abilities" && (
+            <AbilitiesPanel config={config} onChange={handleChange} />
+          )}
+          {activeTab === "statusEffects" && (
+            <StatusEffectsPanel config={config} onChange={handleChange} />
           )}
           {activeTab === "combat" && (
             <CombatPanel config={config} onChange={handleChange} />
