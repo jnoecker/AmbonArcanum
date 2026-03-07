@@ -48,10 +48,10 @@ export function WelcomeScreen() {
       <div className="relative z-10 flex flex-col items-center gap-8">
         <div className="flex flex-col items-center gap-2">
           <h1 className="font-display text-4xl font-semibold tracking-wide text-accent-emphasis drop-shadow-lg">
-            AmbonMUD Creator
+            Ambon Arcanum
           </h1>
           <p className="text-lg text-text-secondary drop-shadow">
-            World building and server management tool
+            World building &amp; server management
           </p>
         </div>
         <div className="relative z-10 flex flex-col items-center gap-3">

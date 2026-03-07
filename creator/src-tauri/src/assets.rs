@@ -1,5 +1,6 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
 use std::path::PathBuf;
 use tauri::{AppHandle, Manager};
 
@@ -157,4 +158,86 @@ pub async fn update_sync_status(app: AppHandle, id: &str, status: &str) -> Resul
         entry.sync_status = status.to_string();
     }
     save_manifest(&app, &manifest).await
+}
+
+fn detect_extension(bytes: &[u8]) -> &'static str {
+    if bytes.starts_with(&[0x89, 0x50, 0x4E, 0x47]) {
+        "png"
+    } else if bytes.starts_with(&[0xFF, 0xD8, 0xFF]) {
+        "jpg"
+    } else if bytes.starts_with(b"RIFF") && bytes.len() > 12 && &bytes[8..12] == b"WEBP" {
+        "webp"
+    } else {
+        "png"
+    }
+}
+
+/// Import an existing image file from disk into the asset library.
+#[tauri::command]
+pub async fn import_asset(
+    app: AppHandle,
+    source_path: String,
+    asset_type: String,
+    context: Option<AssetContext>,
+) -> Result<AssetEntry, String> {
+    let bytes = tokio::fs::read(&source_path)
+        .await
+        .map_err(|e| format!("Failed to read source file: {e}"))?;
+
+    // Content-addressed hash
+    let mut hasher = Sha256::new();
+    hasher.update(&bytes);
+    let hash = format!("{:x}", hasher.finalize());
+
+    // Determine extension and filename
+    let ext = detect_extension(&bytes);
+    let file_name = format!("{hash}.{ext}");
+
+    // Read dimensions from image header
+    let (width, height) = match imagesize::blob_size(&bytes) {
+        Ok(size) => (size.width as u32, size.height as u32),
+        Err(_) => (0, 0),
+    };
+
+    // Copy to assets/images
+    let img_dir = assets_dir(&app)?.join("images");
+    tokio::fs::create_dir_all(&img_dir)
+        .await
+        .map_err(|e| format!("Failed to create images dir: {e}"))?;
+
+    let dest = img_dir.join(&file_name);
+    if !dest.exists() {
+        tokio::fs::copy(&source_path, &dest)
+            .await
+            .map_err(|e| format!("Failed to copy image: {e}"))?;
+    }
+
+    // Extract original filename for the prompt field
+    let original_name = std::path::Path::new(&source_path)
+        .file_stem()
+        .map(|s| s.to_string_lossy().to_string())
+        .unwrap_or_default();
+
+    let entry = AssetEntry {
+        id: uuid::Uuid::new_v4().to_string(),
+        hash,
+        prompt: format!("Imported: {original_name}"),
+        enhanced_prompt: String::new(),
+        model: "imported".to_string(),
+        asset_type,
+        context: context.unwrap_or_default(),
+        created_at: Utc::now(),
+        file_name,
+        width,
+        height,
+        sync_status: "local".to_string(),
+    };
+
+    let mut manifest = load_manifest(&app).await?;
+    // Dedup by hash — update existing entry if same content
+    manifest.assets.retain(|a| a.hash != entry.hash);
+    manifest.assets.push(entry.clone());
+    save_manifest(&app, &manifest).await?;
+
+    Ok(entry)
 }

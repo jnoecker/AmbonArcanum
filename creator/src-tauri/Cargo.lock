@@ -33,7 +33,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "ambon-creator"
+name = "ambon-arcanum"
 version = "0.1.0"
 dependencies = [
  "base64 0.22.1",

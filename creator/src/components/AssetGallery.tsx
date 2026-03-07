@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { open } from "@tauri-apps/plugin-dialog";
 import { useAssetStore } from "@/stores/assetStore";
-import type { AssetEntry, SyncProgress } from "@/types/assets";
+import type { AssetEntry, AssetType, SyncProgress } from "@/types/assets";
 
 /** Triggers image loading when the element scrolls into view. */
 function LazyImage({
@@ -44,6 +45,7 @@ export function AssetGallery({ onClose }: { onClose: () => void }) {
   const assetsDir = useAssetStore((s) => s.assetsDir);
   const loadAssets = useAssetStore((s) => s.loadAssets);
   const deleteAsset = useAssetStore((s) => s.deleteAsset);
+  const importAsset = useAssetStore((s) => s.importAsset);
   const syncing = useAssetStore((s) => s.syncing);
   const syncToR2 = useAssetStore((s) => s.syncToR2);
   const settings = useAssetStore((s) => s.settings);
@@ -53,6 +55,7 @@ export function AssetGallery({ onClose }: { onClose: () => void }) {
   const [zoneFilter, setZoneFilter] = useState<string>("all");
   const [sort, setSort] = useState<SortKey>("newest");
   const [deleting, setDeleting] = useState(false);
+  const [importing, setImporting] = useState(false);
   const [imageCache, setImageCache] = useState<Record<string, string>>({});
   const [syncResult, setSyncResult] = useState<SyncProgress | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -100,6 +103,25 @@ export function AssetGallery({ onClose }: { onClose: () => void }) {
     }
   };
 
+  const handleImport = async () => {
+    const files = await open({
+      multiple: true,
+      filters: [{ name: "Images", extensions: ["png", "jpg", "jpeg", "webp"] }],
+    });
+    if (!files) return;
+    const paths = Array.isArray(files) ? files : [files];
+    setImporting(true);
+    try {
+      for (const filePath of paths) {
+        // Infer asset type from current filter, default to "background"
+        const assetType: AssetType = filter !== "all" ? filter as AssetType : "background";
+        await importAsset(filePath, assetType);
+      }
+    } finally {
+      setImporting(false);
+    }
+  };
+
   const formatDate = (iso: string) => {
     try {
       return new Date(iso).toLocaleDateString(undefined, {
@@ -125,6 +147,14 @@ export function AssetGallery({ onClose }: { onClose: () => void }) {
             <span className="text-xs text-text-muted">
               {sorted.length} asset{sorted.length !== 1 ? "s" : ""}
             </span>
+            <div className="mx-1 h-4 w-px bg-border-default" />
+            <button
+              onClick={handleImport}
+              disabled={importing}
+              className="rounded px-2 py-0.5 text-[10px] font-medium text-accent transition-colors hover:bg-accent/15 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {importing ? "Importing..." : "Import"}
+            </button>
             {hasR2 && (
               <>
                 <div className="mx-1 h-4 w-px bg-border-default" />

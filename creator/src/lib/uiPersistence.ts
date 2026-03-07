@@ -1,6 +1,6 @@
 import type { Tab } from "@/types/project";
 
-const STORAGE_KEY = "ambon-creator-ui";
+const STORAGE_KEY = "ambon-arcanum-ui";
 
 interface PersistedUI {
   lastProjectPath: string;

@@ -1,12 +1,12 @@
 [package]
-name = "ambon-creator"
+name = "ambon-arcanum"
 version = "0.1.0"
-description = "AmbonMUD Creator - World building and server management tool"
+description = "Ambon Arcanum - World building and server management tool"
 authors = []
 edition = "2021"
 
 [lib]
-name = "ambon_creator_lib"
+name = "ambon_arcanum_lib"
 crate-type = ["lib", "cdylib", "staticlib"]
 
 [build-dependencies]
@@ -28,3 +28,4 @@ base64 = "0.22"
 chrono = { version = "0.4", features = ["serde"] }
 tokio = { version = "1", features = ["fs"] }
 tauri-plugin-window-state = "2.4.1"
+imagesize = "0.13"
