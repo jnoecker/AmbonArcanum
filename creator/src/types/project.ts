@@ -19,7 +19,12 @@ export interface ServerState {
   lastError?: string;
 }
 
-export type TabKind = "zone" | "config" | "classes" | "races" | "console";
+export type TabKind = "zone" | "config" | "console";
+
+export type ConfigSubTab =
+  | "server" | "stats" | "classes" | "races" | "abilities"
+  | "statusEffects" | "combat" | "mobTiers" | "progression"
+  | "economy" | "regen" | "crafting" | "group" | "charCreate" | "rawYaml";
 
 export interface Tab {
   id: string;

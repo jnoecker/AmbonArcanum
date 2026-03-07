@@ -1,10 +1,11 @@
 import { create } from "zustand";
-import type { Project, Tab } from "@/types/project";
+import type { Project, Tab, ConfigSubTab } from "@/types/project";
 
 interface ProjectStore {
   project: Project | null;
   tabs: Tab[];
   activeTabId: string | null;
+  configSubTab: ConfigSubTab;
 
   setProject: (project: Project) => void;
   closeProject: () => void;
@@ -12,12 +13,14 @@ interface ProjectStore {
   openTab: (tab: Tab) => void;
   closeTab: (tabId: string) => void;
   setActiveTab: (tabId: string) => void;
+  setConfigSubTab: (subTab: ConfigSubTab) => void;
 }
 
 export const useProjectStore = create<ProjectStore>((set, get) => ({
   project: null,
   tabs: [],
   activeTabId: null,
+  configSubTab: "server" as ConfigSubTab,
 
   setProject: (project) =>
     set({
@@ -50,4 +53,6 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
   },
 
   setActiveTab: (tabId) => set({ activeTabId: tabId }),
+
+  setConfigSubTab: (subTab) => set({ configSubTab: subTab }),
 }));

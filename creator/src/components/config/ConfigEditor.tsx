@@ -37,14 +37,13 @@ const CONFIG_TABS = [
   { id: "rawYaml", label: "Raw YAML" },
 ] as const;
 
-type ConfigTabId = (typeof CONFIG_TABS)[number]["id"];
-
 export function ConfigEditor() {
   const config = useConfigStore((s) => s.config);
   const dirty = useConfigStore((s) => s.dirty);
   const updateConfig = useConfigStore((s) => s.updateConfig);
   const mudDir = useProjectStore((s) => s.project?.mudDir);
-  const [activeTab, setActiveTab] = useState<ConfigTabId>("server");
+  const activeTab = useProjectStore((s) => s.configSubTab);
+  const setActiveTab = useProjectStore((s) => s.setConfigSubTab);
   const [saving, setSaving] = useState(false);
 
   const handleChange = useCallback(
