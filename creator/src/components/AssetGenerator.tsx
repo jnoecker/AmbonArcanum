@@ -9,6 +9,7 @@ import {
 } from "@/lib/arcanumPrompts";
 import { IMAGE_MODELS } from "@/types/assets";
 import type { AssetType, GeneratedImage } from "@/types/assets";
+import loadingVignette from "@/assets/loading-vignette.jpg";
 
 type Stage = "compose" | "generating" | "preview";
 
@@ -270,14 +271,22 @@ export function AssetGenerator() {
           )}
 
           {stage === "generating" && (
-            <div className="flex flex-col items-center justify-center gap-4 py-12">
-              <div className="h-8 w-8 rounded-full border-2 border-accent border-t-transparent animate-spin" />
-              <p className="font-display text-sm tracking-wide text-text-secondary">
-                Generating...
-              </p>
-              <p className="text-xs text-text-muted">
-                This may take a few seconds
-              </p>
+            <div className="relative flex flex-col items-center justify-center gap-4 py-12 overflow-hidden rounded-lg">
+              <img
+                src={loadingVignette}
+                alt=""
+                className="absolute inset-0 h-full w-full object-cover opacity-20"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-bg-secondary via-bg-secondary/70 to-bg-secondary/50" />
+              <div className="relative z-10 flex flex-col items-center gap-4">
+                <div className="h-8 w-8 rounded-full border-2 border-accent border-t-transparent animate-spin" />
+                <p className="font-display text-sm tracking-wide text-text-secondary">
+                  Generating...
+                </p>
+                <p className="text-xs text-text-muted">
+                  This may take a few seconds
+                </p>
+              </div>
             </div>
           )}
 

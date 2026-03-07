@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useOpenProject } from "@/lib/useOpenProject";
 import { loadUIState } from "@/lib/uiPersistence";
 import { ErrorDialog } from "./ErrorDialog";
+import splashHero from "@/assets/splash-hero.jpg";
 
 export function WelcomeScreen() {
   const { openWithPicker, openDir } = useOpenProject();
@@ -35,17 +36,25 @@ export function WelcomeScreen() {
   };
 
   return (
-    <div className="flex h-screen items-center justify-center bg-bg-abyss">
-      <div className="flex flex-col items-center gap-8">
+    <div className="relative flex h-screen items-center justify-center bg-bg-abyss overflow-hidden">
+      {/* Hero background */}
+      <img
+        src={splashHero}
+        alt=""
+        className="absolute inset-0 h-full w-full object-cover opacity-30"
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-bg-abyss via-bg-abyss/60 to-bg-abyss/80" />
+
+      <div className="relative z-10 flex flex-col items-center gap-8">
         <div className="flex flex-col items-center gap-2">
-          <h1 className="font-display text-4xl font-semibold tracking-wide text-accent-emphasis">
+          <h1 className="font-display text-4xl font-semibold tracking-wide text-accent-emphasis drop-shadow-lg">
             Ambon Arcanum
           </h1>
-          <p className="text-lg text-text-secondary">
+          <p className="text-lg text-text-secondary drop-shadow">
             World building &amp; server management
           </p>
         </div>
-        <div className="flex flex-col items-center gap-3">
+        <div className="relative z-10 flex flex-col items-center gap-3">
           <button
             onClick={handleOpen}
             className="rounded-lg bg-gradient-to-r from-accent-muted to-accent px-6 py-3 font-display text-sm font-medium tracking-wide text-accent-emphasis transition-all hover:shadow-[var(--glow-aurum)] hover:brightness-110"

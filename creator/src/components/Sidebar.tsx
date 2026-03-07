@@ -6,6 +6,7 @@ import type { Tab, ConfigSubTab } from "@/types/project";
 import type { WorldFile } from "@/types/world";
 import { useGlobalSearch, ENTITY_TYPE_LABELS } from "@/lib/useGlobalSearch";
 import { NewZoneDialog } from "./NewZoneDialog";
+import panelHeader from "@/assets/panel-header.jpg";
 import {
   addRoom,
   addMob,
@@ -343,6 +344,15 @@ export function Sidebar() {
               ))}
             </ul>
           )}
+        </div>
+
+        {/* Decorative divider */}
+        <div className="mx-3 my-1 h-6 overflow-hidden rounded">
+          <img
+            src={panelHeader}
+            alt=""
+            className="h-full w-full object-cover opacity-40"
+          />
         </div>
 
         {/* Config section */}
