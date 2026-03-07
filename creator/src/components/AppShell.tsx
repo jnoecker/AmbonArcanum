@@ -20,7 +20,7 @@ export function AppShell() {
       <Toolbar />
       <div className="flex min-h-0 flex-1">
         <Sidebar />
-        <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
           <TabBar />
           <MainArea />
         </div>
