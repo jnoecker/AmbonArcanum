@@ -15,7 +15,7 @@ import "@xyflow/react/dist/style.css";
 
 import { useZoneStore } from "@/stores/zoneStore";
 import { zoneToGraph } from "@/lib/zoneToGraph";
-import { applyDagreLayout } from "@/lib/dagreLayout";
+import { compassLayout } from "@/lib/dagreLayout";
 import { RoomNode } from "./RoomNode";
 import { CrossZoneNode } from "./CrossZoneNode";
 import { RoomPanel } from "./RoomPanel";
@@ -36,7 +36,7 @@ function ZoneEditorInner({ zoneId }: ZoneEditorProps) {
   const { initialNodes, initialEdges } = useMemo(() => {
     if (!zoneState) return { initialNodes: [], initialEdges: [] };
     const { nodes: rawNodes, edges } = zoneToGraph(zoneState.data);
-    const nodes = applyDagreLayout(rawNodes, edges);
+    const nodes = compassLayout(rawNodes, zoneState.data);
     return { initialNodes: nodes, initialEdges: edges };
   }, [zoneState]);
 
