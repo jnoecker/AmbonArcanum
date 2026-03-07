@@ -88,6 +88,7 @@ export interface BehaviorParams {
   fleeHpPercent?: number;
   aggroMessage?: string;
   fleeMessage?: string;
+  maxWanderDistance?: number;
 }
 
 export interface ItemFile {
@@ -117,6 +118,7 @@ export interface ShopFile {
   name: string;
   room: string;
   items?: string[];
+  image?: string;
 }
 
 export interface QuestFile {
@@ -155,7 +157,7 @@ export interface DialogueChoiceFile {
 
 export interface GatheringNodeFile {
   displayName: string;
-  keyword: string;
+  keyword?: string;
   skill: string;
   skillRequired?: number;
   yields: GatheringYieldFile[];
@@ -181,6 +183,7 @@ export interface RecipeFile {
   station?: string;
   stationBonus?: number;
   xpReward?: number;
+  image?: string;
 }
 
 export interface RecipeMaterialFile {

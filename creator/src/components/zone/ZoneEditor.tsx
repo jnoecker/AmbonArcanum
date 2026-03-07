@@ -22,7 +22,8 @@ import { saveZone } from "@/lib/saveZone";
 import type { WorldFile } from "@/types/world";
 import { RoomNode } from "./RoomNode";
 import { CrossZoneNode } from "./CrossZoneNode";
-import { RoomPanel } from "./RoomPanel";
+import { RoomPanel, type EntitySelection } from "./RoomPanel";
+import { EntityPanel } from "./EntityPanel";
 import { DirectionPicker } from "./DirectionPicker";
 
 const nodeTypes = {
@@ -48,6 +49,7 @@ function ZoneEditorInner({ zoneId }: ZoneEditorProps) {
   const canUndo = useZoneStore((s) => s.canUndo(zoneId));
   const canRedo = useZoneStore((s) => s.canRedo(zoneId));
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
+  const [selectedEntity, setSelectedEntity] = useState<EntitySelection | null>(null);
   const [showAddRoom, setShowAddRoom] = useState(false);
   const [newRoomId, setNewRoomId] = useState("");
   const addRoomInputRef = useRef<HTMLInputElement>(null);
@@ -87,6 +89,22 @@ function ZoneEditorInner({ zoneId }: ZoneEditorProps) {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [zoneId, zoneState?.dirty, saving, undo, redo]);
+
+  // Auto-close entity panel if the selected entity was removed (e.g. by undo)
+  useEffect(() => {
+    if (!selectedEntity || !zoneState) return;
+    const { kind, id } = selectedEntity;
+    const collection =
+      kind === "mob" ? "mobs" :
+      kind === "item" ? "items" :
+      kind === "shop" ? "shops" :
+      kind === "quest" ? "quests" :
+      kind === "gatheringNode" ? "gatheringNodes" :
+      kind === "recipe" ? "recipes" : null;
+    if (collection && !zoneState.data[collection]?.[id]) {
+      setSelectedEntity(null);
+    }
+  }, [zoneState, selectedEntity]);
 
   // Rebuild graph when WorldFile changes
   const { layoutNodes, layoutEdges } = useMemo(() => {
@@ -165,6 +183,7 @@ function ZoneEditorInner({ zoneId }: ZoneEditorProps) {
     ({ nodes: selected }: OnSelectionChangeParams) => {
       const roomNode = selected.find((n) => n.type === "room");
       setSelectedRoomId(roomNode ? roomNode.id : null);
+      if (roomNode) setSelectedEntity(null);
     },
     [],
   );
@@ -172,11 +191,13 @@ function ZoneEditorInner({ zoneId }: ZoneEditorProps) {
   const onNodeClick: NodeMouseHandler = useCallback((_event, node) => {
     if (node.type === "room") {
       setSelectedRoomId(node.id);
+      setSelectedEntity(null);
     }
   }, []);
 
   const onPaneClick = useCallback(() => {
     setSelectedRoomId(null);
+    setSelectedEntity(null);
   }, []);
 
   // ─── Add room ────────────────────────────────────────────────────
@@ -363,15 +384,24 @@ function ZoneEditorInner({ zoneId }: ZoneEditorProps) {
           )}
         </div>
 
-        {selectedRoomId && (
+        {selectedEntity ? (
+          <EntityPanel
+            zoneId={zoneId}
+            selection={selectedEntity}
+            world={zoneState.data}
+            onWorldChange={applyWorldChange}
+            onClose={() => setSelectedEntity(null)}
+          />
+        ) : selectedRoomId ? (
           <RoomPanel
             zoneId={zoneId}
             roomId={selectedRoomId}
             world={zoneState.data}
             onWorldChange={applyWorldChange}
             onRoomDeleted={() => setSelectedRoomId(null)}
+            onSelectEntity={setSelectedEntity}
           />
-        )}
+        ) : null}
       </div>
     </div>
   );
