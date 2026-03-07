@@ -1,12 +1,13 @@
 import { useZoneStore } from "@/stores/zoneStore";
 import { useConfigStore } from "@/stores/configStore";
 import { useProjectStore } from "@/stores/projectStore";
-import type { Tab } from "@/types/project";
+import type { Tab, ConfigSubTab } from "@/types/project";
 
 export function Sidebar() {
   const zones = useZoneStore((s) => s.zones);
   const configDirty = useConfigStore((s) => s.dirty);
   const openTab = useProjectStore((s) => s.openTab);
+  const setConfigSubTab = useProjectStore((s) => s.setConfigSubTab);
   const activeTabId = useProjectStore((s) => s.activeTabId);
 
   const sortedZones = [...zones.entries()].sort(([a], [b]) =>
@@ -69,22 +70,25 @@ export function Sidebar() {
           <ul className="flex flex-col gap-0.5">
             {(
               [
-                { id: "config", kind: "config" as const, label: "Game Config" },
-                { id: "classes", kind: "classes" as const, label: "Classes" },
-                { id: "races", kind: "races" as const, label: "Races" },
-              ] as Tab[]
-            ).map((tab) => (
-              <li key={tab.id}>
+                { label: "Game Config", subTab: "server" as ConfigSubTab },
+                { label: "Classes", subTab: "classes" as ConfigSubTab },
+                { label: "Races", subTab: "races" as ConfigSubTab },
+              ]
+            ).map((entry) => (
+              <li key={entry.subTab}>
                 <button
-                  onClick={() => openTab(tab)}
+                  onClick={() => {
+                    setConfigSubTab(entry.subTab);
+                    openTab({ id: "config", kind: "config", label: "Config" });
+                  }}
                   className={`w-full rounded px-2 py-1 text-left text-sm transition-colors ${
-                    activeTabId === tab.id
+                    activeTabId === "config"
                       ? "bg-bg-hover text-text-primary"
                       : "text-text-secondary hover:bg-bg-hover hover:text-text-primary"
                   }`}
                 >
-                  {tab.label}
-                  {tab.id === "config" && configDirty && (
+                  {entry.label}
+                  {entry.subTab === "server" && configDirty && (
                     <span className="ml-1 text-accent">*</span>
                   )}
                 </button>

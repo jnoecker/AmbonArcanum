@@ -1,11 +1,12 @@
 import { create } from "zustand";
-import type { Project, Tab } from "@/types/project";
 import { saveUIState } from "@/lib/uiPersistence";
+import type { Project, Tab, ConfigSubTab } from "@/types/project";
 
 interface ProjectStore {
   project: Project | null;
   tabs: Tab[];
   activeTabId: string | null;
+  configSubTab: ConfigSubTab;
 
   setProject: (project: Project) => void;
   closeProject: () => void;
@@ -16,12 +17,14 @@ interface ProjectStore {
 
   /** Restore previously open tabs after project load. */
   restoreTabs: (tabs: Tab[], activeTabId: string | null) => void;
+  setConfigSubTab: (subTab: ConfigSubTab) => void;
 }
 
 export const useProjectStore = create<ProjectStore>((set, get) => ({
   project: null,
   tabs: [],
   activeTabId: null,
+  configSubTab: "server" as ConfigSubTab,
 
   setProject: (project) =>
     set({
@@ -56,6 +59,7 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
   setActiveTab: (tabId) => set({ activeTabId: tabId }),
 
   restoreTabs: (tabs, activeTabId) => set({ tabs, activeTabId }),
+  setConfigSubTab: (subTab) => set({ configSubTab: subTab }),
 }));
 
 // ─── Debounced persistence ─────────────────────────────────────────

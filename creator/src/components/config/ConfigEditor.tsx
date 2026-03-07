@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { useConfigStore } from "@/stores/configStore";
 import { useProjectStore } from "@/stores/projectStore";
 import { saveConfig } from "@/lib/saveConfig";
@@ -37,14 +37,13 @@ const CONFIG_TABS = [
   { id: "rawYaml", label: "Raw YAML" },
 ] as const;
 
-type ConfigTabId = (typeof CONFIG_TABS)[number]["id"];
-
 export function ConfigEditor() {
   const config = useConfigStore((s) => s.config);
   const dirty = useConfigStore((s) => s.dirty);
   const updateConfig = useConfigStore((s) => s.updateConfig);
   const mudDir = useProjectStore((s) => s.project?.mudDir);
-  const [activeTab, setActiveTab] = useState<ConfigTabId>("server");
+  const activeTab = useProjectStore((s) => s.configSubTab);
+  const setActiveTab = useProjectStore((s) => s.setConfigSubTab);
   const [saving, setSaving] = useState(false);
 
   const handleChange = useCallback(
@@ -66,17 +65,6 @@ export function ConfigEditor() {
       setSaving(false);
     }
   }, [mudDir, saving]);
-
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
-        e.preventDefault();
-        handleSave();
-      }
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [handleSave]);
 
   if (!config) {
     return (
