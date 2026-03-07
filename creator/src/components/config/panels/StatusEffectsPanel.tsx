@@ -117,13 +117,15 @@ export function StatusEffectsPanel({ config, onChange }: ConfigPanelProps) {
                     <span className="text-[10px] text-text-muted">
                       {e.effectType}
                     </span>
-                    <IconButton
-                      onClick={() => deleteEffect(id)}
-                      title="Delete"
-                      danger
-                    >
-                      x
-                    </IconButton>
+                    <span onClick={(ev) => ev.stopPropagation()}>
+                      <IconButton
+                        onClick={() => deleteEffect(id)}
+                        title="Delete"
+                        danger
+                      >
+                        x
+                      </IconButton>
+                    </span>
                   </div>
                 </div>
                 {isOpen && (

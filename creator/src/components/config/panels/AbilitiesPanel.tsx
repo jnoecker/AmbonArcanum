@@ -35,16 +35,20 @@ export function AbilitiesPanel({ config, onChange }: ConfigPanelProps) {
       abilities: { ...abilities, [id]: { ...abilities[id]!, ...p } },
     });
 
-  const patchEffect = (id: string, p: Partial<AbilityEffectConfig>) =>
+  const patchEffect = (id: string, p: Partial<AbilityEffectConfig>) => {
+    const prev = abilities[id]!;
+    // When effect type changes, reset to only the new type's fields
+    const newEffect =
+      p.type && p.type !== prev.effect.type
+        ? { type: p.type, ...p }
+        : { ...prev.effect, ...p };
     onChange({
       abilities: {
         ...abilities,
-        [id]: {
-          ...abilities[id]!,
-          effect: { ...abilities[id]!.effect, ...p },
-        },
+        [id]: { ...prev, effect: newEffect },
       },
     });
+  };
 
   const deleteAbility = (id: string) => {
     const next = { ...abilities };
@@ -122,13 +126,15 @@ export function AbilitiesPanel({ config, onChange }: ConfigPanelProps) {
                     <span className="text-[10px] text-text-muted">
                       {a.effect.type}
                     </span>
-                    <IconButton
-                      onClick={() => deleteAbility(id)}
-                      title="Delete"
-                      danger
-                    >
-                      x
-                    </IconButton>
+                    <span onClick={(ev) => ev.stopPropagation()}>
+                      <IconButton
+                        onClick={() => deleteAbility(id)}
+                        title="Delete"
+                        danger
+                      >
+                        x
+                      </IconButton>
+                    </span>
                   </div>
                 </div>
                 {isOpen && (

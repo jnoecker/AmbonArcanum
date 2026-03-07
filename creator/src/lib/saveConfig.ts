@@ -84,13 +84,21 @@ export async function saveConfig(mudDir: string): Promise<void> {
     // Abilities
     saveMapSection(engine, ["abilities", "definitions"], config.abilities,
       (a) => {
+        const effect: Record<string, unknown> = { type: a.effect.type };
+        if (a.effect.minDamage != null) effect.minDamage = a.effect.minDamage;
+        if (a.effect.maxDamage != null) effect.maxDamage = a.effect.maxDamage;
+        if (a.effect.minHeal != null) effect.minHeal = a.effect.minHeal;
+        if (a.effect.maxHeal != null) effect.maxHeal = a.effect.maxHeal;
+        if (a.effect.statusEffectId) effect.statusEffectId = a.effect.statusEffectId;
+        if (a.effect.flatThreat != null) effect.flatThreat = a.effect.flatThreat;
+        if (a.effect.margin != null) effect.margin = a.effect.margin;
         const obj: Record<string, unknown> = {
           displayName: a.displayName,
           manaCost: a.manaCost,
           cooldownMs: a.cooldownMs,
           levelRequired: a.levelRequired,
           targetType: a.targetType,
-          effect: a.effect,
+          effect,
         };
         if (a.description) obj.description = a.description;
         if (a.requiredClass) obj.requiredClass = a.requiredClass;
