@@ -15,6 +15,7 @@ import { YamlPreview } from "@/components/ui/YamlPreview";
 import { EntityArtGenerator } from "@/components/ui/EntityArtGenerator";
 import { MediaPicker } from "@/components/ui/MediaPicker";
 import { roomPrompt, roomContext } from "@/lib/entityPrompts";
+import { EnhanceDescriptionButton } from "@/components/editors/EditorShared";
 import { useVibeStore } from "@/stores/vibeStore";
 import { ZoneVibePanel } from "./ZoneVibePanel";
 
@@ -191,7 +192,17 @@ export function RoomPanel({
       ) : (
       <>
       {/* Description */}
-      <Section title="Description">
+      <Section
+        title="Description"
+        actions={
+          <EnhanceDescriptionButton
+            entitySummary={`Room "${room.title}"${room.station ? `, crafting station: ${room.station}` : ""}`}
+            currentDescription={room.description}
+            onAccept={(v) => handleFieldChange("description", v)}
+            vibe={useVibeStore.getState().getVibe(zoneId)}
+          />
+        }
+      >
         <EditableTextArea
           value={room.description}
           onCommit={(v) => handleFieldChange("description", v)}

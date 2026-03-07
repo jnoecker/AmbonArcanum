@@ -12,7 +12,7 @@ import {
   IconButton,
 } from "@/components/ui/FormWidgets";
 import { DialogueEditor } from "./DialogueEditor";
-import { DeleteEntityButton, MediaSection } from "./EditorShared";
+import { DeleteEntityButton, EnhanceDescriptionButton, MediaSection } from "./EditorShared";
 import { mobPrompt, mobContext } from "@/lib/entityPrompts";
 import { useVibeStore } from "@/stores/vibeStore";
 
@@ -108,11 +108,21 @@ export function MobEditor({
             <TextInput value={mob.name} onCommit={(v) => patch({ name: v })} />
           </FieldRow>
           <FieldRow label="Desc">
-            <TextInput
-              value={mob.description ?? ""}
-              onCommit={(v) => patch({ description: v || undefined })}
-              placeholder="Visual description for art generation"
-            />
+            <div className="flex items-center gap-1">
+              <div className="min-w-0 flex-1">
+                <TextInput
+                  value={mob.description ?? ""}
+                  onCommit={(v) => patch({ description: v || undefined })}
+                  placeholder="Visual description for art generation"
+                />
+              </div>
+              <EnhanceDescriptionButton
+                entitySummary={`Mob "${mob.name}", tier: ${mob.tier ?? "standard"}, level: ${mob.level ?? 1}${mob.behavior?.template ? `, behavior: ${mob.behavior.template}` : ""}`}
+                currentDescription={mob.description}
+                onAccept={(v) => patch({ description: v })}
+                vibe={zoneId ? useVibeStore.getState().getVibe(zoneId) : undefined}
+              />
+            </div>
           </FieldRow>
           <FieldRow label="Room">
             <SelectInput
