@@ -36,6 +36,7 @@ export function Toolbar() {
   const zones = useZoneStore((s) => s.zones);
   const setValidationResults = useValidationStore((s) => s.setResults);
   const openValidationPanel = useValidationStore((s) => s.openPanel);
+  const hasConfig = useConfigStore((s) => !!s.config);
   const { startServer, stopServer } = useServerManager();
   const [errors, setErrors] = useState<string[] | null>(null);
   const [saving, setSaving] = useState(false);
@@ -141,7 +142,7 @@ export function Toolbar() {
           setValidationResults(results);
           openValidationPanel();
         }}
-        disabled={zones.size === 0 && !useConfigStore.getState().config}
+        disabled={zones.size === 0 && !hasConfig}
         className="rounded px-3 py-1 text-xs font-medium transition-colors enabled:text-text-primary enabled:hover:bg-bg-elevated disabled:cursor-not-allowed disabled:opacity-40"
       >
         Validate
