@@ -4,30 +4,58 @@ import { useImageSrc } from "@/lib/useImageSrc";
 
 type RoomNodeType = Node<RoomNodeData, "room">;
 
-/** Handle positions for each compass direction */
-const HANDLES: {
+// ─── Handle definitions ──────────────────────────────────────────────
+
+interface HandleDef {
   id: string;
   position: Position;
   style: React.CSSProperties;
-}[] = [
-  { id: "n", position: Position.Top, style: { left: "50%" } },
-  { id: "s", position: Position.Bottom, style: { left: "50%" } },
-  { id: "e", position: Position.Right, style: { top: "50%" } },
-  { id: "w", position: Position.Left, style: { top: "50%" } },
-  { id: "ne", position: Position.Top, style: { left: "85%" } },
-  { id: "nw", position: Position.Top, style: { left: "15%" } },
-  { id: "se", position: Position.Bottom, style: { left: "85%" } },
-  { id: "sw", position: Position.Bottom, style: { left: "15%" } },
-  { id: "u", position: Position.Right, style: { top: "20%" } },
-  { id: "d", position: Position.Right, style: { top: "80%" } },
+  /** Show a visible "+" button for this handle */
+  showPlus?: boolean;
+  /** Label for tooltip */
+  label: string;
+}
+
+/** Cardinal + diagonal handles with visible plus signs on the four walls */
+const HANDLES: HandleDef[] = [
+  // Cardinal — visible "+" on each wall center
+  { id: "n", position: Position.Top, style: { left: "50%" }, showPlus: true, label: "North" },
+  { id: "s", position: Position.Bottom, style: { left: "50%" }, showPlus: true, label: "South" },
+  { id: "e", position: Position.Right, style: { top: "50%" }, showPlus: true, label: "East" },
+  { id: "w", position: Position.Left, style: { top: "50%" }, showPlus: true, label: "West" },
+  // Diagonals — invisible connection points
+  { id: "ne", position: Position.Top, style: { left: "85%" }, label: "Northeast" },
+  { id: "nw", position: Position.Top, style: { left: "15%" }, label: "Northwest" },
+  { id: "se", position: Position.Bottom, style: { left: "85%" }, label: "Southeast" },
+  { id: "sw", position: Position.Bottom, style: { left: "15%" }, label: "Southwest" },
+  // Up/Down — visible "+" at top-right and bottom-left corners
+  { id: "u", position: Position.Top, style: { left: "95%" }, showPlus: true, label: "Up" },
+  { id: "d", position: Position.Bottom, style: { left: "5%" }, showPlus: true, label: "Down" },
 ];
 
-const handleStyle: React.CSSProperties = {
+const hiddenHandleStyle: React.CSSProperties = {
   width: 6,
   height: 6,
   background: "transparent",
   border: "none",
 };
+
+const plusHandleStyle: React.CSSProperties = {
+  width: 14,
+  height: 14,
+  background: "rgba(78, 94, 150, 0.4)",
+  border: "1px solid rgba(78, 94, 150, 0.6)",
+  borderRadius: 3,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  cursor: "crosshair",
+  fontSize: 10,
+  color: "rgba(194, 206, 240, 0.6)",
+  transition: "all 0.15s",
+};
+
+// ─── Sub-components ──────────────────────────────────────────────────
 
 function SpriteThumb({ sprite }: { sprite: EntitySprite }) {
   const src = useImageSrc(sprite.image);
@@ -54,12 +82,14 @@ function RoomBackground({ image }: { image?: string }) {
   );
 }
 
+// ─── RoomNode ────────────────────────────────────────────────────────
+
 export function RoomNode({ data, selected }: NodeProps<RoomNodeType>) {
   const d = data as RoomNodeData;
 
   return (
     <div
-      className={`relative overflow-hidden rounded border px-3 py-2 transition-colors ${
+      className={`group/room relative overflow-hidden rounded border px-3 py-2 transition-colors ${
         selected
           ? "border-accent bg-bg-elevated shadow-lg shadow-accent/20"
           : d.isStartRoom
@@ -71,24 +101,28 @@ export function RoomNode({ data, selected }: NodeProps<RoomNodeType>) {
       {/* Room background image */}
       <RoomBackground image={d.image} />
 
-      {/* Handles */}
+      {/* Source handles (drag from these to create exits) */}
       {HANDLES.map((h) => (
         <Handle
           key={`source-${h.id}`}
           type="source"
           position={h.position}
           id={`source-${h.id}`}
-          style={{ ...handleStyle, ...h.style }}
+          title={h.label}
           isConnectable
+          className={h.showPlus ? "room-handle-plus" : ""}
+          style={h.showPlus ? { ...plusHandleStyle, ...h.style } : { ...hiddenHandleStyle, ...h.style }}
         />
       ))}
+
+      {/* Target handles (invisible — receive connections) */}
       {HANDLES.map((h) => (
         <Handle
           key={`target-${h.id}`}
           type="target"
           position={h.position}
           id={`target-${h.id}`}
-          style={{ ...handleStyle, ...h.style }}
+          style={{ ...hiddenHandleStyle, ...h.style }}
           isConnectable
         />
       ))}

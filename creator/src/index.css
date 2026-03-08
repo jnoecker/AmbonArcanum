@@ -110,6 +110,22 @@ select,
   user-select: text;
 }
 
+/* ─── Room handle plus buttons ─── */
+.room-handle-plus {
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s, border-color 0.15s !important;
+}
+
+.group\/room:hover .room-handle-plus {
+  opacity: 1;
+}
+
+.room-handle-plus:hover {
+  background: rgba(200, 151, 46, 0.4) !important;
+  border-color: rgba(200, 151, 46, 0.7) !important;
+  color: rgba(226, 188, 106, 0.9) !important;
+}
+
 /* ─── Animation Keyframes ─── */
 @keyframes aurum-pulse {
   0%, 100% { opacity: 0.7; box-shadow: 0 0 8px rgba(200, 151, 46, 0.3); }

@@ -184,6 +184,7 @@ export function zoneToGraph(
 
     const isBidirectional = !!reverse;
     const isCrossZone = exit.target.startsWith("xzone:");
+    const isVertical = exit.direction === "u" || exit.direction === "d";
 
     const label = isBidirectional
       ? `${exit.direction.toUpperCase()} / ${reverse!.direction.toUpperCase()}`
@@ -199,14 +200,14 @@ export function zoneToGraph(
         : `target-${oppositeDir(exit.direction)}`,
       type: "smoothstep",
       label,
-      animated: isCrossZone,
+      animated: isCrossZone || isVertical,
       markerEnd: isBidirectional
         ? undefined
-        : { type: MarkerType.ArrowClosed, color: "#6a7aac" },
+        : { type: MarkerType.ArrowClosed, color: isVertical ? "#7a5fc0" : "#6a7aac" },
       style: {
-        stroke: isCrossZone ? "#c8972e" : exit.hasDoor ? "#e2bc6a" : "#6a7aac",
-        strokeDasharray: exit.hasDoor ? "6 3" : undefined,
-        strokeWidth: 1.5,
+        stroke: isCrossZone ? "#c8972e" : isVertical ? "#7a5fc0" : exit.hasDoor ? "#e2bc6a" : "#6a7aac",
+        strokeDasharray: exit.hasDoor ? "6 3" : isVertical ? "4 4" : undefined,
+        strokeWidth: isVertical ? 2 : 1.5,
       },
       labelStyle: {
         fill: "#6a7aac",
