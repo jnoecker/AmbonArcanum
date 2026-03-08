@@ -366,7 +366,7 @@ function ZoneEditorInner({ zoneId }: ZoneEditorProps) {
           <img
             src={builderBg}
             alt=""
-            className="pointer-events-none absolute inset-0 z-[1] h-full w-full object-cover opacity-[0.08] mix-blend-screen"
+            className="pointer-events-none absolute inset-0 z-[1] h-full w-full object-cover opacity-[0.18] mix-blend-screen"
           />
 
           {/* Batch art generator */}
