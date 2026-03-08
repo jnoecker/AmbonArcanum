@@ -79,6 +79,7 @@ function ZoneEditorInner({ zoneId }: ZoneEditorProps) {
   }, [zoneState, selectedEntity]);
 
   // Consume pending navigation from sidebar
+  const pendingNavigation = useProjectStore((s) => s.pendingNavigation);
   const consumeNavigation = useProjectStore((s) => s.consumeNavigation);
   useEffect(() => {
     const nav = consumeNavigation();
@@ -90,7 +91,7 @@ function ZoneEditorInner({ zoneId }: ZoneEditorProps) {
       setSelectedRoomId(nav.roomId);
       setSelectedEntity(null);
     }
-  }, [zoneId, consumeNavigation]);
+  }, [zoneId, consumeNavigation, pendingNavigation]);
 
   // Rebuild graph when WorldFile changes
   const { layoutNodes, layoutEdges } = useMemo(() => {
