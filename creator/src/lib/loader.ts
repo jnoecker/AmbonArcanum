@@ -73,6 +73,7 @@ export async function loadAppConfig(
       group: parseSimpleSection(engine.group, { maxSize: 5, inviteTimeoutMs: 60000, xpBonusPerMember: 0.1 }),
       classes: parseMapSection(engine.classes, "definitions"),
       races: parseMapSection(engine.races, "definitions"),
+      equipmentSlots: parseMapSection(engine.equipment, "slots"),
       characterCreation: parseCharacterCreationConfig(engine.characterCreation),
       images: parseImagesConfig(root.images),
       rawSections: collectRawSections(root, engine),
@@ -275,7 +276,7 @@ function collectRawSections(
   const knownEngine = new Set([
     "stats", "abilities", "statusEffects", "combat", "mob",
     "regen", "economy", "crafting", "group", "guild", "classes",
-    "races", "characterCreation", "scheduler", "friends", "debug", "classStartRooms",
+    "races", "characterCreation", "equipment", "scheduler", "friends", "debug", "classStartRooms",
   ]);
 
   const raw: Record<string, unknown> = {};

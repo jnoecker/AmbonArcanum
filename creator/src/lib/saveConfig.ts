@@ -157,6 +157,11 @@ export async function saveConfig(mudDir: string): Promise<void> {
       },
     );
 
+    // Equipment Slots
+    saveMapSection(engine, ["equipment", "slots"], config.equipmentSlots,
+      (slot) => ({ displayName: slot.displayName, order: slot.order }),
+    );
+
     // Character Creation
     setIn(engine, ["characterCreation", "startingGold"], config.characterCreation.startingGold);
   }

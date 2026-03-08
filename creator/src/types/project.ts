@@ -22,7 +22,7 @@ export interface ServerState {
 export type TabKind = "zone" | "config" | "console";
 
 export type ConfigSubTab =
-  | "server" | "stats" | "classes" | "races" | "abilities"
+  | "server" | "stats" | "classes" | "races" | "equipmentSlots" | "abilities"
   | "statusEffects" | "combat" | "mobTiers" | "progression"
   | "economy" | "regen" | "crafting" | "group" | "charCreate" | "images"
   | "rawYaml" | "apiSettings";

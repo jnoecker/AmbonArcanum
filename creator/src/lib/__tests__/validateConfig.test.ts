@@ -66,6 +66,7 @@ const BASE_CONFIG: AppConfig = {
   group: { maxSize: 5, inviteTimeoutMs: 60000, xpBonusPerMember: 0.1 },
   classes: {},
   races: {},
+  equipmentSlots: {},
   mobActionDelay: { minActionDelayMillis: 8000, maxActionDelayMillis: 20000 },
   characterCreation: { startingGold: 0 },
   rawSections: {},

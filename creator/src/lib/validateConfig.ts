@@ -128,6 +128,28 @@ export function validateConfig(config: AppConfig): ValidationIssue[] {
     }
   }
 
+  // ─── Equipment Slots ────────────────────────────────────────────
+  const seenOrders = new Map<number, string>();
+  for (const [id, slot] of Object.entries(config.equipmentSlots)) {
+    if (!slot.displayName?.trim()) {
+      issues.push({
+        severity: "error",
+        entity: `equipmentSlot:${id}`,
+        message: "Display name is required",
+      });
+    }
+    const existing = seenOrders.get(slot.order);
+    if (existing) {
+      issues.push({
+        severity: "warning",
+        entity: `equipmentSlot:${id}`,
+        message: `Duplicate order value ${slot.order} (also used by "${existing}")`,
+      });
+    } else {
+      seenOrders.set(slot.order, id);
+    }
+  }
+
   // ─── Combat ───────────────────────────────────────────────────
   if (config.combat.minDamage > config.combat.maxDamage) {
     issues.push({

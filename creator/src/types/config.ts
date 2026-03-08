@@ -171,6 +171,13 @@ export interface GroupConfig {
   xpBonusPerMember: number;
 }
 
+// ─── Equipment Slots ────────────────────────────────────────────────
+
+export interface EquipmentSlotDefinition {
+  displayName: string;
+  order: number;
+}
+
 // ─── Classes & Races ────────────────────────────────────────────────
 
 export interface ClassDefinitionConfig {
@@ -230,6 +237,7 @@ export interface AppConfig {
   classes: Record<string, ClassDefinitionConfig>;
   races: Record<string, RaceDefinitionConfig>;
   characterCreation: CharacterCreationConfig;
+  equipmentSlots: Record<string, EquipmentSlotDefinition>;
   images: ImagesConfig;
   /** Raw YAML content for unrecognized sections */
   rawSections: Record<string, unknown>;

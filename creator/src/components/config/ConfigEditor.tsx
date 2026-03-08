@@ -17,6 +17,7 @@ import { StatusEffectsPanel } from "./panels/StatusEffectsPanel";
 import { RawYamlPanel } from "./panels/RawYamlPanel";
 import { ClassesPanel } from "./panels/ClassesPanel";
 import { RacesPanel } from "./panels/RacesPanel";
+import { EquipmentSlotsPanel } from "./panels/EquipmentSlotsPanel";
 import { CharacterCreationPanel } from "./panels/CharacterCreationPanel";
 import { ImagesPanel } from "./panels/ImagesPanel";
 import { ApiSettingsPanel } from "./panels/ApiSettingsPanel";
@@ -26,6 +27,7 @@ const CONFIG_TABS = [
   { id: "stats", label: "Stats" },
   { id: "classes", label: "Classes" },
   { id: "races", label: "Races" },
+  { id: "equipmentSlots", label: "Equipment" },
   { id: "abilities", label: "Abilities" },
   { id: "statusEffects", label: "Status FX" },
   { id: "combat", label: "Combat" },
@@ -115,7 +117,7 @@ export function ConfigEditor() {
 
       {/* Panel content */}
       <div className="min-h-0 flex-1 overflow-y-auto">
-        <div className="mx-auto max-w-2xl px-6 py-4">
+        <div className={`mx-auto px-6 py-4 ${activeTab === "equipmentSlots" ? "max-w-5xl" : "max-w-2xl"}`}>
           {activeTab === "server" && (
             <ServerPanel config={config} onChange={handleChange} />
           )}
@@ -127,6 +129,9 @@ export function ConfigEditor() {
           )}
           {activeTab === "races" && (
             <RacesPanel config={config} onChange={handleChange} />
+          )}
+          {activeTab === "equipmentSlots" && (
+            <EquipmentSlotsPanel config={config} onChange={handleChange} />
           )}
           {activeTab === "abilities" && (
             <AbilitiesPanel config={config} onChange={handleChange} />
