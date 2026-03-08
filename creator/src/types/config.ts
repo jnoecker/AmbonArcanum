@@ -267,6 +267,10 @@ export interface CharacterCreationConfig {
 export interface RaceDefinitionConfig {
   displayName: string;
   description?: string;
+  backstory?: string;
+  traits?: string[];
+  abilities?: string[];
+  image?: string;
   statMods?: StatMap;
 }
 

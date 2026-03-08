@@ -156,6 +156,10 @@ export async function saveConfig(mudDir: string): Promise<void> {
           displayName: race.displayName,
         };
         if (race.description) obj.description = race.description;
+        if (race.backstory) obj.backstory = race.backstory;
+        if (race.traits && race.traits.length > 0) obj.traits = race.traits;
+        if (race.abilities && race.abilities.length > 0) obj.abilities = race.abilities;
+        if (race.image) obj.image = race.image;
         if (race.statMods && Object.keys(race.statMods).length > 0)
           obj.statMods = race.statMods;
         return obj;
