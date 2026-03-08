@@ -12,7 +12,7 @@ Ambon Arcanum is a Tauri 2 desktop app for building MUD game worlds. React 19 + 
 - `creator/src/` -- React frontend (components, stores, types, lib)
 - `creator/src-tauri/src/` -- Rust backend (Tauri commands)
 - `reference/` -- Kotlin source files from AmbonMUD server (read-only reference)
-- `ARCANUM_STYLE_GUIDE.md` -- Design system (colors, typography, components)
+- `ARCANUM_STYLE_GUIDE.md` -- Design system (colors, typography, components, both art styles)
 
 ## Development Commands
 
@@ -40,16 +40,19 @@ bun run tauri build
 ### Frontend (React + TypeScript)
 
 - **State**: Zustand stores in `src/stores/`. Each store is independent to avoid re-render cascading.
-  - `projectStore` -- project metadata, open tabs
+  - `projectStore` -- project metadata, open tabs, pending navigation
   - `zoneStore` -- loaded zone data, dirty flags, undo/redo (via zundo)
-  - `configStore` -- parsed application.yaml
+  - `configStore` -- parsed application.yaml (data-driven config for all game systems)
   - `serverStore` -- server process state, logs
   - `validationStore` -- computed validation errors
   - `assetStore` -- image generation, asset manifest, R2 sync, settings
 - **Types**: `src/types/` mirrors Kotlin DTOs from `reference/world-yaml-dtos/`
 - **YAML I/O**: Uses `yaml` package CST mode for format-preserving round-trip. See `src/lib/loader.ts`, `src/lib/saveZone.ts`, `src/lib/saveConfig.ts`.
 - **Validation**: Client-side validation in `src/lib/validateZone.ts` and `src/lib/validateConfig.ts`. Must mirror rules from `reference/world-loader/WorldLoader.kt`.
-- **Graph**: Zone maps use XY Flow (React Flow) with dagre layout. See `src/components/zone/`.
+- **Graph**: Zone maps use XY Flow (React Flow) with dagre layout. Custom `RoomNode` with background images, entity sprites, and visible exit handles. See `src/components/zone/`.
+- **Art Generation**: Two art styles -- "arcanum" (baroque cosmic gold-indigo) and "gentle_magic" (soft dreamlike lavender). Templates in `src/lib/arcanumPrompts.ts`. Supports room, mob, item, and UI asset types.
+- **Global Assets**: Key-value pairs in `application.yaml` under `ambonmud.globalAssets` for app-wide generated art (e.g. `compass_rose: abc123.png`).
+- **Decorative Backgrounds**: UI panels use themed background images from `src/assets/` at low opacity (10-18%) with `mix-blend-screen` or gradient overlays.
 
 ### Backend (Rust)
 
@@ -57,8 +60,11 @@ bun run tauri build
 - `project.rs` -- File I/O for project/zone/config files
 - `settings.rs` -- Settings persistence (API keys, R2 credentials)
 - `deepinfra.rs` -- DeepInfra API client for AI image generation
-- `assets.rs` -- Asset manifest (JSON) management
+- `runware.rs` -- Runware API client (alternative image provider)
+- `assets.rs` -- Asset manifest (JSON) management, content-addressed storage (SHA256 hash filenames)
 - `r2.rs` -- Cloudflare R2 sync with AWS Signature V4 signing (no SDK dependency)
+- `vibes.rs` -- Zone vibe/context metadata for LLM-informed art generation
+- `llm.rs` -- LLM integration for prompt enhancement (Anthropic, OpenRouter)
 
 ### IPC Pattern
 
@@ -85,6 +91,8 @@ Images are served to the frontend as base64 data URLs via the `read_image_data_u
 - Fonts: Cinzel (display), Crimson Pro (body), JetBrains Mono (code)
 - CSS custom properties defined in `src/index.css` -- use semantic tokens like `bg-bg-primary`, `text-text-primary`, `border-border-default`
 - No sans-serif fonts in the UI
+- Decorative background images use low opacity (10-18%) and `pointer-events-none`
+- Tab names and action buttons use aurum-gold (`text-accent`) for visual hierarchy
 
 ### YAML
 - Preserve comments and formatting when editing existing files (CST mode)
@@ -109,3 +117,8 @@ Images are served to the frontend as base64 data URLs via the `read_image_data_u
 - **Flex scrolling**: Containers that need to scroll must have `min-h-0 flex-1` on parent to allow `overflow-y-auto` to work.
 - **Settings loading**: `loadSettings()` is called in `App.tsx` on mount. If a new setting is added, update both `Settings` in Rust (`settings.rs`) and TypeScript (`types/assets.ts`).
 - **Reference files**: The `reference/` directory is read-only Kotlin source from the AmbonMUD server. Never modify these files -- they're the source of truth for type shapes.
+- **ReactFlow backgrounds**: ReactFlow renders its own opaque canvas layer. To overlay background images on the zone builder, place them ON TOP with `pointer-events-none`, `z-[1]`, and `mix-blend-screen` -- not behind the canvas.
+- **Server detection**: The server outputs `"AmbonMUD listening on telnet port {port}"` when ready. Match this exact string in `useServerManager.ts`.
+- **Config data-driven fields**: Many game systems (equipment slots, crafting skills, station types, etc.) are data-driven from `application.yaml`. Editors like `ItemEditor`, `RecipeEditor`, `GatheringNodeEditor` derive dropdown options from `configStore` with fallback to hardcoded defaults.
+- **Art style templates**: Asset prompt templates in `arcanumPrompts.ts` are keyed by both `AssetType` and `ArtStyle`. When adding a new asset type, add templates for both "arcanum" and "gentle_magic" styles.
+- **Global assets**: Stored as simple `Record<string, string>` (key → filename). Use `setIn` not `saveMapSection` when saving -- values are strings, not objects.

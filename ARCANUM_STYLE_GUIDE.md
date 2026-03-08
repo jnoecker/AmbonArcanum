@@ -2,7 +2,7 @@
 
 **Version:** arcanum_v1
 **Last Updated:** March 7, 2026
-**Scope:** Unified aesthetic for the Ambon Arcanum creator tool — server management, world building, zone editing, and configuration
+**Scope:** Unified aesthetic for the Ambon Arcanum creator tool — server management, world building, zone editing, and configuration. Covers both the Arcanum (creator UI) and Gentle Magic (world content) art styles.
 **Product:** Ambon Arcanum (standalone creator tool, separate from the AmbonMUD game client)
 
 ---
@@ -15,9 +15,10 @@
 4. [Typography](#typography)
 5. [Motion & Animation](#motion--animation)
 6. [Component Design Language](#component-design-language)
-7. [World Art Prompts](#world-art-prompts)
-8. [Validation Checklist](#validation-checklist)
-9. [Versioning Strategy](#versioning-strategy)
+7. [Art Styles](#art-styles)
+8. [World Art Prompts](#world-art-prompts)
+9. [Validation Checklist](#validation-checklist)
+10. [Versioning Strategy](#versioning-strategy)
 
 ---
 
@@ -493,6 +494,56 @@ The server status indicator is the most emotionally expressive component in the 
 
 ---
 
+## Art Styles
+
+The Arcanum supports two distinct art styles for generated content. Both are available in the asset generator.
+
+### Arcanum (`arcanum_v1`)
+
+The Creator's own instrument — baroque cosmic gold-and-indigo. This is the style of the Arcanum tool itself and its UI chrome. Art feels vast, ornate, and luminous.
+
+- **Palette:** Deep cosmic indigo, abyssal navy, aurum-gold, blue-violet
+- **Forms:** Baroque/rococo scrollwork as glowing energy threads, fractaline structures, spiral arms of light
+- **Light:** Concentrated aurum emanating from active elements, nebula-violet ambient fill
+- **Composition:** Cosmological scale, painterly oil technique, objects float in void or baroque architecture
+- **Entity portraits:** Faithful anatomy lit with Arcanum palette; baroque ornamentation frames the character, not replaces them
+
+### Gentle Magic (`surreal_softmagic_v1`)
+
+The world as experienced from within — soft, dreamlike, emotionally safe. This style is for MUD world content: rooms, creatures, items, maps.
+
+- **Palette:** Deep mist (#22293c), lavender, pale blue, dusty rose, moss green, soft gold
+- **Forms:** Gentle curves, organic lived-in quality, slight vertical elongation, micro-warping allowed
+- **Light:** Ambient and diffused, source-ambiguous, ground-level glow, soft bloom, floating motes
+- **Composition:** Dreamlike and breathable, intimate rather than grand, space between elements matters
+- **Entity portraits:** Faithful anatomy with soft ambient lighting; the dreamlike quality enhances the character
+
+### Asset Types
+
+Both styles have templates for the following asset types (defined in `src/lib/arcanumPrompts.ts`):
+
+| Type | Label | Description |
+|------|-------|-------------|
+| `background` | Background | Full-screen environment art for UI panels |
+| `ornament` | Panel Ornament | Horizontal decorative borders and dividers |
+| `status_art` | Server Status Art | Server control panel artwork |
+| `empty_state` | Empty State | Shown when no content is loaded |
+| `entity_portrait` | Entity Portrait | Framed character/creature portrait |
+| `ability_sprite` | Ability Sprite | Square icon for abilities |
+| `zone_map` | Zone Map | Bird's-eye cartographic world map |
+| `splash_hero` | Splash / Welcome | Grand welcome/gateway art |
+| `loading_vignette` | Loading Vignette | Centered loading indicator art |
+| `panel_header` | Panel Header Bar | Ultra-wide thin decorative banner |
+| `room` | Room Scene | Interior/exterior environment for a MUD room |
+| `mob` | Creature / NPC | Character or creature portrait with faithful anatomy |
+| `item` | Item / Object | Single object rendered as inventory-style icon |
+
+### Global Assets
+
+Generated art can be registered as global assets in `application.yaml` under `ambonmud.globalAssets`. These are key-value pairs where the key is a semantic name (e.g. `compass_rose`, `login_splash`) and the value is the content-addressed filename (e.g. `abc123def.png`). Global assets are available app-wide and served via the same image base URL as entity images.
+
+---
+
 ## World Art Prompts
 
 These prompts target **Flux Dev** and **Flux Schnell** for still images. Video prompts target **LTX 2.0** and **Hunyuan Mini**.
@@ -738,7 +789,8 @@ When reviewing any component, screen, or artwork against this style:
 
 ## Versioning Strategy
 
-- `arcanum_v1` — **Current** (deep cosmic, baroque gold, Cinzel/Crimson Pro)
+- `arcanum_v1` — **Current** — Creator UI style (deep cosmic, baroque gold, Cinzel/Crimson Pro)
+- `surreal_softmagic_v1` — **Current** — World content style (dreamlike lavender, organic forms, ambient light)
 - `arcanum_dawn_v1` — Lighter variant: rose-gold and pale violet at dawn, for onboarding/welcome screens
 - `arcanum_void_v1` — Deeper, darker, more minimal: the Creator has been gone a long time
 - `arcanum_active_v1` — Higher contrast, brighter gold: for power-user/high-density layouts

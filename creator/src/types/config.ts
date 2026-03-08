@@ -317,6 +317,7 @@ export interface AppConfig {
   craftingStationTypes: Record<string, CraftingStationTypeDefinition>;
   guildRanks: Record<string, GuildRankDefinition>;
   images: ImagesConfig;
+  globalAssets: Record<string, string>;
   /** Raw YAML content for unrecognized sections */
   rawSections: Record<string, unknown>;
 }

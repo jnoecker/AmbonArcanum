@@ -243,6 +243,11 @@ export async function saveConfig(mudDir: string): Promise<void> {
   // ─── Images ────────────────────────────────────────────────
   setIn(root, ["images", "baseUrl"], config.images.baseUrl);
 
+  // ─── Global Assets ────────────────────────────────────────
+  if (Object.keys(config.globalAssets).length > 0) {
+    setIn(root, ["globalAssets"], config.globalAssets);
+  }
+
   // ─── Progression ────────────────────────────────────────────
   setIn(root, ["progression", "maxLevel"], config.progression.maxLevel);
   setIn(root, ["progression", "xp", "baseXp"], config.progression.xp.baseXp);

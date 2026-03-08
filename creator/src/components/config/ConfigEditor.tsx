@@ -24,6 +24,7 @@ import { CharacterCreationPanel } from "./panels/CharacterCreationPanel";
 import { AchievementsPanel } from "./panels/AchievementsPanel";
 import { QuestsPanel } from "./panels/QuestsPanel";
 import { ImagesPanel } from "./panels/ImagesPanel";
+import { GlobalAssetsPanel } from "./panels/GlobalAssetsPanel";
 import { ApiSettingsPanel } from "./panels/ApiSettingsPanel";
 
 const CONFIG_TABS = [
@@ -45,6 +46,7 @@ const CONFIG_TABS = [
   { id: "achievements", label: "Achievements" },
   { id: "quests", label: "Quests" },
   { id: "images", label: "Images" },
+  { id: "globalAssets", label: "Global Assets" },
   { id: "rawYaml", label: "Raw YAML" },
   { id: "apiSettings", label: "API Settings" },
 ] as const;
@@ -188,6 +190,9 @@ export function ConfigEditor() {
           )}
           {activeTab === "images" && (
             <ImagesPanel config={config} onChange={handleChange} />
+          )}
+          {activeTab === "globalAssets" && (
+            <GlobalAssetsPanel config={config} onChange={handleChange} />
           )}
           {activeTab === "rawYaml" && (
             <RawYamlPanel config={config} onChange={handleChange} />

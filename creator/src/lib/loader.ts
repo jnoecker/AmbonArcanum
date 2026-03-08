@@ -87,6 +87,7 @@ export async function loadAppConfig(
       craftingStationTypes: parseMapSection(engine.crafting, "stationTypes"),
       guildRanks: parseMapSection(engine.guild, "ranks"),
       images: parseImagesConfig(root.images),
+      globalAssets: parseGlobalAssets(root.globalAssets),
       rawSections: collectRawSections(root, engine),
     };
 
@@ -262,6 +263,15 @@ function parseImagesConfig(raw: unknown): AppConfig["images"] {
   };
 }
 
+function parseGlobalAssets(raw: unknown): Record<string, string> {
+  if (!raw || typeof raw !== "object") return {};
+  const result: Record<string, string> = {};
+  for (const [k, v] of Object.entries(raw as Record<string, unknown>)) {
+    if (typeof v === "string") result[k] = v;
+  }
+  return result;
+}
+
 function parseMapSection<T>(raw: unknown, key: string): Record<string, T> {
   if (!raw || typeof raw !== "object") return {};
   const section = (raw as Record<string, unknown>)[key];
@@ -280,7 +290,7 @@ function collectRawSections(
   engine: Record<string, unknown>,
 ): Record<string, unknown> {
   const knownRoot = new Set([
-    "server", "engine", "progression", "images", "world", "persistence",
+    "server", "engine", "progression", "images", "globalAssets", "world", "persistence",
     "login", "transport", "demo", "observability", "admin",
     "logging", "database", "redis", "grpc", "gateway", "sharding",
   ]);

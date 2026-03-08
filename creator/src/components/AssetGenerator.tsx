@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { useAssetStore } from "@/stores/assetStore";
+import { useConfigStore } from "@/stores/configStore";
 import {
   ASSET_TEMPLATES,
-  ARCANUM_PREAMBLE,
-  ENHANCE_SYSTEM_PROMPT,
+  getPreamble,
+  getEnhanceSystemPrompt,
   composePrompt,
+  ART_STYLE_LABELS,
+  type ArtStyle,
 } from "@/lib/arcanumPrompts";
 import { IMAGE_MODELS } from "@/types/assets";
 import type { AssetType, GeneratedImage } from "@/types/assets";
@@ -18,11 +21,15 @@ export function AssetGenerator() {
   const closeGenerator = useAssetStore((s) => s.closeGenerator);
   const acceptAsset = useAssetStore((s) => s.acceptAsset);
 
+  const config = useConfigStore((s) => s.config);
+  const updateConfig = useConfigStore((s) => s.updateConfig);
+
   const [stage, setStage] = useState<Stage>("compose");
+  const [artStyle, setArtStyle] = useState<ArtStyle>("arcanum");
   const [assetType, setAssetType] = useState<AssetType>("background");
   const [modelId, setModelId] = useState<string>(IMAGE_MODELS[0].id);
   const [customization, setCustomization] = useState("");
-  const [prompt, setPrompt] = useState(() => composePrompt("background"));
+  const [prompt, setPrompt] = useState(() => composePrompt("background", "arcanum"));
   const [enhancedPrompt, setEnhancedPrompt] = useState("");
   const [useEnhanced, setUseEnhanced] = useState(false);
   const [enhancing, setEnhancing] = useState(false);
@@ -30,27 +37,39 @@ export function AssetGenerator() {
   const [error, setError] = useState<string | null>(null);
   const [accepting, setAccepting] = useState(false);
 
+  // Global asset key (if user wants to save as a config global asset)
+  const [globalAssetKey, setGlobalAssetKey] = useState("");
+
   const hasApiKey = settings && settings.deepinfra_api_key.length > 0;
 
   const handleTypeChange = (type: AssetType) => {
     setAssetType(type);
-    setPrompt(composePrompt(type, customization || undefined));
+    setPrompt(composePrompt(type, artStyle, customization || undefined));
+    setEnhancedPrompt("");
+    setUseEnhanced(false);
+  };
+
+  const handleStyleChange = (style: ArtStyle) => {
+    setArtStyle(style);
+    setPrompt(composePrompt(assetType, style, customization || undefined));
     setEnhancedPrompt("");
     setUseEnhanced(false);
   };
 
   const handleCustomizationChange = (value: string) => {
     setCustomization(value);
-    setPrompt(composePrompt(assetType, value || undefined));
+    setPrompt(composePrompt(assetType, artStyle, value || undefined));
   };
 
   const handleEnhance = async () => {
     setEnhancing(true);
     setError(null);
     try {
+      const preamble = getPreamble(artStyle);
+      const systemPrompt = getEnhanceSystemPrompt(artStyle);
       const result = await invoke<string>("enhance_prompt", {
-        prompt: `${ARCANUM_PREAMBLE}\n\n${prompt}`,
-        systemPrompt: ENHANCE_SYSTEM_PROMPT,
+        prompt: `${preamble}\n\n${prompt}`,
+        systemPrompt,
       });
       setEnhancedPrompt(result);
       setUseEnhanced(true);
@@ -65,9 +84,10 @@ export function AssetGenerator() {
     setStage("generating");
     setError(null);
     try {
+      const preamble = getPreamble(artStyle);
       const finalPrompt = useEnhanced && enhancedPrompt
         ? enhancedPrompt
-        : `${ARCANUM_PREAMBLE}\n\n${prompt}`;
+        : `${preamble}\n\n${prompt}`;
 
       const model = IMAGE_MODELS.find((m) => m.id === modelId);
       const guidance = model && "defaultGuidance" in model
@@ -99,6 +119,17 @@ export function AssetGenerator() {
         assetType,
         useEnhanced ? enhancedPrompt : undefined,
       );
+
+      // Save as global asset in config if key is provided
+      if (globalAssetKey.trim() && config) {
+        const key = globalAssetKey.trim().toLowerCase().replace(/\s+/g, "_");
+        const fileName = result.file_path.split(/[\\/]/).pop() ?? result.hash;
+        updateConfig({
+          ...config,
+          globalAssets: { ...config.globalAssets, [key]: fileName },
+        });
+      }
+
       closeGenerator();
     } catch (e) {
       setError(String(e));
@@ -145,7 +176,7 @@ export function AssetGenerator() {
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border-default px-5 py-3">
           <h2 className="font-display text-sm tracking-wide text-text-primary">
-            Generate Arcanum Art
+            Generate Art
           </h2>
           <button
             onClick={closeGenerator}
@@ -159,6 +190,30 @@ export function AssetGenerator() {
         <div className="flex-1 overflow-y-auto px-5 py-4">
           {stage === "compose" && (
             <div className="flex flex-col gap-4">
+              {/* Art style */}
+              <div>
+                <label className="mb-1 block font-display text-[10px] uppercase tracking-widest text-text-muted">
+                  Art Style
+                </label>
+                <div className="flex gap-2">
+                  {(Object.entries(ART_STYLE_LABELS) as [ArtStyle, string][]).map(
+                    ([key, label]) => (
+                      <button
+                        key={key}
+                        onClick={() => handleStyleChange(key)}
+                        className={`flex-1 rounded px-3 py-1.5 text-xs transition-colors ${
+                          artStyle === key
+                            ? "bg-accent/20 text-accent"
+                            : "bg-bg-elevated text-text-secondary hover:text-text-primary"
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ),
+                  )}
+                </div>
+              </div>
+
               {/* Asset type */}
               <div>
                 <label className="mb-1 block font-display text-[10px] uppercase tracking-widest text-text-muted">
@@ -304,6 +359,24 @@ export function AssetGenerator() {
                 <span>&middot;</span>
                 <span>{result.model.split("/").pop()}</span>
               </div>
+
+              {/* Save as global asset option */}
+              <div>
+                <label className="mb-1 block font-display text-[10px] uppercase tracking-widest text-text-muted">
+                  Save as Global Asset (optional)
+                </label>
+                <input
+                  type="text"
+                  value={globalAssetKey}
+                  onChange={(e) => setGlobalAssetKey(e.target.value)}
+                  placeholder="e.g. compass_rose, login_splash, world_map"
+                  className="w-full rounded border border-border-default bg-bg-primary px-3 py-1.5 text-xs text-text-primary placeholder:text-text-muted outline-none focus:border-accent/50"
+                />
+                <p className="mt-0.5 text-[10px] text-text-muted">
+                  Enter a key name to register this asset in application.yaml under globalAssets
+                </p>
+              </div>
+
               {error && (
                 <p className="text-xs italic text-status-error">{error}</p>
               )}

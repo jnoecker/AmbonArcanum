@@ -44,7 +44,10 @@ export type AssetType =
   | "zone_map"
   | "splash_hero"
   | "loading_vignette"
-  | "panel_header";
+  | "panel_header"
+  | "room"
+  | "mob"
+  | "item";
 
 /** Mirrors the Rust Settings struct */
 export interface Settings {

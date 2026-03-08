@@ -25,7 +25,7 @@ export type ConfigSubTab =
   | "server" | "stats" | "classes" | "races" | "equipmentSlots" | "abilities"
   | "statusEffects" | "combat" | "mobTiers" | "progression"
   | "economy" | "regen" | "crafting" | "group" | "charCreate" | "images"
-  | "achievements" | "quests"
+  | "achievements" | "quests" | "globalAssets"
   | "rawYaml" | "apiSettings";
 
 export interface Tab {

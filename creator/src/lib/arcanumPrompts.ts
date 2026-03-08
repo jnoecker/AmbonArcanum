@@ -32,47 +32,98 @@ export function getPreamble(style: ArtStyle): string {
   return style === "arcanum" ? ARCANUM_PREAMBLE : GENTLE_MAGIC_PREAMBLE;
 }
 
-/** Per-asset-type prompt templates */
-export const ASSET_TEMPLATES: Record<AssetType, { label: string; template: string }> = {
+/** Per-asset-type prompt templates, keyed by art style */
+export const ASSET_TEMPLATES: Record<AssetType, { label: string; templates: Record<ArtStyle, string> }> = {
   background: {
     label: "Background",
-    template: `Vast cosmic observatory floating in deep space, baroque architectural elements rendered in flowing light — sweeping rococo scrollwork of glowing blue-violet and gold energy forming grand archways and spiral colonnades, a colossal golden spiral galaxy visible through open arched windows, deep indigo and abyssal navy void beyond, fractaline structures branching into the distance like crystalline trees made of light, warm aurum-amber luminescence pooling at architectural nodes, cool nebula-violet atmospheric mist drifting between pillars, ultra-wide panoramic composition, painterly oil technique, extremely detailed`,
+    templates: {
+      arcanum: `Vast cosmic observatory floating in deep space, baroque architectural elements rendered in flowing light — sweeping rococo scrollwork of glowing blue-violet and gold energy forming grand archways and spiral colonnades, a colossal golden spiral galaxy visible through open arched windows, deep indigo and abyssal navy void beyond, fractaline structures branching into the distance like crystalline trees made of light, warm aurum-amber luminescence pooling at architectural nodes, cool nebula-violet atmospheric mist drifting between pillars, ultra-wide panoramic composition, painterly oil technique, extremely detailed`,
+      gentle_magic: `A quiet enchanted landscape stretching wide — rolling meadows of pale silver-green grass blending into soft lavender hills on the horizon, a winding stream of pale blue water glowing faintly from within, scattered wildflowers in dusty rose and soft gold catching ambient light that has no clear source, ancient trees with slightly elongated trunks and canopies of luminous moss-green leaves, floating motes of warm light drifting through atmospheric haze, a distant tower of weathered stone wrapped in gentle ivy, the sky a gradient of deep mist blues and cloud-pale lavender, dreamlike, breathable, painterly, luminous`,
+    },
   },
   ornament: {
     label: "Panel Ornament",
-    template: `Intricate baroque energy scrollwork border, symmetrical horizontal composition, glowing aurum-gold rococo flourishes and acanthus-leaf spirals rendered as threads of light against deep cosmic indigo, cool blue-violet glow fills the spaces between curls, the scrollwork dissolves to transparency at both horizontal ends, extremely detailed filigree of light, jewelry-like precision, wide aspect ratio banner format`,
+    templates: {
+      arcanum: `Intricate baroque energy scrollwork border, symmetrical horizontal composition, glowing aurum-gold rococo flourishes and acanthus-leaf spirals rendered as threads of light against deep cosmic indigo, cool blue-violet glow fills the spaces between curls, the scrollwork dissolves to transparency at both horizontal ends, extremely detailed filigree of light, jewelry-like precision, wide aspect ratio banner format`,
+      gentle_magic: `A delicate horizontal vine border of intertwining botanical forms — soft lavender wisteria blossoms and pale blue morning glories woven through slender moss-green stems, faintly glowing from within with source-ambiguous light, dusty rose buds and tiny soft-gold seed pods nestled along the vine, the tendrils curl gently at both ends dissolving into atmospheric haze, floating motes of warm light scattered between the flowers, wide aspect ratio banner format, painterly, luminous, organic, dreamlike`,
+    },
   },
   status_art: {
     label: "Server Status Art",
-    template: `A cosmic engine in full operation — a grand mechanical orrery made entirely of light, baroque golden rings and spiral armatures rotating slowly in deep indigo space, warm aurum energy flowing along the curved spokes like luminous oil, smaller fractal orreries visible in the distance like satellites, blue-violet atmospheric fill between components, a sense of vast power operating at perfect equilibrium, painterly, glowing, majestic`,
+    templates: {
+      arcanum: `A cosmic engine in full operation — a grand mechanical orrery made entirely of light, baroque golden rings and spiral armatures rotating slowly in deep indigo space, warm aurum energy flowing along the curved spokes like luminous oil, smaller fractal orreries visible in the distance like satellites, blue-violet atmospheric fill between components, a sense of vast power operating at perfect equilibrium, painterly, glowing, majestic`,
+      gentle_magic: `A gentle magical hearth in a cozy tower room — a softly glowing crystal orb rests on an old wooden table, casting ambient lavender and pale blue light across shelves of worn books and glass bottles, a small fireplace burns with soft-gold flames that seem to breathe rather than flicker, floating motes of warm light drift lazily through the room, moss grows in the cracks of stone walls adding moss-green accents, a cat sleeps curled near the warmth, the whole scene radiates quiet contentment and living magic, painterly, luminous, dreamlike, intimate`,
+    },
   },
   empty_state: {
     label: "Empty State",
-    template: `An empty cosmic void beginning to stir — deep abyssal navy space with the faint suggestion of energy not yet shaped into form, a single point of warm aurum-gold light at the center casting the first illumination into darkness, baroque energy tendrils beginning to curl outward from that center point as if the act of creation is just beginning, blue-violet nebula mist drifting at the periphery, vast and serene, the moment before the world exists, painterly, luminous`,
+    templates: {
+      arcanum: `An empty cosmic void beginning to stir — deep abyssal navy space with the faint suggestion of energy not yet shaped into form, a single point of warm aurum-gold light at the center casting the first illumination into darkness, baroque energy tendrils beginning to curl outward from that center point as if the act of creation is just beginning, blue-violet nebula mist drifting at the periphery, vast and serene, the moment before the world exists, painterly, luminous`,
+      gentle_magic: `A still forest clearing just before dawn — pale atmospheric haze fills the space between tall slender trees, the ground is soft dark earth with a few tiny luminous mushrooms casting faint lavender glow, a single firefly of soft gold light hovers at the center of the clearing as if waiting, dew drops on spider silk catch and scatter pale blue ambient light, the canopy above filters deep mist-blue sky through moss-green leaves, everything is quiet and expectant — a place where something gentle is about to begin, painterly, luminous, dreamlike, serene`,
+    },
   },
   entity_portrait: {
     label: "Entity Portrait",
-    template: `Baroque cosmic portrait frame rendered in glowing aurum-gold scrollwork, deep indigo background with blue-violet nebula wisps, the subject depicted as an archetypal symbol rendered in flowing light rather than literal form, ornate frame edges curl and dissolve into darkness, warm golden light emanates from the center, painterly, luminous`,
+    templates: {
+      arcanum: `Baroque cosmic portrait frame rendered in glowing aurum-gold scrollwork, deep indigo background with blue-violet nebula wisps, the subject depicted as an archetypal symbol rendered in flowing light rather than literal form, ornate frame edges curl and dissolve into darkness, warm golden light emanates from the center, painterly, luminous`,
+      gentle_magic: `A warm intimate portrait with a soft organic frame of flowering vines in dusty rose and moss green, the background a gentle gradient of deep mist-blue to lavender, the subject bathed in soft ambient light with no harsh shadows, faint halo of pale golden glow around the head, floating motes of light in the atmosphere, the portrait feels kind and approachable, slightly elongated proportions giving an ethereal quality, painterly, luminous, dreamlike`,
+    },
   },
   ability_sprite: {
     label: "Ability Sprite",
-    template: `A single iconic ability symbol rendered as flowing energy against deep cosmic indigo void, baroque scrollwork frame dissolving at edges, the central icon glows with concentrated aurum-gold light and soft bloom, blue-violet atmospheric fill behind, centered square composition like a game ability icon, painterly, luminous, extremely detailed, no text, no figures`,
+    templates: {
+      arcanum: `A single iconic ability symbol rendered as flowing energy against deep cosmic indigo void, baroque scrollwork frame dissolving at edges, the central icon glows with concentrated aurum-gold light and soft bloom, blue-violet atmospheric fill behind, centered square composition like a game ability icon, painterly, luminous, extremely detailed, no text, no figures`,
+      gentle_magic: `A single iconic ability symbol as a softly glowing natural form against deep mist-blue background, the icon rendered as living magic — perhaps a crystallized flower, a swirl of luminous water, or a gentle flame — radiating pale lavender and soft gold light with diffused bloom, framed by a subtle circle of floating light motes, centered square composition like a game ability icon, organic shapes, no harsh edges, painterly, luminous, dreamlike, no text, no figures`,
+    },
   },
   zone_map: {
     label: "Zone Map",
-    template: `Celestial cartography from above, a glowing world map rendered in baroque light threads on a deep cosmic indigo void, landmasses formed from swirling aurum-gold energy lines that curl and flourish at coastlines and mountain ranges in rococo scrollwork style, rivers traced as flowing silver-blue light, zone boundaries marked by gentle violet-glowing arcs, concentric circles of faint stardust suggesting scale and depth, fractal detail increasing toward the edges, bird's-eye perspective, painterly, luminous`,
+    templates: {
+      arcanum: `Celestial cartography from above, a glowing world map rendered in baroque light threads on a deep cosmic indigo void, landmasses formed from swirling aurum-gold energy lines that curl and flourish at coastlines and mountain ranges in rococo scrollwork style, rivers traced as flowing silver-blue light, zone boundaries marked by gentle violet-glowing arcs, concentric circles of faint stardust suggesting scale and depth, fractal detail increasing toward the edges, bird's-eye perspective, painterly, luminous`,
+      gentle_magic: `A hand-painted world map on aged parchment with a magical quality — landmasses rendered in soft watercolor washes of moss green and dusty rose, coastlines traced with faintly glowing pale blue lines, mountains depicted as gentle lavender-shadowed bumps, forests as clusters of tiny luminous green dots, rivers flowing in soft gold ink that seems to shimmer, zone boundaries marked by wreaths of tiny painted flowers, the parchment edges curl naturally and small motes of light hover above magical locations, bird's-eye perspective, painterly, luminous, dreamlike, warm`,
+    },
   },
   splash_hero: {
     label: "Splash / Welcome",
-    template: `A grand cosmic portal at the threshold of creation — an immense baroque archway of glowing aurum-gold scrollwork stands at the center of deep cosmic indigo void, its pillars formed from intertwined spirals of golden light and blue-violet energy, through the arch a breathtaking view of a nascent universe unfolds with spiral galaxies and nebula clouds in warm amber and cool violet, the portal radiates concentrated aurum light outward in soft bloom, rococo acanthus-leaf finials crown the arch, the floor is a mirror-dark reflective plane catching the golden glow, sweeping ultra-wide cinematic composition, painterly oil technique, extremely detailed, majestic and inviting`,
+    templates: {
+      arcanum: `A grand cosmic portal at the threshold of creation — an immense baroque archway of glowing aurum-gold scrollwork stands at the center of deep cosmic indigo void, its pillars formed from intertwined spirals of golden light and blue-violet energy, through the arch a breathtaking view of a nascent universe unfolds with spiral galaxies and nebula clouds in warm amber and cool violet, the portal radiates concentrated aurum light outward in soft bloom, rococo acanthus-leaf finials crown the arch, the floor is a mirror-dark reflective plane catching the golden glow, sweeping ultra-wide cinematic composition, painterly oil technique, extremely detailed, majestic and inviting`,
+      gentle_magic: `A welcoming gateway into an enchanted world — a natural stone archway overgrown with luminous flowering vines in lavender and dusty rose, the arch opens onto a breathtaking vista of rolling emerald hills under a sky of soft gradient blues and pale gold, a winding path of warm stone leads from the viewer through the archway into the distance, floating motes of gentle light drift through the opening like seeds on a breeze, ancient trees with moss-green canopies frame either side, the ground is carpeted in tiny glowing wildflowers, sweeping ultra-wide composition, painterly, luminous, dreamlike, inviting and emotionally warm`,
+    },
   },
   loading_vignette: {
     label: "Loading Vignette",
-    template: `A single baroque golden orrery mechanism suspended in deep cosmic indigo void — three concentric rings of aurum-gold light slowly orbiting a bright central point, the rings are ornate with rococo scrollwork filigree rendered as energy threads, blue-violet nebula mist drifts between the rings giving depth, tiny fractaline satellite structures orbit at the periphery like jeweled clockwork, the whole mechanism radiates a gentle warm glow with soft bloom, centered square composition on transparent-feeling dark background, painterly, luminous, meditative`,
+    templates: {
+      arcanum: `A single baroque golden orrery mechanism suspended in deep cosmic indigo void — three concentric rings of aurum-gold light slowly orbiting a bright central point, the rings are ornate with rococo scrollwork filigree rendered as energy threads, blue-violet nebula mist drifts between the rings giving depth, tiny fractaline satellite structures orbit at the periphery like jeweled clockwork, the whole mechanism radiates a gentle warm glow with soft bloom, centered square composition on transparent-feeling dark background, painterly, luminous, meditative`,
+      gentle_magic: `A gentle magical phenomenon suspended in soft deep-mist blue space — three luminous butterflies of pale lavender, soft gold, and dusty rose circling slowly around a tiny glowing seed of warm light at the center, their wings leave faint trails of dissolving light motes in the air, atmospheric haze creates depth and softness, the whole scene feels like a quiet moment of natural magic caught in amber, centered square composition on a dark but warm background, painterly, luminous, dreamlike, meditative`,
+    },
   },
   panel_header: {
     label: "Panel Header Bar",
-    template: `An ultra-wide thin horizontal decorative banner — symmetrical baroque scrollwork of glowing aurum-gold energy rendered as delicate filigree threads on deep cosmic indigo, a central diamond-shaped medallion radiates warm golden light outward, flanked by sweeping C-curve and S-curve acanthus spirals that extend to both edges and dissolve to transparency at the ends, blue-violet ambient glow fills the spaces between the gold threads, extremely thin tall aspect ratio like a decorative rule line, no text, no figures, painterly, luminous, jewelry-like precision`,
+    templates: {
+      arcanum: `An ultra-wide thin horizontal decorative banner — symmetrical baroque scrollwork of glowing aurum-gold energy rendered as delicate filigree threads on deep cosmic indigo, a central diamond-shaped medallion radiates warm golden light outward, flanked by sweeping C-curve and S-curve acanthus spirals that extend to both edges and dissolve to transparency at the ends, blue-violet ambient glow fills the spaces between the gold threads, extremely thin tall aspect ratio like a decorative rule line, no text, no figures, painterly, luminous, jewelry-like precision`,
+      gentle_magic: `An ultra-wide thin horizontal decorative banner — a delicate garland of soft-glowing botanical forms on deep mist-blue background, a central cluster of tiny lavender flowers radiates gentle pale light outward, flanked by trailing vines of moss green with dusty rose buds and soft gold seed pods that extend to both edges and dissolve into atmospheric haze, floating motes of warm light scattered along the length, extremely thin tall aspect ratio like a natural decorative rule, no text, no figures, painterly, luminous, organic, dreamlike`,
+    },
+  },
+  room: {
+    label: "Room Scene",
+    templates: {
+      arcanum: `Interior of a fantastical chamber viewed from within — vaulted ceilings supported by columns of baroque scrollwork rendered as glowing aurum-gold energy threads, deep cosmic indigo shadows filling the upper vaults, cool blue-violet nebula mist drifting at floor level, warm amber luminescence pooling from ornate wall sconces and crystalline fixtures, doorways visible as darker arched openings framed by rococo filigree of light, the floor a dark polished surface reflecting golden glows, environmental details suggesting function and history, wide landscape composition as if the viewer stands inside the room, painterly oil technique, extremely detailed, atmospheric`,
+      gentle_magic: `Interior of a cozy enchanted room viewed from within — warm weathered stone walls softened by trailing ivy and small luminous flowers in lavender and dusty rose, a worn wooden floor with a woven rug in muted earth tones, soft ambient light filtering through a leaded-glass window casting pale blue and soft gold patterns, furniture of dark aged wood with gentle curves, floating motes of warm light drifting near the ceiling, a fireplace or lantern providing a gentle source-ambiguous glow, the room feels lived-in and safe with small magical details — a glowing jar, a levitating book, mushrooms growing from a crack, wide landscape composition, painterly, luminous, dreamlike, intimate`,
+    },
+  },
+  mob: {
+    label: "Creature / NPC",
+    templates: {
+      arcanum: `A fantastical creature or character standing in a dramatic pose against deep cosmic indigo void, baroque aurum-gold energy scrollwork framing the figure like an ornate portrait border, the subject rendered with faithful anatomy and physical detail — armor, fur, scales, or clothing depicted realistically with Arcanum palette lighting, warm aurum-gold light illuminating the figure from a central point creating soft bloom and highlighting key features, cool blue-violet atmospheric fill providing depth behind the subject, fractaline energy details accenting weapons or magical elements, the figure occupies the center of a square portrait composition, painterly, luminous, extremely detailed, heroic and imposing`,
+      gentle_magic: `A fantastical creature or character in a relaxed natural pose within a gentle environment, the subject rendered with faithful anatomy and physical detail — armor, fur, scales, or clothing depicted with soft ambient lighting in the Gentle Magic palette, lavender and pale blue atmospheric haze surrounds the figure creating depth, soft gold light highlights key features without harsh shadows, small magical details accent the character — glowing eyes, luminous trinkets, faintly shimmering fabric, floating motes of light nearby, moss or small flowers growing at their feet, the figure occupies the center of a square portrait composition, the overall feeling is approachable and characterful rather than threatening, painterly, luminous, dreamlike`,
+    },
+  },
+  item: {
+    label: "Item / Object",
+    templates: {
+      arcanum: `A single fantastical object floating against deep cosmic indigo void — the item rendered in fine detail with realistic materials and textures lit by concentrated aurum-gold light that pools and blooms around its form, baroque energy scrollwork curling subtly around the object as ornamental framing that dissolves into darkness at the edges, cool blue-violet atmospheric glow providing depth behind, the object casts no harsh shadow but sits within a soft halo of warm golden luminescence, centered square composition like a game inventory icon, painterly, luminous, extremely detailed, precious and significant`,
+      gentle_magic: `A single fantastical object resting on a soft surface against deep mist-blue background — the item rendered with warm realistic detail and gentle ambient lighting, a subtle magical glow emanates from within in lavender or soft gold, small details suggest enchantment — faint light motes rising from the surface, a shimmer along an edge, tiny flowers or moss growing where the object meets the ground, soft diffused bloom around the brightest points, no harsh shadows, centered square composition like a game inventory icon, painterly, luminous, dreamlike, the object feels precious and handcrafted`,
+    },
   },
 };
 
@@ -192,9 +243,10 @@ export function getEnhanceSystemPrompt(style: ArtStyle): string {
 /** Compose a full prompt from template + context */
 export function composePrompt(
   assetType: AssetType,
+  style: ArtStyle = "arcanum",
   customization?: string,
 ): string {
-  const template = ASSET_TEMPLATES[assetType].template;
+  const template = ASSET_TEMPLATES[assetType].templates[style];
   if (customization) {
     return `${template}, ${customization}`;
   }
