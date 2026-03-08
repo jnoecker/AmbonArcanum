@@ -8,6 +8,7 @@ import { QuestEditor } from "@/components/editors/QuestEditor";
 import { GatheringNodeEditor } from "@/components/editors/GatheringNodeEditor";
 import { RecipeEditor } from "@/components/editors/RecipeEditor";
 import { YamlPreview } from "@/components/ui/YamlPreview";
+import sidebarBg from "@/assets/sidebar-bg.png";
 
 const COLLECTION_MAP: Record<string, string> = {
   mob: "mobs",
@@ -46,9 +47,10 @@ export function EntityPanel({
   }, [world, selection]);
 
   return (
-    <div className="flex min-h-0 w-80 shrink-0 flex-col border-l border-border-default bg-bg-secondary">
+    <div className="relative flex min-h-0 w-80 shrink-0 flex-col border-l border-border-default bg-bg-secondary">
+      <img src={sidebarBg} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-[0.12]" />
       {/* Header with back button */}
-      <div className="shrink-0 flex items-center gap-2 border-b border-border-default px-4 py-2">
+      <div className="relative z-10 shrink-0 flex items-center gap-2 border-b border-border-default px-4 py-2">
         <button
           onClick={onClose}
           className="h-5 w-5 rounded text-xs text-text-muted transition-colors hover:bg-bg-elevated hover:text-text-primary"
@@ -76,7 +78,7 @@ export function EntityPanel({
       </div>
 
       {/* YAML preview or editor */}
-      <div className="min-h-0 flex-1 overflow-y-auto">
+      <div className="relative z-10 min-h-0 flex-1 overflow-y-auto">
       {showYaml ? (
         <YamlPreview
           data={entityData ? { [selection.id]: entityData } : null}

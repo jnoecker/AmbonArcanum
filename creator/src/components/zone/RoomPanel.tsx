@@ -18,6 +18,7 @@ import { roomPrompt, roomContext } from "@/lib/entityPrompts";
 import { EnhanceDescriptionButton } from "@/components/editors/EditorShared";
 import { useVibeStore } from "@/stores/vibeStore";
 import { ZoneVibePanel } from "./ZoneVibePanel";
+import sidebarBg from "@/assets/sidebar-bg.png";
 
 export type EntityKind = "mob" | "item" | "shop" | "quest" | "gatheringNode" | "recipe";
 
@@ -155,9 +156,10 @@ export function RoomPanel({
   }, [world, roomId, onWorldChange, onSelectEntity]);
 
   return (
-    <div className="flex min-h-0 w-72 shrink-0 flex-col border-l border-border-default bg-bg-secondary">
+    <div className="relative flex min-h-0 w-72 shrink-0 flex-col border-l border-border-default bg-bg-secondary">
+      <img src={sidebarBg} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-[0.12]" />
       {/* Header */}
-      <div className="shrink-0 border-b border-border-default px-4 py-3">
+      <div className="relative z-10 shrink-0 border-b border-border-default px-4 py-3">
         <div className="flex items-start justify-between">
           <div>
             <EditableField
@@ -186,7 +188,7 @@ export function RoomPanel({
         </div>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto">
+      <div className="relative z-10 min-h-0 flex-1 overflow-y-auto">
       {showYaml ? (
         <YamlPreview data={{ [roomId]: room }} label={`room: ${roomId}`} />
       ) : (
