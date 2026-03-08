@@ -19,6 +19,8 @@ import { ClassesPanel } from "./panels/ClassesPanel";
 import { RacesPanel } from "./panels/RacesPanel";
 import { EquipmentSlotsPanel } from "./panels/EquipmentSlotsPanel";
 import { CharacterCreationPanel } from "./panels/CharacterCreationPanel";
+import { AchievementsPanel } from "./panels/AchievementsPanel";
+import { QuestsPanel } from "./panels/QuestsPanel";
 import { ImagesPanel } from "./panels/ImagesPanel";
 import { ApiSettingsPanel } from "./panels/ApiSettingsPanel";
 
@@ -38,6 +40,8 @@ const CONFIG_TABS = [
   { id: "crafting", label: "Crafting" },
   { id: "group", label: "Group" },
   { id: "charCreate", label: "Char Create" },
+  { id: "achievements", label: "Achievements" },
+  { id: "quests", label: "Quests" },
   { id: "images", label: "Images" },
   { id: "rawYaml", label: "Raw YAML" },
   { id: "apiSettings", label: "API Settings" },
@@ -162,6 +166,12 @@ export function ConfigEditor() {
           )}
           {activeTab === "charCreate" && (
             <CharacterCreationPanel config={config} onChange={handleChange} />
+          )}
+          {activeTab === "achievements" && (
+            <AchievementsPanel config={config} onChange={handleChange} />
+          )}
+          {activeTab === "quests" && (
+            <QuestsPanel config={config} onChange={handleChange} />
           )}
           {activeTab === "images" && (
             <ImagesPanel config={config} onChange={handleChange} />
