@@ -14,6 +14,7 @@ import { ValidationPanel } from "./ValidationPanel";
 import { DiffModal } from "./ui/DiffModal";
 import { useAssetStore } from "@/stores/assetStore";
 import { BatchLegacyImport } from "./BatchLegacyImport";
+import toolbarBg from "@/assets/toolbar-bg.jpg";
 
 const STATUS_COLORS: Record<string, string> = {
   stopped: "bg-server-stopped",
@@ -78,7 +79,13 @@ export function Toolbar() {
   };
 
   return (
-    <div className="flex h-11 shrink-0 items-center gap-3 border-b border-border-default bg-bg-secondary px-4">
+    <div className="relative flex h-11 shrink-0 items-center gap-3 overflow-hidden border-b border-border-default bg-bg-secondary px-4">
+      <img
+        src={toolbarBg}
+        alt=""
+        className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-[0.15]"
+        style={{ objectPosition: "center center" }}
+      />
       {/* Project name */}
       <span className="font-display text-sm font-semibold tracking-wide text-accent-emphasis">
         {project?.name ?? "Ambon Arcanum"}
