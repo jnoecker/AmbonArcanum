@@ -288,8 +288,11 @@ export function ApiSettingsPanel() {
               }
               className="accent-accent"
             />
-            Auto-remove background for mob/item sprites during batch generation
+            Auto-remove background for mob/item sprites
           </label>
+          <p className="ml-6 -mt-1 text-[10px] text-text-muted/60">
+            Runs client-side AI background removal on sprite-type assets (mobs, items, abilities, player sprites, race/class portraits) after generation. The transparent version is saved as a variant alongside the original.
+          </p>
         </div>
       </div>
 

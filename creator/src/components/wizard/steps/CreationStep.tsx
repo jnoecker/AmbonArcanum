@@ -93,6 +93,7 @@ export function CreationStep({
         },
         acceptAsset,
       },
+      settings?.auto_remove_bg,
     );
 
     // Persist image references to zone YAML and zoneStore
