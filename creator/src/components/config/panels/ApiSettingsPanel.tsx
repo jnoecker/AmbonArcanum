@@ -431,7 +431,8 @@ export function ApiSettingsPanel() {
 
                     // Write explicit zone list to world.resources in config
                     const zones = useZoneStore.getState().zones;
-                    const resources = Array.from(zones.keys()).sort();
+                    const resources = Array.from(zones.keys()).sort()
+                      .map((id) => `world/${id}.yaml`);
                     const currentConfig = useConfigStore.getState().config;
                     if (currentConfig && resources.length > 0) {
                       useConfigStore.getState().updateConfig({

@@ -695,7 +695,7 @@ pub async fn deploy_zones_to_r2(app: AppHandle, mud_dir: String) -> Result<SyncP
             }
         };
 
-        let object_key = format!("config/world/{name}");
+        let object_key = format!("world/{name}");
         match upload_object(
             &client,
             &s.r2_account_id,
@@ -709,9 +709,7 @@ pub async fn deploy_zones_to_r2(app: AppHandle, mud_dir: String) -> Result<SyncP
         .await
         {
             Ok(()) => {
-                // Strip extension for the resource list (server expects bare names)
-                let bare = name.trim_end_matches(".yaml").trim_end_matches(".yml");
-                deployed_names.push(bare.to_string());
+                deployed_names.push(format!("world/{name}"));
                 progress.uploaded += 1;
             }
             Err(e) => {
