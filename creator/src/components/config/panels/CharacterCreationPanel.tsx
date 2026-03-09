@@ -10,9 +10,12 @@ export function CharacterCreationPanel({ config, onChange }: ConfigPanelProps) {
 
   return (
     <>
-      <Section title="Character Creation">
+      <Section
+        title="Character Creation"
+        description="Initial resources given to newly created characters. Starting gold lets players buy basic equipment right away. Set to 0 for a 'start from nothing' experience where players must earn their first gear."
+      >
         <div className="flex flex-col gap-1.5">
-          <FieldRow label="Starting Gold">
+          <FieldRow label="Starting Gold" hint="Gold given to new characters. 0 = earn everything. 50-100 = enough for a basic weapon. 500+ = well-equipped start.">
             <NumberInput
               value={cc.startingGold}
               onCommit={(v) => patch({ startingGold: v ?? 0 })}
@@ -39,7 +42,7 @@ export function CharacterCreationPanel({ config, onChange }: ConfigPanelProps) {
                 onCommit={(v) => patchGender({ displayName: v })}
               />
             </FieldRow>
-            <FieldRow label="Sprite Code">
+            <FieldRow label="Sprite Code" hint="Code used in sprite filenames (e.g. 'm' or 'f'). Defaults to the gender's ID if left blank.">
               <TextInput
                 value={g.spriteCode ?? ""}
                 onCommit={(v) => patchGender({ spriteCode: v || undefined })}

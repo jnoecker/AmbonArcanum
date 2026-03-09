@@ -27,23 +27,26 @@ export function GroupPanel({ config, onChange }: ConfigPanelProps) {
 
   return (
     <>
-      <Section title="Group Settings">
+      <Section
+        title="Group Settings"
+        description="Groups let players team up for combat and exploration. Members in a group share XP from kills. Larger groups are more powerful but split XP more ways — the XP bonus per member offsets this to encourage grouping."
+      >
         <div className="flex flex-col gap-1.5">
-          <FieldRow label="Max Size">
+          <FieldRow label="Max Size" hint="Maximum players in a group. 5 is the classic party size. Larger groups (8-10) suit raid-style content.">
             <NumberInput
               value={g.maxSize}
               onCommit={(v) => patch({ maxSize: v ?? 5 })}
               min={2}
             />
           </FieldRow>
-          <FieldRow label="Invite Timeout">
+          <FieldRow label="Invite Timeout" hint="Milliseconds before a group invite expires. 60000ms (1 minute) is standard. Shorter timeouts prevent stale invites.">
             <NumberInput
               value={g.inviteTimeoutMs}
               onCommit={(v) => patch({ inviteTimeoutMs: v ?? 60000 })}
               min={1000}
             />
           </FieldRow>
-          <FieldRow label="XP Bonus / Member">
+          <FieldRow label="XP Bonus / Member" hint="Fractional XP bonus per additional group member. 0.1 = +10% per member, so a 5-person group gets +40% total XP. Encourages grouping without making it mandatory.">
             <NumberInput
               value={g.xpBonusPerMember}
               onCommit={(v) => patch({ xpBonusPerMember: v ?? 0.1 })}
@@ -54,9 +57,12 @@ export function GroupPanel({ config, onChange }: ConfigPanelProps) {
         </div>
       </Section>
 
-      <Section title="Guild Settings">
+      <Section
+        title="Guild Settings"
+        description="Guilds are persistent player organizations. The founder rank is assigned to the guild creator, and new members receive the default rank. Configure rank names and permissions below."
+      >
         <div className="flex flex-col gap-1.5">
-          <FieldRow label="Founder Rank">
+          <FieldRow label="Founder Rank" hint="Rank automatically assigned to the player who creates a new guild. Should have all permissions.">
             <SelectInput
               value={config.guild.founderRank}
               onCommit={(v) => onChange({ guild: { ...config.guild, founderRank: v } })}
@@ -66,7 +72,7 @@ export function GroupPanel({ config, onChange }: ConfigPanelProps) {
               }))}
             />
           </FieldRow>
-          <FieldRow label="Default Rank">
+          <FieldRow label="Default Rank" hint="Rank given to new guild members when they join. Should have minimal permissions.">
             <SelectInput
               value={config.guild.defaultRank}
               onCommit={(v) => onChange({ guild: { ...config.guild, defaultRank: v } })}
@@ -96,7 +102,7 @@ export function GroupPanel({ config, onChange }: ConfigPanelProps) {
                 onCommit={(v) => patchRank({ displayName: v })}
               />
             </FieldRow>
-            <FieldRow label="Level">
+            <FieldRow label="Level" hint="Numeric rank level used for ordering. Higher = more authority. The founder rank should have the highest level.">
               <NumberInput
                 value={r.level}
                 onCommit={(v) => patchRank({ level: v ?? 0 })}
