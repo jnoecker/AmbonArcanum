@@ -10,7 +10,7 @@ import { ProgressionBalanceStep } from "./steps/ProgressionBalanceStep";
 import { DemoZoneStep } from "./steps/DemoZoneStep";
 import { CreationStep } from "./steps/CreationStep";
 
-const PROJECT_NAME_RE = /^[a-z][a-z0-9_-]*$/;
+const PROJECT_NAME_RE = /^[a-zA-Z][a-zA-Z0-9_-]*$/;
 
 const STEP_COUNT = 7;
 
@@ -65,7 +65,7 @@ export function ProjectWizard({ onClose }: ProjectWizardProps) {
     }
     if (!PROJECT_NAME_RE.test(data.projectName)) {
       setNameError(
-        "Must start with a lowercase letter, use only a-z, 0-9, hyphens, underscores",
+        "Must start with a letter, use only letters, digits, hyphens, underscores",
       );
       return false;
     }

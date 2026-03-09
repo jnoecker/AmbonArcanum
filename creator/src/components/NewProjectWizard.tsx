@@ -7,7 +7,7 @@ interface NewProjectWizardProps {
   onClose: () => void;
 }
 
-const PROJECT_NAME_RE = /^[a-z][a-z0-9_-]*$/;
+const PROJECT_NAME_RE = /^[a-zA-Z][a-zA-Z0-9_-]*$/;
 
 const STAGE_LABELS: Record<WizardStage, string> = {
   idle: "",
@@ -41,7 +41,7 @@ export function NewProjectWizard({ onClose }: NewProjectWizardProps) {
   const validateName = (name: string) => {
     if (!name) return "Project name is required";
     if (!PROJECT_NAME_RE.test(name))
-      return "Must start with a lowercase letter, use only a-z, 0-9, hyphens, underscores";
+      return "Must start with a letter, use only letters, digits, hyphens, underscores";
     return null;
   };
 
