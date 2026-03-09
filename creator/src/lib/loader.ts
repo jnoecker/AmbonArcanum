@@ -42,8 +42,10 @@ export async function loadAllZones(
 
 /**
  * Load and parse the application config.
- * Reads application.yaml (checked-in defaults), then deep-merges
- * application-local.yaml (gitignored operator overrides) on top.
+ * Uses application-local.yaml (gitignored operator overrides) if it exists,
+ * otherwise falls back to application.yaml (checked-in defaults).
+ * Spring Boot uses first-source-wins at the map level, so the local file
+ * replaces entire map sections — no per-entry merging.
  */
 export async function loadAppConfig(
   mudDir: string,
@@ -53,21 +55,14 @@ export async function loadAppConfig(
   const localPath = `${resourcesDir}/application-local.yaml`;
 
   try {
-    const baseContent = await readTextFile(basePath);
-    const baseDoc = parseDocument(baseContent);
-    const baseRaw = baseDoc.toJS() as Record<string, unknown>;
-
-    // Deep-merge local overrides if the file exists
-    let merged = baseRaw;
-    if (await exists(localPath)) {
-      const localContent = await readTextFile(localPath);
-      const localDoc = parseDocument(localContent);
-      const localRaw = localDoc.toJS() as Record<string, unknown>;
-      merged = deepMergeRaw(baseRaw, localRaw);
-    }
+    // Local file takes precedence; fall back to base defaults
+    const configPath = await exists(localPath) ? localPath : basePath;
+    const content = await readTextFile(configPath);
+    const doc = parseDocument(content);
+    const raw = doc.toJS() as Record<string, unknown>;
 
     // Navigate into the ambonmud root if present
-    const root = (merged.ambonmud ?? merged) as Record<string, unknown>;
+    const root = (raw.ambonmud ?? raw) as Record<string, unknown>;
     const engine = (root.engine ?? {}) as Record<string, unknown>;
     const progression = (root.progression ?? {}) as Record<string, unknown>;
 
@@ -414,27 +409,3 @@ function parseNumberArray(val: unknown, fallback: number[]): number[] {
   return val.filter((v): v is number => typeof v === "number");
 }
 
-// ─── Deep merge for YAML overlay ────────────────────────────────────
-
-function deepMergeRaw(
-  base: Record<string, unknown>,
-  override: Record<string, unknown>,
-): Record<string, unknown> {
-  const result = { ...base };
-  for (const key of Object.keys(override)) {
-    const bv = base[key];
-    const ov = override[key];
-    if (
-      ov && typeof ov === "object" && !Array.isArray(ov) &&
-      bv && typeof bv === "object" && !Array.isArray(bv)
-    ) {
-      result[key] = deepMergeRaw(
-        bv as Record<string, unknown>,
-        ov as Record<string, unknown>,
-      );
-    } else {
-      result[key] = ov;
-    }
-  }
-  return result;
-}
