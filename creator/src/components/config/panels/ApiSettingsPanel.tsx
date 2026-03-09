@@ -3,7 +3,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { useAssetStore } from "@/stores/assetStore";
 import { useProjectStore } from "@/stores/projectStore";
 import { IMAGE_MODELS } from "@/types/assets";
-import type { Settings } from "@/types/assets";
+import type { Settings, SyncProgress } from "@/types/assets";
 
 const LLM_PROVIDERS = [
   { id: "deepinfra", label: "DeepInfra", keyField: "deepinfra_api_key" as const },
@@ -27,6 +27,8 @@ export function ApiSettingsPanel() {
   const [error, setError] = useState<string | null>(null);
   const [deploying, setDeploying] = useState(false);
   const [deployResult, setDeployResult] = useState<string | null>(null);
+  const [deployingZones, setDeployingZones] = useState(false);
+  const [zoneDeployResult, setZoneDeployResult] = useState<string | null>(null);
   const mudDir = useProjectStore((s) => s.project?.mudDir);
 
   useEffect(() => {
@@ -413,6 +415,39 @@ export function ApiSettingsPanel() {
             </div>
             <p className="mt-1 text-[10px] text-text-muted">
               Uploads application-local.yaml to R2 for the demo cluster to pull
+            </p>
+
+            <div className="mt-2 flex items-center gap-2">
+              <button
+                onClick={async () => {
+                  if (!mudDir) return;
+                  setDeployingZones(true);
+                  setZoneDeployResult(null);
+                  try {
+                    const result = await invoke<SyncProgress>("deploy_zones_to_r2", { mudDir });
+                    setZoneDeployResult(
+                      `${result.uploaded} zone${result.uploaded !== 1 ? "s" : ""} deployed` +
+                      (result.failed > 0 ? `, ${result.failed} failed` : ""),
+                    );
+                  } catch (e) {
+                    setZoneDeployResult(`Failed: ${e}`);
+                  } finally {
+                    setDeployingZones(false);
+                  }
+                }}
+                disabled={deployingZones || !mudDir || !draft.r2_bucket}
+                className="rounded bg-gradient-to-r from-accent-muted to-accent px-4 py-1.5 text-xs font-medium text-accent-emphasis transition-all hover:shadow-[var(--glow-aurum)] hover:brightness-110 disabled:opacity-50"
+              >
+                {deployingZones ? "Deploying..." : "Deploy Zones to R2"}
+              </button>
+              {zoneDeployResult && (
+                <span className={`text-[10px] ${zoneDeployResult.startsWith("Failed") ? "text-status-error" : "text-status-success"}`}>
+                  {zoneDeployResult}
+                </span>
+              )}
+            </div>
+            <p className="mt-1 text-[10px] text-text-muted">
+              Uploads all zone YAML files to R2 for the demo cluster to pull
             </p>
           </div>
         </div>

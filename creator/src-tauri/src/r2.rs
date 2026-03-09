@@ -646,6 +646,75 @@ pub async fn deploy_config_to_r2(app: AppHandle, mud_dir: String) -> Result<Stri
     Ok(format!("{domain}/{object_key}"))
 }
 
+/// Deploy all zone YAML files to R2 so the demo cluster can pull them.
+/// Reads every .yaml/.yml file from the MUD project's world directory and
+/// uploads to "config/world/{filename}" in the configured R2 bucket.
+#[tauri::command]
+pub async fn deploy_zones_to_r2(app: AppHandle, mud_dir: String) -> Result<SyncProgress, String> {
+    let s = settings::get_settings(app).await?;
+    if s.r2_account_id.is_empty()
+        || s.r2_access_key_id.is_empty()
+        || s.r2_secret_access_key.is_empty()
+        || s.r2_bucket.is_empty()
+    {
+        return Err("R2 credentials not configured. Set them in Settings.".to_string());
+    }
+
+    let world_dir = PathBuf::from(&mud_dir).join("src/main/resources/world");
+    let entries = std::fs::read_dir(&world_dir)
+        .map_err(|e| format!("Failed to read world directory: {e}"))?;
+
+    let mut zone_files: Vec<(String, PathBuf)> = Vec::new();
+    for entry in entries.flatten() {
+        let name = entry.file_name().to_string_lossy().to_string();
+        if name.ends_with(".yaml") || name.ends_with(".yml") {
+            zone_files.push((name, entry.path()));
+        }
+    }
+
+    let client = reqwest::Client::new();
+    let mut progress = SyncProgress {
+        total: zone_files.len(),
+        uploaded: 0,
+        skipped: 0,
+        failed: 0,
+        errors: Vec::new(),
+    };
+
+    for (name, path) in &zone_files {
+        let body = match tokio::fs::read(path).await {
+            Ok(b) => b,
+            Err(e) => {
+                progress.failed += 1;
+                progress.errors.push(format!("{name}: Failed to read: {e}"));
+                continue;
+            }
+        };
+
+        let object_key = format!("config/world/{name}");
+        match upload_object(
+            &client,
+            &s.r2_account_id,
+            &s.r2_bucket,
+            &s.r2_access_key_id,
+            &s.r2_secret_access_key,
+            &object_key,
+            body,
+            "application/x-yaml",
+        )
+        .await
+        {
+            Ok(()) => progress.uploaded += 1,
+            Err(e) => {
+                progress.failed += 1;
+                progress.errors.push(format!("{name}: {e}"));
+            }
+        }
+    }
+
+    Ok(progress)
+}
+
 /// Resolve an asset file_name to its public R2 URL via custom domain.
 #[tauri::command]
 pub async fn resolve_asset_url(app: AppHandle, file_name: String) -> Result<String, String> {
