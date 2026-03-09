@@ -10,23 +10,26 @@ export function CraftingPanel({ config, onChange }: ConfigPanelProps) {
 
   return (
     <>
-      <Section title="Skill Progression">
+      <Section
+        title="Skill Progression"
+        description="Crafting skills level independently from character level. The XP formula is: XP(level) = baseXp * level^exponent. Higher exponents make mastery take significantly longer, rewarding dedicated crafters."
+      >
         <div className="flex flex-col gap-1.5">
-          <FieldRow label="Max Skill Level">
+          <FieldRow label="Max Skill Level" hint="Cap for all crafting skills. 100 is the classic 'mastery' target. Lower values (e.g. 50) make crafting easier to max out.">
             <NumberInput
               value={c.maxSkillLevel}
               onCommit={(v) => patch({ maxSkillLevel: v ?? 100 })}
               min={1}
             />
           </FieldRow>
-          <FieldRow label="Base XP / Level">
+          <FieldRow label="Base XP / Level" hint="XP constant in the skill-up formula. Higher values make each level take longer. 50 is a moderate pace.">
             <NumberInput
               value={c.baseXpPerLevel}
               onCommit={(v) => patch({ baseXpPerLevel: v ?? 50 })}
               min={1}
             />
           </FieldRow>
-          <FieldRow label="XP Exponent">
+          <FieldRow label="XP Exponent" hint="Growth rate of XP requirements. 1.0 = linear (every level takes the same effort). 1.5 = moderate curve. 2.0+ = steep late-game grind.">
             <NumberInput
               value={c.xpExponent}
               onCommit={(v) => patch({ xpExponent: v ?? 1.5 })}
@@ -37,16 +40,19 @@ export function CraftingPanel({ config, onChange }: ConfigPanelProps) {
         </div>
       </Section>
 
-      <Section title="Gathering">
+      <Section
+        title="Gathering"
+        description="Controls the resource-gathering loop. Gathering cooldown determines how often players can harvest nodes, while the station bonus rewards players who craft at dedicated stations rather than in the field."
+      >
         <div className="flex flex-col gap-1.5">
-          <FieldRow label="Cooldown (ms)">
+          <FieldRow label="Cooldown (ms)" hint="Delay between gathering attempts on the same node. 3000ms (3s) feels responsive. Higher values (10000+) make gathering a slower, more deliberate activity.">
             <NumberInput
               value={c.gatherCooldownMs}
               onCommit={(v) => patch({ gatherCooldownMs: v ?? 3000 })}
               min={0}
             />
           </FieldRow>
-          <FieldRow label="Station Bonus">
+          <FieldRow label="Station Bonus" hint="Extra items yielded when gathering at a crafting station vs. in the field. 1 = one bonus item. Set to 0 to remove the station advantage.">
             <NumberInput
               value={c.stationBonusQuantity}
               onCommit={(v) => patch({ stationBonusQuantity: v ?? 1 })}
@@ -73,7 +79,7 @@ export function CraftingPanel({ config, onChange }: ConfigPanelProps) {
                 onCommit={(v) => patch({ displayName: v })}
               />
             </FieldRow>
-            <FieldRow label="Type">
+            <FieldRow label="Type" hint="Gathering skills harvest raw materials; Crafting skills transform materials into items.">
               <SelectInput
                 value={s.type}
                 onCommit={(v) => patch({ type: v })}
@@ -97,7 +103,7 @@ export function CraftingPanel({ config, onChange }: ConfigPanelProps) {
         defaultItem={(raw) => ({ displayName: raw })}
         renderSummary={() => ""}
         renderDetail={(_id, s, patch) => (
-          <FieldRow label="Display Name">
+          <FieldRow label="Display Name" hint="Name shown to players (e.g. Forge, Alchemy Table, Loom).">
             <TextInput
               value={s.displayName}
               onCommit={(v) => patch({ displayName: v })}

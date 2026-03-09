@@ -108,10 +108,12 @@ export function EditableTextArea({
 /** Collapsible section with a header label. */
 export function Section({
   title,
+  description,
   children,
   actions,
 }: {
   title: string;
+  description?: string;
   children: ReactNode;
   actions?: ReactNode;
 }) {
@@ -123,6 +125,9 @@ export function Section({
         </h4>
         {actions && <div className="ml-auto flex items-center gap-1">{actions}</div>}
       </div>
+      {description && (
+        <p className="mb-2 text-[11px] leading-relaxed text-text-muted/70">{description}</p>
+      )}
       {children}
     </div>
   );
@@ -131,16 +136,23 @@ export function Section({
 /** Labeled text input for forms. */
 export function FieldRow({
   label,
+  hint,
   children,
 }: {
   label: string;
+  hint?: string;
   children: ReactNode;
 }) {
   return (
-    <label className="flex items-center gap-2 py-0.5 text-xs">
-      <span className="w-24 shrink-0 text-text-muted">{label}</span>
-      <div className="min-w-0 flex-1">{children}</div>
-    </label>
+    <div className="py-0.5">
+      <label className="flex items-center gap-2 text-xs">
+        <span className="w-24 shrink-0 text-text-muted">{label}</span>
+        <div className="min-w-0 flex-1">{children}</div>
+      </label>
+      {hint && (
+        <p className="ml-[6.5rem] mt-0.5 text-[10px] leading-snug text-text-muted/60">{hint}</p>
+      )}
+    </div>
   );
 }
 
