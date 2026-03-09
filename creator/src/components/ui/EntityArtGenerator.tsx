@@ -8,6 +8,7 @@ import { getEnhanceSystemPrompt, ART_STYLE_LABELS, UNIVERSAL_NEGATIVE, type ArtS
 import { IMAGE_MODELS, ENTITY_DIMENSIONS, DIMENSION_PRESETS } from "@/types/assets";
 import type { AssetContext, GeneratedImage } from "@/types/assets";
 import { VariantStrip } from "./VariantStrip";
+import { removeBgAndSave, shouldRemoveBg } from "@/lib/useBackgroundRemoval";
 
 type Stage = "idle" | "generating" | "preview";
 
@@ -233,6 +234,13 @@ export function EntityArtGenerator({
     onAccept(result.file_path);
     if (assetType) {
       await acceptAsset(result, assetType, lastEnhancedPrompt ?? undefined, context, variantGroup, true).catch(() => {});
+
+      // Auto-remove background for sprite asset types
+      if (settings?.auto_remove_bg && shouldRemoveBg(assetType) && result.data_url) {
+        removeBgAndSave(result.data_url, assetType, context, variantGroup).then(async (entry) => {
+          if (entry) await useAssetStore.getState().loadAssets();
+        });
+      }
     }
     setStage("idle");
     setResult(null);

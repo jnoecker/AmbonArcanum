@@ -12,6 +12,7 @@ import {
 } from "@/lib/arcanumPrompts";
 import type { GeneratedImage } from "@/types/assets";
 import { ENTITY_DIMENSIONS } from "@/types/assets";
+import { removeBgAndSave, shouldRemoveBg } from "@/lib/useBackgroundRemoval";
 
 export function assetTypeForKind(kind: string): string {
   if (kind === "room") return "background";
@@ -141,6 +142,7 @@ export async function runBatchArtGeneration(
   concurrency: number,
   abortRef: { current: boolean },
   callbacks: ArtGenerationCallbacks,
+  autoRemoveBg?: boolean,
 ): Promise<WorldFile> {
   let updatedWorld = { ...world };
 
@@ -209,20 +211,27 @@ export async function runBatchArtGeneration(
         callbacks.onTargetUpdate(idx, { status: "done", result: image });
 
         const variantGroup = `${target.kind}:${zoneId}:${target.id}`;
+        const batchAssetType = assetTypeForKind(target.kind);
+        const batchContext = {
+          zone: zoneId,
+          entity_type: target.kind,
+          entity_id: target.id,
+        };
         await callbacks
           .acceptAsset(
             image,
-            assetTypeForKind(target.kind),
+            batchAssetType,
             finalPrompt,
-            {
-              zone: zoneId,
-              entity_type: target.kind,
-              entity_id: target.id,
-            },
+            batchContext,
             variantGroup,
             true,
           )
           .catch(() => {});
+
+        // Auto-remove background for sprite asset types
+        if (autoRemoveBg && shouldRemoveBg(batchAssetType) && image.data_url) {
+          removeBgAndSave(image.data_url, batchAssetType, batchContext, variantGroup).catch(() => {});
+        }
 
         const { kind, id } = target;
         if (kind === "room") {

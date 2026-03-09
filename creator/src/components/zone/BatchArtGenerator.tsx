@@ -63,6 +63,7 @@ export function BatchArtGenerator({
         onWorldUpdate: onWorldChange,
         acceptAsset,
       },
+      settings?.auto_remove_bg,
     );
 
     setRunning(false);
