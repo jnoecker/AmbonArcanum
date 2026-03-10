@@ -3,9 +3,14 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::path::PathBuf;
+use std::sync::LazyLock;
 use tauri::{AppHandle, Manager};
+use tokio::sync::Mutex;
 
 const MANIFEST_FILE: &str = "manifest.json";
+
+/// Global mutex to prevent concurrent manifest read-modify-write corruption.
+static MANIFEST_LOCK: LazyLock<Mutex<()>> = LazyLock::new(|| Mutex::new(()));
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AssetEntry {
@@ -122,6 +127,7 @@ pub async fn accept_asset(
         is_active: active,
     };
 
+    let _lock = MANIFEST_LOCK.lock().await;
     let mut manifest = load_manifest(&app).await?;
     // Avoid duplicates by hash
     manifest.assets.retain(|a| a.hash != entry.hash);
@@ -147,6 +153,7 @@ pub async fn list_assets(app: AppHandle) -> Result<Vec<AssetEntry>, String> {
 
 #[tauri::command]
 pub async fn delete_asset(app: AppHandle, id: String) -> Result<(), String> {
+    let _lock = MANIFEST_LOCK.lock().await;
     let mut manifest = load_manifest(&app).await?;
     let entry = manifest.assets.iter().find(|a| a.id == id).cloned();
 
@@ -190,6 +197,9 @@ pub async fn resolve_media_path(app: AppHandle, file_name: String) -> Result<Str
 }
 
 /// Update the sync_status of an asset by ID. Called from r2 module.
+/// Update sync_status for a single asset. NOT locked — callers that
+/// invoke this in a loop (e.g. sync_assets) must ensure serialization
+/// themselves or accept that concurrent writes may lose updates.
 pub async fn update_sync_status(app: AppHandle, id: &str, status: &str) -> Result<(), String> {
     let mut manifest = load_manifest(&app).await?;
     if let Some(entry) = manifest.assets.iter_mut().find(|a| a.id == id) {
@@ -344,6 +354,7 @@ pub async fn import_asset(
         is_active: false,
     };
 
+    let _lock = MANIFEST_LOCK.lock().await;
     let mut manifest = load_manifest(&app).await?;
     // Dedup by hash — update existing entry if same content
     manifest.assets.retain(|a| a.hash != entry.hash);
@@ -359,6 +370,7 @@ pub async fn set_active_variant(
     variant_group: String,
     asset_id: String,
 ) -> Result<(), String> {
+    let _lock = MANIFEST_LOCK.lock().await;
     let mut manifest = load_manifest(&app).await?;
     for a in manifest.assets.iter_mut() {
         if a.variant_group == variant_group {
@@ -436,6 +448,7 @@ pub async fn save_bytes_as_asset(
         is_active: false,
     };
 
+    let _lock = MANIFEST_LOCK.lock().await;
     let mut manifest = load_manifest(&app).await?;
     manifest.assets.retain(|a| a.hash != entry.hash);
     manifest.assets.push(entry.clone());
@@ -471,6 +484,7 @@ pub async fn import_player_sprites(
     }
 
     let mut result = SpriteImportResult::default();
+    let _lock = MANIFEST_LOCK.lock().await;
     let mut manifest = load_manifest(&app).await?;
     let images_dir = assets_dir(&app)?.join("images");
     tokio::fs::create_dir_all(&images_dir)
