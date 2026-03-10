@@ -21,7 +21,7 @@ import {
 } from "@/lib/arcanumPrompts";
 import { IMAGE_MODELS, ENTITY_DIMENSIONS } from "@/types/assets";
 import type { AssetEntry, GeneratedImage, SyncProgress } from "@/types/assets";
-import { removeBgAndSave, shouldRemoveBg } from "@/lib/useBackgroundRemoval";
+import { removeBgAndSave } from "@/lib/useBackgroundRemoval";
 
 interface SpriteImportResult {
   imported: number;
@@ -220,8 +220,8 @@ export function PlayerSpriteManager() {
 
     await acceptAsset(image, "player_sprite", finalPrompt, assetContext, variantGroup, true);
 
-    // Auto-remove background if enabled
-    if (settings?.auto_remove_bg && shouldRemoveBg("player_sprite") && image.data_url) {
+    // Always remove background for player sprites — they need transparency
+    if (image.data_url) {
       removeBgAndSave(image.data_url, "player_sprite", assetContext, variantGroup).catch(() => {});
     }
 
