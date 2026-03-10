@@ -93,6 +93,7 @@ export function PlayerSpriteManager() {
   const loadAssets = useAssetStore((s) => s.loadAssets);
   const settings = useAssetStore((s) => s.settings);
   const acceptAsset = useAssetStore((s) => s.acceptAsset);
+  const deleteAsset = useAssetStore((s) => s.deleteAsset);
   const artStyle = useAssetStore((s) => s.artStyle);
   const setArtStyle = useAssetStore((s) => s.setArtStyle);
 
@@ -144,7 +145,20 @@ export function PlayerSpriteManager() {
     return map;
   }, [assets]);
 
-  const coveredCount = spriteMap.size;
+  // Count only sprites that match a valid matrix slot
+  const coveredCount = useMemo(() => {
+    let count = 0;
+    for (const race of races) {
+      for (const gender of genders) {
+        for (const cls of classes) {
+          for (const tier of tiers) {
+            if (spriteMap.has(spriteKey(race, gender.id, cls, tier))) count++;
+          }
+        }
+      }
+    }
+    return count;
+  }, [races, genders, classes, tiers, spriteMap]);
 
   // Apply filters
   const filteredRaces = filterRace === "all" ? races : [filterRace];
@@ -584,7 +598,7 @@ export function PlayerSpriteManager() {
             player_sprites/&#123;race&#125;_&#123;spriteCode&#125;_&#123;class&#125;_l&#123;tier&#125;.png
           </code>
           {" | "}Tiers: {allTiers.map((t) => `l${t}`).join(", ")}
-          {" | "}Click an empty cell to generate a single sprite.
+          {" | "}Hover a cell to generate, regenerate, or delete.
         </p>
 
         {filteredRaces.map((race) => (
@@ -630,7 +644,8 @@ export function PlayerSpriteManager() {
                             const asset = spriteMap.get(key);
                             const isGenerating = generating === key;
                             const isEmpty = !asset;
-                            const canGenerate = isEmpty && hasApiKey && !batchRunning && !generating;
+                            const canGenerate = hasApiKey && !batchRunning && !generating;
+                            const canDelete = !isEmpty && !batchRunning && !generating;
 
                             return (
                               <td
@@ -639,8 +654,7 @@ export function PlayerSpriteManager() {
                                 title={`player_sprites/${key}.png`}
                               >
                                 <div
-                                  className={`group relative mx-auto h-12 w-12 overflow-hidden rounded ${canGenerate ? "cursor-pointer" : ""}`}
-                                  onClick={canGenerate ? () => handleGenerateOne(race, gender.id, gender.label, cls, tier) : undefined}
+                                  className="group relative mx-auto h-12 w-12 overflow-hidden rounded"
                                 >
                                   {isGenerating ? (
                                     <div className="flex h-full w-full items-center justify-center bg-bg-tertiary">
@@ -649,11 +663,29 @@ export function PlayerSpriteManager() {
                                   ) : (
                                     <>
                                       <SpriteThumbnail fileName={asset?.file_name} />
-                                      {canGenerate && (
-                                        <div className="absolute inset-0 flex items-center justify-center bg-accent/10 opacity-0 transition-opacity group-hover:opacity-100">
-                                          <span className="text-[10px] font-medium text-accent">Gen</span>
-                                        </div>
-                                      )}
+                                      {/* Hover overlay with actions */}
+                                      <div className="absolute inset-0 flex items-center justify-center gap-0.5 bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
+                                        {canGenerate && (
+                                          <button
+                                            onClick={() => handleGenerateOne(race, gender.id, gender.label, cls, tier)}
+                                            className="rounded px-1 py-0.5 text-[9px] font-medium text-accent hover:bg-accent/20"
+                                            title={isEmpty ? "Generate" : "Regenerate"}
+                                          >
+                                            {isEmpty ? "Gen" : "Regen"}
+                                          </button>
+                                        )}
+                                        {canDelete && (
+                                          <button
+                                            onClick={async () => {
+                                              await deleteAsset(asset.id);
+                                            }}
+                                            className="rounded px-1 py-0.5 text-[9px] font-medium text-status-error hover:bg-status-error/20"
+                                            title="Delete sprite"
+                                          >
+                                            Del
+                                          </button>
+                                        )}
+                                      </div>
                                     </>
                                   )}
                                 </div>
