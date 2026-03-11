@@ -11,6 +11,7 @@ import { RegistryPanel } from "./RegistryPanel";
 import { EntityArtGenerator } from "@/components/ui/EntityArtGenerator";
 import { getPreamble } from "@/lib/arcanumPrompts";
 import type { ArtStyle } from "@/lib/arcanumPrompts";
+import { BulkImportButton } from "./BulkImportButton";
 
 const FALLBACK_TARGET_TYPES = [
   { value: "enemy", label: "Enemy" },
@@ -114,7 +115,31 @@ export function AbilitiesPanel({ config, onChange }: ConfigPanelProps) {
     patch({ effect: newEffect as AbilityEffectConfig });
   };
 
+  const handleBulkImport = useCallback(
+    (mapping: Array<{ original_name: string; file_name: string }>) => {
+      const lookup = Object.fromEntries(mapping.map((m) => [m.original_name, m.file_name]));
+      const updated: Record<string, AbilityDefinitionConfig> = {};
+      for (const [id, ability] of Object.entries(config.abilities)) {
+        const stem = ability.image?.replace(/^.*[\\/]/, "").replace(/\.\w+$/, "");
+        if (stem && lookup[stem]) {
+          updated[id] = { ...ability, image: lookup[stem] };
+        } else {
+          updated[id] = ability;
+        }
+      }
+      onChange({ abilities: updated });
+    },
+    [config.abilities, onChange],
+  );
+
   return (
+    <>
+    <BulkImportButton
+      assetType="ability_icon"
+      entityType="ability"
+      label="Import Ability Icons"
+      onImported={handleBulkImport}
+    />
     <RegistryPanel<AbilityDefinitionConfig>
       title="Abilities"
       items={config.abilities}
@@ -327,5 +352,6 @@ export function AbilitiesPanel({ config, onChange }: ConfigPanelProps) {
         </>
       )}
     />
+    </>
   );
 }

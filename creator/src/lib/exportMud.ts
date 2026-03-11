@@ -261,6 +261,7 @@ export function statusEffectToPlain(e: AppConfig["statusEffects"][string]): Reco
     effectType: e.effectType,
     durationMs: e.durationMs,
   };
+  if (e.image) obj.image = e.image;
   if (e.tickIntervalMs != null) obj.tickIntervalMs = e.tickIntervalMs;
   if (e.tickValue != null) obj.tickValue = e.tickValue;
   if (e.tickMinValue != null) obj.tickMinValue = e.tickMinValue;

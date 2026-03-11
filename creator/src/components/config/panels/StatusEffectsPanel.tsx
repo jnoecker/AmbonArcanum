@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/FormWidgets";
 import { RegistryPanel } from "./RegistryPanel";
 import { renameStatusEffectInConfig } from "@/lib/refactorId";
+import { BulkImportButton } from "./BulkImportButton";
 
 const FALLBACK_EFFECT_TYPES = [
   { value: "dot", label: "Damage Over Time" },
@@ -56,7 +57,31 @@ export function StatusEffectsPanel({ config, onChange }: ConfigPanelProps) {
     [config, onChange],
   );
 
+  const handleBulkImport = useCallback(
+    (mapping: Array<{ original_name: string; file_name: string }>) => {
+      const lookup = Object.fromEntries(mapping.map((m) => [m.original_name, m.file_name]));
+      const updated: Record<string, StatusEffectDefinitionConfig> = {};
+      for (const [id, effect] of Object.entries(config.statusEffects)) {
+        const stem = effect.image?.replace(/^.*[\\/]/, "").replace(/\.\w+$/, "");
+        if (stem && lookup[stem]) {
+          updated[id] = { ...effect, image: lookup[stem] };
+        } else {
+          updated[id] = effect;
+        }
+      }
+      onChange({ statusEffects: updated });
+    },
+    [config.statusEffects, onChange],
+  );
+
   return (
+    <>
+    <BulkImportButton
+      assetType="status_effect_icon"
+      entityType="status_effect"
+      label="Import Status Effect Icons"
+      onImported={handleBulkImport}
+    />
     <RegistryPanel<StatusEffectDefinitionConfig>
       title="Status Effects"
       items={config.statusEffects}
@@ -84,6 +109,13 @@ export function StatusEffectsPanel({ config, onChange }: ConfigPanelProps) {
               <TextInput
                 value={e.displayName}
                 onCommit={(v) => patch({ displayName: v })}
+              />
+            </FieldRow>
+            <FieldRow label="Image">
+              <TextInput
+                value={e.image ?? ""}
+                onCommit={(v) => patch({ image: v || undefined })}
+                placeholder="none"
               />
             </FieldRow>
             <FieldRow label="Effect Type">
@@ -219,6 +251,7 @@ export function StatusEffectsPanel({ config, onChange }: ConfigPanelProps) {
         );
       }}
     />
+    </>
   );
 }
 

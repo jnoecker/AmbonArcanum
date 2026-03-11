@@ -616,3 +616,141 @@ pub async fn import_player_sprites(
     save_manifest(&app, &manifest).await?;
     Ok(result)
 }
+
+/// Result for bulk image import.
+#[derive(Debug, Default, Serialize)]
+pub struct BulkImportResult {
+    pub imported: u32,
+    pub skipped: u32,
+    pub mapping: Vec<BulkImportEntry>,
+    pub errors: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct BulkImportEntry {
+    pub original_name: String,
+    pub file_name: String,
+}
+
+/// Bulk-import all images from a flat directory into the asset library.
+///
+/// Returns a mapping of original filename (stem) → content-addressed filename
+/// so the caller can update YAML references.
+#[tauri::command]
+pub async fn bulk_import_images(
+    app: AppHandle,
+    source_dir: String,
+    asset_type: String,
+    entity_type: String,
+) -> Result<BulkImportResult, String> {
+    let dir = std::path::Path::new(&source_dir);
+    if !dir.is_dir() {
+        return Err(format!("Directory not found: {source_dir}"));
+    }
+
+    let mut result = BulkImportResult::default();
+    let _lock = MANIFEST_LOCK.lock().await;
+    let mut manifest = load_manifest(&app).await?;
+    let images_dir = assets_dir(&app)?.join("images");
+    tokio::fs::create_dir_all(&images_dir)
+        .await
+        .map_err(|e| format!("Failed to create images dir: {e}"))?;
+
+    let entries = std::fs::read_dir(dir)
+        .map_err(|e| format!("Failed to read directory: {e}"))?;
+
+    for entry in entries.flatten() {
+        let path = entry.path();
+        if !path.is_file() {
+            continue;
+        }
+        let fname = entry.file_name().to_string_lossy().to_string();
+        let stem = path
+            .file_stem()
+            .map(|s| s.to_string_lossy().to_string())
+            .unwrap_or_default();
+
+        // Only process image files
+        let ext_lower = path
+            .extension()
+            .map(|e| e.to_string_lossy().to_lowercase())
+            .unwrap_or_default();
+        if !matches!(ext_lower.as_str(), "png" | "jpg" | "jpeg" | "webp") {
+            continue;
+        }
+
+        let bytes = match std::fs::read(&path) {
+            Ok(b) => b,
+            Err(e) => {
+                result.errors.push(format!("Failed to read {fname}: {e}"));
+                continue;
+            }
+        };
+
+        let mut hasher = Sha256::new();
+        hasher.update(&bytes);
+        let hash = format!("{:x}", hasher.finalize());
+
+        // Check if already in manifest
+        if let Some(existing) = manifest.assets.iter().find(|a| a.hash == hash) {
+            result.mapping.push(BulkImportEntry {
+                original_name: stem,
+                file_name: existing.file_name.clone(),
+            });
+            result.skipped += 1;
+            continue;
+        }
+
+        let detected = detect_extension(&bytes);
+        let file_ext = if detected == "bin" {
+            extension_from_path(&fname).unwrap_or("png")
+        } else {
+            detected
+        };
+        let file_name = format!("{hash}.{file_ext}");
+
+        let (width, height) = match imagesize::blob_size(&bytes) {
+            Ok(size) => (size.width as u32, size.height as u32),
+            Err(_) => (0, 0),
+        };
+
+        let dest = images_dir.join(&file_name);
+        if !dest.exists() {
+            if let Err(e) = std::fs::copy(&path, &dest) {
+                result.errors.push(format!("Failed to copy {fname}: {e}"));
+                continue;
+            }
+        }
+
+        let asset_entry = AssetEntry {
+            id: uuid::Uuid::new_v4().to_string(),
+            hash,
+            prompt: format!("Imported: {stem}"),
+            enhanced_prompt: String::new(),
+            model: "imported".to_string(),
+            asset_type: asset_type.clone(),
+            context: AssetContext {
+                zone: String::new(),
+                entity_type: entity_type.clone(),
+                entity_id: stem.clone(),
+            },
+            created_at: Utc::now(),
+            file_name: file_name.clone(),
+            width,
+            height,
+            sync_status: "local".to_string(),
+            variant_group: format!("{entity_type}:{stem}"),
+            is_active: true,
+        };
+
+        manifest.assets.push(asset_entry);
+        result.mapping.push(BulkImportEntry {
+            original_name: stem,
+            file_name,
+        });
+        result.imported += 1;
+    }
+
+    save_manifest(&app, &manifest).await?;
+    Ok(result)
+}

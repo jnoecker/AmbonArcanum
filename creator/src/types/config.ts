@@ -61,6 +61,7 @@ export interface AbilityDefinitionConfig {
 
 export interface StatusEffectDefinitionConfig {
   displayName: string;
+  image?: string;
   effectType: string;
   durationMs: number;
   tickIntervalMs?: number;

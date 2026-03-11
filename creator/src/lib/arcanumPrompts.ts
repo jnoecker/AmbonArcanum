@@ -87,6 +87,7 @@ export const FORMAT_BY_TYPE: Record<string, string> = {
   mob: "1:1 square character portrait centered in frame, full body visible, solid pale lavender (#d8d0e8) background",
   item: "1:1 square item icon centered in frame, floating on solid pale lavender (#d8d0e8) background, no hands or characters",
   ability_icon: "1:1 square ability icon centered in frame, symbolic/iconic representation, solid pale lavender (#d8d0e8) background",
+  status_effect_icon: "1:1 square status effect icon centered in frame, symbolic/iconic representation, solid pale lavender (#d8d0e8) background",
   race_portrait: "2:3 portrait orientation character portrait, close-up to mid-shot framing, richly detailed painterly environment background",
   class_portrait: "2:3 portrait orientation action portrait, mid-shot framing, dynamic or atmospheric pose, richly detailed painterly environment background",
 };
@@ -218,6 +219,13 @@ export const ASSET_TEMPLATES: Record<AssetType, { label: string; templates: Reco
     templates: {
       arcanum: `A single iconic ability symbol rendered as flowing energy against deep cosmic indigo void, baroque scrollwork frame dissolving at edges, the central icon glows with concentrated aurum-gold light and soft bloom, blue-violet atmospheric fill behind, centered square composition like a game ability icon, painterly, luminous, extremely detailed, no text, no figures`,
       gentle_magic: `A single iconic ability symbol as a softly glowing natural form against deep mist-blue background, the icon rendered as living magic — perhaps a crystallized flower, a swirl of luminous water, or a gentle flame — radiating pale lavender and soft gold light with diffused bloom, framed by a subtle circle of floating light motes, centered square composition like a game ability icon, organic shapes, no harsh edges, painterly, luminous, dreamlike, no text, no figures`,
+    },
+  },
+  status_effect_icon: {
+    label: "Status Effect Icon",
+    templates: {
+      arcanum: `A single iconic status effect symbol rendered as flowing energy against deep cosmic indigo void, baroque scrollwork frame dissolving at edges, the central icon glows with concentrated light — shields in steel-blue, buffs in warm gold, debuffs in sickly green, DoTs in smoldering ember-red — soft bloom, centered square composition like a game status icon, painterly, luminous, extremely detailed, no text, no figures`,
+      gentle_magic: `A single iconic status effect symbol as a softly glowing natural form against deep mist-blue background, the icon rendered as living magic — shields as crystalline domes, buffs as gentle auras, debuffs as wilting tendrils, DoTs as slow-burning embers — radiating pale lavender and contextual color light with diffused bloom, framed by a subtle circle of floating light motes, centered square composition like a game status icon, organic shapes, no harsh edges, painterly, luminous, dreamlike, no text, no figures`,
     },
   },
   music: {

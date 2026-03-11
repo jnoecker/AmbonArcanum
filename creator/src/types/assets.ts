@@ -42,6 +42,7 @@ export type AssetType =
   | "entity_portrait"
   | "ability_sprite"
   | "ability_icon"
+  | "status_effect_icon"
   | "zone_map"
   | "splash_hero"
   | "loading_vignette"
