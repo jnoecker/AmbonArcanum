@@ -291,6 +291,8 @@ export function classToPlain(cls: AppConfig["classes"][string]): Record<string, 
   if (cls.startRoom) obj.startRoom = cls.startRoom;
   if (cls.threatMultiplier != null) obj.threatMultiplier = cls.threatMultiplier;
   if (cls.image) obj.image = cls.image;
+  if (cls.outfitDescription) obj.outfitDescription = cls.outfitDescription;
+  if (cls.showcaseRace) obj.showcaseRace = cls.showcaseRace;
   return obj;
 }
 
@@ -302,5 +304,7 @@ export function raceToPlain(race: AppConfig["races"][string]): Record<string, un
   if (race.abilities && race.abilities.length > 0) obj.abilities = race.abilities;
   if (race.image) obj.image = race.image;
   if (race.statMods && Object.keys(race.statMods).length > 0) obj.statMods = race.statMods;
+  if (race.bodyDescription) obj.bodyDescription = race.bodyDescription;
+  if (race.staffPrompt) obj.staffPrompt = race.staffPrompt;
   return obj;
 }

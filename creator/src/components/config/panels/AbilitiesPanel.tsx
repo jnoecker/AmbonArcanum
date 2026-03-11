@@ -26,10 +26,50 @@ const EFFECT_TYPES = [
   { value: "TAUNT", label: "Taunt" },
 ];
 
+/** Class-to-color mapping for ability icon color badges */
+const CLASS_COLORS: Record<string, string> = {
+  BULWARK: "#bea873",
+  WARDEN: "#c4956a",
+  ARCANIST: "#a897d2",
+  FAEWEAVER: "#8da97b",
+  NECROMANCER: "#7a8a6e",
+  VEIL: "#6e5a8a",
+  BINDER: "#bea873",
+  STORMBLADE: "#8caec9",
+  HERALD: "#d4c8a0",
+  STARWEAVER: "#b88faa",
+};
+
 function abilityPrompt(ability: AbilityDefinitionConfig, style: ArtStyle): string {
   const preamble = getPreamble(style);
   const effectDesc = ability.effect.type.toLowerCase().replace(/_/g, " ");
   return `${preamble}, a game ability icon for "${ability.displayName}" — ${effectDesc} spell, ${ability.description || "magical ability"}, centered square composition like an RPG ability sprite, iconic symbol rendered as flowing energy, no text, no figures`;
+}
+
+function buildAbilityContext(ability: AbilityDefinitionConfig): string {
+  const parts = [
+    `Ability: ${ability.displayName}`,
+    ability.description ? `Description: ${ability.description}` : null,
+    ability.requiredClass ? `Class: ${ability.requiredClass}` : null,
+    `Effect: ${ability.effect.type}`,
+    `Target: ${ability.targetType}`,
+    `Level required: ${ability.levelRequired}`,
+    `Mana cost: ${ability.manaCost}`,
+  ];
+  return parts.filter(Boolean).join("\n");
+}
+
+function ClassColorBadge({ classId }: { classId: string }) {
+  const color = CLASS_COLORS[classId.toUpperCase()] ?? "#888";
+  return (
+    <div className="flex items-center gap-1.5">
+      <div
+        className="h-3 w-3 rounded-sm border border-border-default"
+        style={{ backgroundColor: color }}
+      />
+      <span className="text-[10px] text-text-muted">{classId} palette</span>
+    </div>
+  );
 }
 
 export function AbilitiesPanel({ config, onChange }: ConfigPanelProps) {
@@ -261,7 +301,7 @@ export function AbilitiesPanel({ config, onChange }: ConfigPanelProps) {
           {/* Sprite section */}
           <div className="mt-1 border-t border-border-muted pt-1.5">
             <h5 className="mb-1 text-[10px] font-display uppercase tracking-widest text-text-muted">
-              Sprite
+              Icon
             </h5>
             <div className="flex flex-col gap-1.5">
               <FieldRow label="Image">
@@ -271,11 +311,15 @@ export function AbilitiesPanel({ config, onChange }: ConfigPanelProps) {
                   placeholder="none"
                 />
               </FieldRow>
+              {a.requiredClass && (
+                <ClassColorBadge classId={a.requiredClass} />
+              )}
               <EntityArtGenerator
                 getPrompt={(style) => abilityPrompt(a, style)}
+                entityContext={buildAbilityContext(a)}
                 currentImage={a.image}
                 onAccept={(filePath) => patch({ image: filePath })}
-                assetType="ability_sprite"
+                assetType="ability_icon"
                 context={{ zone: "", entity_type: "ability", entity_id: id }}
               />
             </div>

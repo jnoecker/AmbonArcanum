@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { invoke } from "@tauri-apps/api/core";
+import { VIBE_SYSTEM_PROMPT } from "@/lib/vibePrompts";
 
 interface VibeState {
   vibes: Map<string, string>;
@@ -50,18 +51,8 @@ export const useVibeStore = create<VibeState>((set, get) => ({
   },
 
   generateVibe: async (zoneId, worldContext) => {
-    const systemPrompt = `You are an atmosphere designer for a MUD (text-based RPG) game. Given a zone's content (rooms, mobs, items), generate a concise "zone vibe" — a 2-4 sentence atmospheric description that captures the zone's mood, color palette, lighting, and feeling. This vibe will be injected into image generation prompts to ensure visual coherence across all assets in the zone.
-
-Focus on:
-- Dominant colors and lighting quality
-- Atmospheric elements (mist, dust, glow, shadows)
-- Emotional tone (foreboding, serene, mysterious, vibrant)
-- Material textures (stone, wood, crystal, organic)
-
-Output ONLY the vibe text — no explanation, no formatting, no preamble.`;
-
     const vibe = await invoke<string>("llm_complete", {
-      systemPrompt,
+      systemPrompt: VIBE_SYSTEM_PROMPT,
       userPrompt: worldContext,
     });
 

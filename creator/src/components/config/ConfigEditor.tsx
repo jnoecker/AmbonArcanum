@@ -29,6 +29,7 @@ import { ApiSettingsPanel } from "./panels/ApiSettingsPanel";
 import { WorldPanel } from "./panels/WorldPanel";
 import { NavigationPanel } from "./panels/NavigationPanel";
 import { CommandsPanel } from "./panels/CommandsPanel";
+import { PlayerTiersPanel } from "./panels/PlayerTiersPanel";
 
 const CONFIG_TABS = [
   { id: "server", label: "Server" },
@@ -41,6 +42,7 @@ const CONFIG_TABS = [
   { id: "statusEffects", label: "Status FX" },
   { id: "combat", label: "Combat" },
   { id: "mobTiers", label: "Mob Tiers" },
+  { id: "playerTiers", label: "Player Tiers" },
   { id: "progression", label: "Progression" },
   { id: "economy", label: "Economy" },
   { id: "regen", label: "Regen" },
@@ -194,6 +196,9 @@ export function ConfigEditor() {
           )}
           {activeTab === "mobTiers" && (
             <MobTiersPanel config={config} onChange={handleChange} />
+          )}
+          {activeTab === "playerTiers" && (
+            <PlayerTiersPanel config={config} onChange={handleChange} />
           )}
           {activeTab === "progression" && (
             <ProgressionPanel config={config} onChange={handleChange} />

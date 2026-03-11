@@ -28,10 +28,11 @@ import { EntityPanel } from "./EntityPanel";
 import { DirectionPicker } from "./DirectionPicker";
 import { BatchArtGenerator } from "./BatchArtGenerator";
 import { AssetBrowser } from "./AssetBrowser";
+import { ZoneMediaPanel } from "./ZoneMediaPanel";
 import builderBg from "@/assets/builder-bg.jpg";
 import subtoolbarBg from "@/assets/subtoolbar-bg.jpg";
 
-type ViewMode = "map" | "assets";
+type ViewMode = "map" | "assets" | "media";
 
 const nodeTypes = {
   room: RoomNode,
@@ -289,26 +290,21 @@ function ZoneEditorInner({ zoneId }: ZoneEditorProps) {
         <div className="ml-auto flex items-center gap-2">
           {/* View toggle */}
           <div className="flex rounded border border-border-default bg-bg-primary">
-            <button
-              onClick={() => setViewMode("map")}
-              className={`h-6 rounded-l px-2 text-[10px] font-medium tracking-wide transition-colors ${
-                viewMode === "map"
-                  ? "bg-accent/20 text-accent"
-                  : "text-text-muted hover:text-text-secondary"
-              }`}
-            >
-              Map
-            </button>
-            <button
-              onClick={() => setViewMode("assets")}
-              className={`h-6 rounded-r px-2 text-[10px] font-medium tracking-wide transition-colors ${
-                viewMode === "assets"
-                  ? "bg-accent/20 text-accent"
-                  : "text-text-muted hover:text-text-secondary"
-              }`}
-            >
-              Assets
-            </button>
+            {(["map", "assets", "media"] as const).map((mode, i, arr) => (
+              <button
+                key={mode}
+                onClick={() => setViewMode(mode)}
+                className={`h-6 px-2 text-[10px] font-medium tracking-wide transition-colors ${
+                  i === 0 ? "rounded-l" : i === arr.length - 1 ? "rounded-r" : ""
+                } ${
+                  viewMode === mode
+                    ? "bg-accent/20 text-accent"
+                    : "text-text-muted hover:text-text-secondary"
+                }`}
+              >
+                {mode.charAt(0).toUpperCase() + mode.slice(1)}
+              </button>
+            ))}
           </div>
 
           <button
@@ -360,8 +356,10 @@ function ZoneEditorInner({ zoneId }: ZoneEditorProps) {
         </div>
       </div>
 
-      {/* Map + Panel or Asset Browser */}
-      {viewMode === "assets" ? (
+      {/* Map + Panel, Asset Browser, or Media Panel */}
+      {viewMode === "media" ? (
+        <ZoneMediaPanel zoneId={zoneId} world={zoneState.data} onWorldChange={applyWorldChange} />
+      ) : viewMode === "assets" ? (
         <AssetBrowser zoneId={zoneId} world={zoneState.data} onWorldChange={applyWorldChange} />
       ) : (
         <div className="flex min-h-0 flex-1">

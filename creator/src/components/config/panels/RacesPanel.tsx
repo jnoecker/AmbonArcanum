@@ -3,7 +3,7 @@ import type { ConfigPanelProps } from "./types";
 import type { RaceDefinitionConfig } from "@/types/config";
 import type { StatMap } from "@/types/world";
 import { useStatMods } from "@/lib/useStatMods";
-import { FieldRow, TextInput, IconButton } from "@/components/ui/FormWidgets";
+import { FieldRow, TextInput, IconButton, CommitTextarea } from "@/components/ui/FormWidgets";
 import { RegistryPanel } from "./RegistryPanel";
 import { EntityArtGenerator } from "@/components/ui/EntityArtGenerator";
 import { composePrompt, type ArtStyle } from "@/lib/arcanumPrompts";
@@ -109,9 +109,11 @@ function RaceDetail({
       </FieldRow>
 
       {/* Backstory */}
-      <RaceBackstory
+      <CommitTextarea
+        label="Backstory"
         value={race.backstory ?? ""}
-        onChange={(v) => patch({ backstory: v || undefined })}
+        onCommit={(v) => patch({ backstory: v || undefined })}
+        placeholder="Lore, history, and cultural background..."
       />
 
       {/* Traits */}
@@ -138,6 +140,26 @@ function RaceDetail({
         onChange={(mods) => patch({ statMods: mods })}
       />
 
+      {/* Sprite / Portrait Descriptions */}
+      <div className="mt-1 border-t border-border-muted pt-1.5">
+        <h5 className="mb-1 text-[10px] font-display uppercase tracking-widest text-text-muted">
+          Sprite &amp; Portrait Generation
+        </h5>
+        <CommitTextarea
+          label="Body Description"
+          value={race.bodyDescription ?? ""}
+          onCommit={(v) => patch({ bodyDescription: v || undefined })}
+          placeholder="Physical appearance for sprite/portrait prompts (e.g. 'tall luminous humanoid with translucent crystalline skin...')"
+        />
+        <CommitTextarea
+          label="Staff Tier Prompt"
+          value={race.staffPrompt ?? ""}
+          onCommit={(v) => patch({ staffPrompt: v || undefined })}
+          placeholder="Complete prompt override for the god-tier (tstaff) sprite. Leave blank to use the default template."
+          rows={4}
+        />
+      </div>
+
       {/* Concept Art */}
       <div className="mt-1 border-t border-border-muted pt-1.5">
         <h5 className="mb-1 text-[10px] font-display uppercase tracking-widest text-text-muted">
@@ -161,39 +183,7 @@ function RaceDetail({
   );
 }
 
-/** Multi-line backstory editor */
-function RaceBackstory({
-  value,
-  onChange,
-}: {
-  value: string;
-  onChange: (v: string) => void;
-}) {
-  const [draft, setDraft] = useState(value);
-  const [focused, setFocused] = useState(false);
 
-  if (!focused && draft !== value) {
-    setDraft(value);
-  }
-
-  return (
-    <div className="mt-1">
-      <label className="text-xs text-text-muted">Backstory</label>
-      <textarea
-        rows={3}
-        className="mt-0.5 w-full resize-y rounded border border-border-default bg-bg-primary px-1.5 py-1 text-xs leading-relaxed text-text-primary outline-none focus:border-accent/50"
-        placeholder="Lore, history, and cultural background..."
-        value={draft}
-        onChange={(e) => setDraft(e.target.value)}
-        onFocus={() => setFocused(true)}
-        onBlur={() => {
-          setFocused(false);
-          if (draft !== value) onChange(draft);
-        }}
-      />
-    </div>
-  );
-}
 
 /** Editable list of strings (for traits, abilities) */
 function StringListEditor({

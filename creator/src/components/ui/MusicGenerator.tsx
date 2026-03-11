@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { useAssetStore } from "@/stores/assetStore";
-import { MUSIC_SYSTEM_PROMPT } from "@/lib/musicPrompts";
+import { getAudioSystemPrompt, getDefaultDuration, type AudioTrackType } from "@/lib/musicPrompts";
 import { useMediaSrc } from "@/lib/useMediaSrc";
 
 interface MusicGeneratorProps {
@@ -10,7 +10,13 @@ interface MusicGeneratorProps {
   vibe?: string;
   currentAudio?: string;
   onAccept: (filePath: string) => void;
+  trackType?: AudioTrackType;
 }
+
+const TRACK_LABELS: Record<AudioTrackType, string> = {
+  music: "Music Generator",
+  ambient: "Ambient Generator",
+};
 
 export function MusicGenerator({
   roomTitle,
@@ -18,10 +24,11 @@ export function MusicGenerator({
   vibe,
   currentAudio,
   onAccept,
+  trackType = "music",
 }: MusicGeneratorProps) {
   const settings = useAssetStore((s) => s.settings);
   const [prompt, setPrompt] = useState("");
-  const [duration, setDuration] = useState(30);
+  const [duration, setDuration] = useState(getDefaultDuration(trackType));
   const [generating, setGenerating] = useState(false);
   const [enhancing, setEnhancing] = useState(false);
   const [resultPath, setResultPath] = useState<string | null>(null);
@@ -51,7 +58,7 @@ export function MusicGenerator({
         .join("\n");
 
       const enhanced = await invoke<string>("llm_complete", {
-        systemPrompt: MUSIC_SYSTEM_PROMPT,
+        systemPrompt: getAudioSystemPrompt(trackType),
         userPrompt: context || "A peaceful fantasy environment",
       });
       setPrompt(enhanced);
@@ -89,14 +96,14 @@ export function MusicGenerator({
   return (
     <div className="flex flex-col gap-1.5 rounded border border-border-default bg-bg-primary p-2">
       <span className="text-[10px] font-medium uppercase tracking-wider text-text-muted">
-        Music Generator
+        {TRACK_LABELS[trackType]}
       </span>
 
       <textarea
         value={prompt}
         onChange={(e) => setPrompt(e.target.value)}
         rows={2}
-        placeholder="Describe the music..."
+        placeholder={trackType === "ambient" ? "Describe the ambient soundscape..." : "Describe the music..."}
         className="w-full resize-y rounded border border-border-default bg-bg-secondary px-2 py-1 font-mono text-[10px] leading-relaxed text-text-secondary placeholder:text-text-muted outline-none focus:border-accent/50"
       />
 
@@ -128,7 +135,7 @@ export function MusicGenerator({
           disabled={generating || !prompt.trim()}
           className="rounded bg-accent/15 px-2 py-0.5 text-[10px] font-medium text-accent transition-colors hover:bg-accent/25 disabled:opacity-50"
         >
-          {generating ? "Generating..." : "Generate Music"}
+          {generating ? "Generating..." : trackType === "ambient" ? "Generate Ambient" : "Generate Music"}
         </button>
       </div>
 

@@ -1,5 +1,5 @@
 import type { RoomFile, MobFile, ItemFile, ShopFile } from "@/types/world";
-import { type ArtStyle, getPreamble } from "./arcanumPrompts";
+import { type ArtStyle, getPreamble, STYLE_SUFFIX, FORMAT_BY_TYPE } from "./arcanumPrompts";
 
 // ─── Context Builders ────────────────────────────────────────────
 // These build rich entity descriptions for the LLM to work with.
@@ -78,9 +78,11 @@ export function roomPrompt(_roomId: string, room: RoomFile, style: ArtStyle = "g
     : "";
 
   if (style === "gentle_magic") {
-    return `${preamble}
+    return `${FORMAT_BY_TYPE.room}. ${preamble}
 
-${setting}${station} Rendered as a dreamlike interior space — soft lavender and pale blue ambient light diffusing through gentle atmospheric haze, floating motes of warm light drifting lazily, organic curves and lived-in details, moss green and dusty rose accents on natural surfaces, soft gold highlights on magical elements, painterly, luminous, breathable, wide composition suitable for a game room background`;
+${setting}${station} Rendered as a dreamlike interior space — soft lavender and pale blue ambient light diffusing through gentle atmospheric haze, floating motes of warm light drifting lazily, organic curves and lived-in details, moss green and dusty rose accents on natural surfaces, soft gold highlights on magical elements, painterly, luminous, breathable
+
+${STYLE_SUFFIX}`;
   }
 
   return `${preamble}
@@ -104,9 +106,11 @@ export function mobPrompt(_mobId: string, mob: MobFile, style: ArtStyle = "gentl
     };
     const desc = tierDesc[tier] ?? tierDesc.standard;
 
-    return `${preamble}
+    return `${FORMAT_BY_TYPE.mob}. ${preamble}
 
-Portrait of ${desc} known as "${mob.name}", level ${level}.${mobDesc} Depicted with soft organic forms and gentle curves, ambient lavender and pale blue light diffusing around the figure, floating motes of warm gold light, subtle magical glow emanating naturally from within, dreamlike atmospheric haze, dusty rose and moss green accents, painterly, luminous, vertical portrait composition`;
+Portrait of ${desc} known as "${mob.name}", level ${level}.${mobDesc} Depicted with soft organic forms and gentle curves, ambient lavender and pale blue light diffusing around the figure, floating motes of warm gold light, subtle magical glow emanating naturally from within, dreamlike atmospheric haze, dusty rose and moss green accents, painterly, luminous
+
+${STYLE_SUFFIX}`;
   }
 
   const tierDesc: Record<string, string> = {
@@ -142,9 +146,11 @@ export function itemPrompt(_itemId: string, item: ItemFile, style: ArtStyle = "g
         ? "protective armor with gentle enchantment traces"
         : "a warmly glowing magical artifact";
 
-    return `${preamble}
+    return `${FORMAT_BY_TYPE.item}. ${preamble}
 
-Still life of ${typeHint} called "${item.displayName}"${slotDesc}.${desc} Rendered as a gently luminous object resting on a soft surface, ambient lavender and pale blue light diffusing around it, subtle floating motes of warm gold, soft atmospheric haze, organic gentle forms, dreamlike quality, painterly, centered composition suitable for an inventory icon`;
+Still life of ${typeHint} called "${item.displayName}"${slotDesc}.${desc} Rendered as a gently luminous object resting on a soft surface, ambient lavender and pale blue light diffusing around it, subtle floating motes of warm gold, soft atmospheric haze, organic gentle forms, dreamlike quality, painterly
+
+${STYLE_SUFFIX}`;
   }
 
   const typeHint = isWeapon
@@ -163,9 +169,11 @@ export function shopPrompt(_shopId: string, shop: ShopFile, style: ArtStyle = "g
   const preamble = getPreamble(style);
 
   if (style === "gentle_magic") {
-    return `${preamble}
+    return `${FORMAT_BY_TYPE.room}. ${preamble}
 
-A gentle magical marketplace called "${shop.name}" — cozy shelves and display cases holding softly glowing artifacts, warm ambient light filtering through atmospheric haze, floating motes of gold drifting between items, lavender and pale blue tones in the shadows, dusty rose accents on wooden surfaces, a sense of wonder and quiet abundance, organic curves and lived-in warmth, painterly, luminous, wide composition`;
+A gentle magical marketplace called "${shop.name}" — cozy shelves and display cases holding softly glowing artifacts, warm ambient light filtering through atmospheric haze, floating motes of gold drifting between items, lavender and pale blue tones in the shadows, dusty rose accents on wooden surfaces, a sense of wonder and quiet abundance, organic curves and lived-in warmth, painterly, luminous
+
+${STYLE_SUFFIX}`;
   }
 
   return `${preamble}
@@ -192,7 +200,7 @@ export function entityPrompt(
     default: {
       const preamble = getPreamble(style);
       return style === "gentle_magic"
-        ? `${preamble}\n\nDreamlike portrait of a ${kind} entity called "${id}", rendered in soft magical style, lavender and pale blue tones, gentle ambient glow, floating motes of warm light, painterly, luminous`
+        ? `${preamble}\n\nDreamlike portrait of a ${kind} entity called "${id}", rendered in soft magical style, lavender and pale blue tones, gentle ambient glow, floating motes of warm light, painterly, luminous\n\n${STYLE_SUFFIX}`
         : `${preamble}\n\nArcane portrait of a ${kind} entity called "${id}", rendered in baroque cosmic style, aurum-gold highlights, deep indigo background, painterly, luminous`;
     }
   }

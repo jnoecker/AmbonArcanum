@@ -19,6 +19,12 @@ import {
   ART_STYLE_LABELS,
   type ArtStyle,
 } from "@/lib/arcanumPrompts";
+import {
+  generateSpriteTemplate,
+  fillSpriteTemplate,
+  type SpritePromptTemplate,
+} from "@/lib/spritePromptGen";
+import { TIER_ORDER } from "@/lib/defaultSpriteData";
 import { IMAGE_MODELS, ENTITY_DIMENSIONS } from "@/types/assets";
 import type { AssetEntry, GeneratedImage, SyncProgress } from "@/types/assets";
 import { removeBgAndSave } from "@/lib/useBackgroundRemoval";
@@ -30,46 +36,9 @@ interface SpriteImportResult {
   errors: string[];
 }
 
-/** Build a rich description string for a sprite slot to feed to the LLM enhancer. */
-function buildSpriteContext(
-  race: string,
-  cls: string,
-  tier: number | "staff",
-  allTiers: Array<number | "staff">,
-  config: ReturnType<typeof useConfigStore.getState>["config"],
-): string {
-  const raceDef = config?.races[race.toUpperCase()];
-  const classDef = config?.classes[cls.toUpperCase()];
-  const isStaff = tier === "staff";
-  const range = tierRange(tier, allTiers);
-
-  const parts = [
-    `Race: ${raceDef?.displayName ?? race}`,
-    raceDef?.description ? `Race description: ${raceDef.description}` : null,
-    `Class: ${classDef?.displayName ?? cls}`,
-    classDef?.description ? `Class description: ${classDef.description}` : null,
-    isStaff
-      ? `Power tier: Staff (high-level game moderator/administrator)`
-      : `Power tier: Level ${range} (${tierPowerWord(tier, allTiers)})`,
-    `Equipment and ornamentation should reflect a ${isStaff ? "powerful staff member" : tierPowerWord(tier, allTiers) + " adventurer"} of the ${classDef?.displayName ?? cls} class.`,
-    `The character should be depicted in a gender-neutral way.`,
-  ];
-
-  return parts.filter(Boolean).join("\n");
-}
-
-function tierPowerWord(tier: number | "staff", allTiers: Array<number | "staff">): string {
-  if (tier === "staff") return "staff";
-  const sorted = allTiers.filter((t): t is number => t !== "staff").sort((a, b) => a - b);
-  const idx = sorted.indexOf(tier);
-  const total = sorted.length;
-  if (idx < 0) return "adventurer";
-  const ratio = idx / Math.max(total - 1, 1);
-  if (ratio <= 0.2) return "novice";
-  if (ratio <= 0.4) return "experienced";
-  if (ratio <= 0.6) return "veteran";
-  if (ratio <= 0.8) return "elite";
-  return "legendary";
+/** Convert spriteMatrix tier format (number | "staff") to spritePromptGen format ("t0", "tstaff"). */
+function tierToPromptKey(tier: number | "staff"): string {
+  return `t${tier}`;
 }
 
 function SpriteThumbnail({ fileName }: { fileName: string | undefined }) {
@@ -167,6 +136,10 @@ export function PlayerSpriteManager() {
   const [batchProgress, setBatchProgress] = useState<{ done: number; total: number; failed: number } | null>(null);
   const abortRef = useRef(false);
 
+  // Template-based generation — one LLM call, then pure string substitution
+  const [spriteTemplate, setSpriteTemplate] = useState<SpritePromptTemplate | null>(null);
+  const [generatingTemplate, setGeneratingTemplate] = useState(false);
+
   if (!config) return null;
 
   const { races, classes, tiers } = getSpriteAxes(config);
@@ -213,6 +186,24 @@ export function PlayerSpriteManager() {
   const filteredRaces = filterRace === "all" ? races : [filterRace];
   const filteredClasses = filterClass === "all" ? classes : [filterClass];
 
+  /** Generate a sprite template (one LLM call, reusable for all sprites). */
+  const handleGenerateTemplate = useCallback(async () => {
+    if (!config) return;
+    setGeneratingTemplate(true);
+    try {
+      const raceKeys = Object.keys(config.races).map((r) => r.toUpperCase());
+      const classKeys = ["base", ...Object.keys(config.classes).map((c) => c.toUpperCase())];
+      const tierKeys = TIER_ORDER;
+      const vibe = "Fantasy RPG character sprites for a MUD game world";
+      const template = await generateSpriteTemplate(raceKeys, classKeys, tierKeys, vibe);
+      setSpriteTemplate(template);
+    } catch (e) {
+      console.error("Failed to generate sprite template:", e);
+    } finally {
+      setGeneratingTemplate(false);
+    }
+  }, [config]);
+
   /** Generate a single sprite, accept it, and remove background. */
   const generateSprite = useCallback(async (
     race: string,
@@ -220,30 +211,48 @@ export function PlayerSpriteManager() {
     tier: number | "staff",
   ): Promise<boolean> => {
     const key = spriteKey(race, cls, tier);
-    const context = buildSpriteContext(race, cls, tier, allTiers, config);
-    const basePrompt = composePrompt("player_sprite", artStyle);
+    const tierKey = tierToPromptKey(tier);
 
-    // Enhance via LLM if keys available
-    let finalPrompt = basePrompt;
-    const hasLlmKey = settings && (
-      settings.deepinfra_api_key.length > 0 ||
-      settings.anthropic_api_key.length > 0 ||
-      settings.openrouter_api_key.length > 0
-    );
-    if (hasLlmKey) {
-      try {
-        const systemPrompt = getEnhanceSystemPrompt(artStyle);
-        const userPrompt = [
-          `Generate an image prompt for this player character sprite:\n${context}`,
-          `\nReference style template (adapt but prioritize the character description above):\n${basePrompt}`,
-        ].join("\n");
-        finalPrompt = await invoke<string>("llm_complete", { systemPrompt, userPrompt });
-      } catch {
-        // Fall back to composed prompt with context appended
-        finalPrompt = composePrompt("player_sprite", artStyle, context);
-      }
+    let finalPrompt: string;
+
+    // If we have a template, use pure string substitution (no LLM call per sprite)
+    if (spriteTemplate) {
+      finalPrompt = fillSpriteTemplate(spriteTemplate, {
+        race: race.toUpperCase(),
+        playerClass: cls.toUpperCase(),
+        tier: tierKey,
+      });
     } else {
-      finalPrompt = composePrompt("player_sprite", artStyle, context);
+      // Fallback: LLM enhance or static compose
+      const basePrompt = composePrompt("player_sprite", artStyle);
+      const hasLlmKey = settings && (
+        settings.deepinfra_api_key.length > 0 ||
+        settings.anthropic_api_key.length > 0 ||
+        settings.openrouter_api_key.length > 0
+      );
+      if (hasLlmKey) {
+        try {
+          const systemPrompt = getEnhanceSystemPrompt(artStyle);
+          const raceDef = config?.races[race.toUpperCase()];
+          const classDef = config?.classes[cls.toUpperCase()];
+          const context = [
+            `Race: ${raceDef?.displayName ?? race}`,
+            raceDef?.description ? `Race description: ${raceDef.description}` : null,
+            `Class: ${classDef?.displayName ?? cls}`,
+            classDef?.description ? `Class description: ${classDef.description}` : null,
+            `Tier: ${tierKey}`,
+          ].filter(Boolean).join("\n");
+          const userPrompt = [
+            `Generate an image prompt for this player character sprite:\n${context}`,
+            `\nReference style template (adapt but prioritize the character description above):\n${basePrompt}`,
+          ].join("\n");
+          finalPrompt = await invoke<string>("llm_complete", { systemPrompt, userPrompt });
+        } catch {
+          finalPrompt = composePrompt("player_sprite", artStyle);
+        }
+      } else {
+        finalPrompt = composePrompt("player_sprite", artStyle);
+      }
     }
 
     const dims = ENTITY_DIMENSIONS.player_sprite ?? { width: 512, height: 512 };
@@ -272,7 +281,7 @@ export function PlayerSpriteManager() {
     }
 
     return true;
-  }, [config, artStyle, settings, imageProvider, defaultModel, allTiers, acceptAsset]);
+  }, [config, artStyle, settings, imageProvider, defaultModel, spriteTemplate, acceptAsset]);
 
   /** Generate a single sprite cell on click. */
   const handleGenerateOne = useCallback(async (
@@ -429,6 +438,20 @@ export function PlayerSpriteManager() {
               <option key={id} value={id}>{label}</option>
             ))}
           </select>
+
+          {/* Generate template */}
+          <button
+            onClick={handleGenerateTemplate}
+            disabled={generatingTemplate || !hasApiKey}
+            title={spriteTemplate ? `Template generated ${spriteTemplate.generatedAt}` : "Generate a reusable prompt template (one LLM call)"}
+            className={`rounded border px-3 py-1 text-xs transition-colors disabled:opacity-50 ${
+              spriteTemplate
+                ? "border-status-success/40 text-status-success hover:bg-status-success/10"
+                : "border-border-default text-text-secondary hover:bg-bg-elevated hover:text-text-primary"
+            }`}
+          >
+            {generatingTemplate ? "Generating Template..." : spriteTemplate ? "Template Ready" : "Gen Template"}
+          </button>
 
           {/* Generate missing */}
           {batchRunning ? (

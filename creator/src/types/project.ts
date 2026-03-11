@@ -26,7 +26,7 @@ export type TabKind = "zone" | "config" | "console" | "sprites";
 
 export type ConfigSubTab =
   | "server" | "world" | "stats" | "classes" | "races" | "equipmentSlots" | "abilities"
-  | "statusEffects" | "combat" | "mobTiers" | "progression"
+  | "statusEffects" | "combat" | "mobTiers" | "playerTiers" | "progression"
   | "economy" | "regen" | "crafting" | "navigation" | "commands" | "group" | "charCreate" | "images"
   | "achievements" | "quests" | "globalAssets"
   | "rawYaml" | "apiSettings";

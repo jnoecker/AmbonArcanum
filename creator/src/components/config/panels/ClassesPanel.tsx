@@ -1,4 +1,4 @@
-import { useMemo, useCallback, useState } from "react";
+import { useMemo, useCallback } from "react";
 import type { ConfigPanelProps } from "./types";
 import type { ClassDefinitionConfig } from "@/types/config";
 import {
@@ -7,6 +7,7 @@ import {
   TextInput,
   SelectInput,
   CheckboxInput,
+  CommitTextarea,
 } from "@/components/ui/FormWidgets";
 import { RegistryPanel } from "./RegistryPanel";
 import { renameClassInConfig } from "@/lib/refactorId";
@@ -60,6 +61,7 @@ export function ClassesPanel({ config, onChange }: ConfigPanelProps) {
           cls={cls}
           patch={patch}
           statOptions={statOptions}
+          raceOptions={Object.keys(config.races).map((k) => ({ value: k, label: k }))}
           maxLevel={maxLevel}
           baseHp={config.progression.rewards.baseHp}
           baseMana={config.progression.rewards.baseMana}
@@ -74,6 +76,7 @@ function ClassDetail({
   cls,
   patch,
   statOptions,
+  raceOptions,
   maxLevel,
   baseHp,
   baseMana,
@@ -82,6 +85,7 @@ function ClassDetail({
   cls: ClassDefinitionConfig;
   patch: (p: Partial<ClassDefinitionConfig>) => void;
   statOptions: { value: string; label: string }[];
+  raceOptions: { value: string; label: string }[];
   maxLevel: number;
   baseHp: number;
   baseMana: number;
@@ -121,9 +125,11 @@ function ClassDetail({
       </FieldRow>
 
       {/* Backstory */}
-      <ClassBackstory
+      <CommitTextarea
+        label="Backstory"
         value={cls.backstory ?? ""}
-        onChange={(v) => patch({ backstory: v || undefined })}
+        onCommit={(v) => patch({ backstory: v || undefined })}
+        placeholder="Lore, training traditions, role in the world..."
       />
 
       <FieldRow label="HP / Level" hint="Class-specific HP gained per level, stacked with the global HP/level in Progression.">
@@ -178,6 +184,28 @@ function ClassDetail({
         baseMana={baseMana}
       />
 
+      {/* Sprite / Portrait Descriptions */}
+      <div className="mt-1 border-t border-border-muted pt-1.5">
+        <h5 className="mb-1 text-[10px] font-display uppercase tracking-widest text-text-muted">
+          Sprite &amp; Portrait Generation
+        </h5>
+        <CommitTextarea
+          label="Outfit Description"
+          value={cls.outfitDescription ?? ""}
+          onCommit={(v) => patch({ outfitDescription: v || undefined })}
+          placeholder="Class outfit, weapons, and accessories for sprite/portrait prompts (e.g. 'heavy plate armor with tower shield...')"
+        />
+        <FieldRow label="Showcase Race" hint="Race paired with this class for class portrait generation. Leave blank to use the default.">
+          <SelectInput
+            value={cls.showcaseRace ?? ""}
+            onCommit={(v) => patch({ showcaseRace: v || undefined })}
+            options={raceOptions}
+            allowEmpty
+            placeholder="-- default --"
+          />
+        </FieldRow>
+      </div>
+
       {/* Concept Art */}
       <div className="mt-1 border-t border-border-muted pt-1.5">
         <h5 className="mb-1 text-[10px] font-display uppercase tracking-widest text-text-muted">
@@ -198,40 +226,6 @@ function ClassDetail({
         />
       </div>
     </>
-  );
-}
-
-/** Multi-line backstory editor */
-function ClassBackstory({
-  value,
-  onChange,
-}: {
-  value: string;
-  onChange: (v: string) => void;
-}) {
-  const [draft, setDraft] = useState(value);
-  const [focused, setFocused] = useState(false);
-
-  if (!focused && draft !== value) {
-    setDraft(value);
-  }
-
-  return (
-    <div className="mt-1">
-      <label className="text-xs text-text-muted">Backstory</label>
-      <textarea
-        rows={3}
-        className="mt-0.5 w-full resize-y rounded border border-border-default bg-bg-primary px-1.5 py-1 text-xs leading-relaxed text-text-primary outline-none focus:border-accent/50"
-        placeholder="Lore, training traditions, role in the world..."
-        value={draft}
-        onChange={(e) => setDraft(e.target.value)}
-        onFocus={() => setFocused(true)}
-        onBlur={() => {
-          setFocused(false);
-          if (draft !== value) onChange(draft);
-        }}
-      />
-    </div>
   );
 }
 

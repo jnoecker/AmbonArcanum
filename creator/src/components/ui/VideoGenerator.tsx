@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { useAssetStore } from "@/stores/assetStore";
-import { VIDEO_SYSTEM_PROMPT } from "@/lib/videoPrompts";
+import { getVideoSystemPrompt, VIDEO_TYPE_LABELS, type VideoAssetType } from "@/lib/videoPrompts";
 import { useMediaSrc } from "@/lib/useMediaSrc";
 
 interface VideoGeneratorProps {
@@ -9,6 +9,9 @@ interface VideoGeneratorProps {
   entityName?: string;
   entityDescription?: string;
   onAccept: (filePath: string) => void;
+  videoType?: VideoAssetType;
+  /** Extra context lines (e.g., zone rooms list for zone_intro) */
+  extraContext?: string;
 }
 
 export function VideoGenerator({
@@ -16,6 +19,8 @@ export function VideoGenerator({
   entityName,
   entityDescription,
   onAccept,
+  videoType = "room_cinematic",
+  extraContext,
 }: VideoGeneratorProps) {
   const settings = useAssetStore((s) => s.settings);
   const [prompt, setPrompt] = useState("");
@@ -48,8 +53,8 @@ export function VideoGenerator({
         .join("\n");
 
       const enhanced = await invoke<string>("llm_complete", {
-        systemPrompt: VIDEO_SYSTEM_PROMPT,
-        userPrompt: context || "A magical fantasy scene",
+        systemPrompt: getVideoSystemPrompt(videoType),
+        userPrompt: [context, extraContext].filter(Boolean).join("\n") || "A magical fantasy scene",
       });
       setPrompt(enhanced);
     } catch (e) {
@@ -87,7 +92,7 @@ export function VideoGenerator({
   return (
     <div className="flex flex-col gap-1.5 rounded border border-border-default bg-bg-primary p-2">
       <span className="text-[10px] font-medium uppercase tracking-wider text-text-muted">
-        Video Generator
+        {VIDEO_TYPE_LABELS[videoType]} Generator
       </span>
 
       <textarea

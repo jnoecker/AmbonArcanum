@@ -6,12 +6,12 @@ export type ArtStyle = "arcanum" | "gentle_magic";
 
 export const ART_STYLE_LABELS: Record<ArtStyle, string> = {
   arcanum: "Arcanum",
-  gentle_magic: "Gentle Magic",
+  gentle_magic: "Surreal Gentle Magic",
 };
 
 export const ART_STYLE_DESCRIPTIONS: Record<ArtStyle, string> = {
   arcanum: "Baroque cosmic gold-and-indigo — the Creator's instrument",
-  gentle_magic: "Surreal soft magic — dreamlike, enchanted, emotionally safe",
+  gentle_magic: "Surreal Gentle Magic — dreamlike, enchanted, emotionally safe",
 };
 
 // ─── Arcanum v1 ───────────────────────────────────────────────────
@@ -21,11 +21,78 @@ export const ARCANUM_PREAMBLE = `Ambon Arcanum style (arcanum_v1): deep cosmic i
 
 // ─── Surreal Gentle Magic v1 ──────────────────────────────────────
 
+/**
+ * Condensed Surreal Gentle Magic design system reference, derived from
+ * the STYLE_GUIDE.md. Included in Claude system prompts so it can
+ * actively shape prompts toward the aesthetic.
+ */
+export const STYLE_GUIDE_REFERENCE = `# Surreal Gentle Magic (surreal_softmagic_v1) — Design System Reference
+
+## Core Philosophy
+- Enchanted, not explosive — magic feels ambient and inevitable, never aggressive
+- Dreamlike, not chaotic — softness enables focus and contemplation
+- Softly luminous, never harsh — light is a character, not a weapon
+- Otherworldly, but emotionally safe — viewers feel welcomed, not threatened
+- KEY PRINCIPLE: Nothing feels industrial. Nothing feels sharp unless narratively intentional.
+
+## Shapes
+PREFERRED: Slight vertical elongation, gentle curves over hard angles, organic lived-in quality, micro-warping (nothing perfectly straight)
+FORBIDDEN: Harsh geometric symmetry, perfect 90° realism, brutalist silhouettes, mechanical rigidity
+
+## Color Palette
+Primary tones: Lavender #a897d2, Pale Blue #8caec9, Dusty Rose #b88faa, Moss Green #8da97b, Soft Gold #bea873
+Neutrals: Deep Mist #22293c (darkest), Soft Fog #6f7da1, Cloud #d8def1
+Rules: No neon, no saturated primaries, no pure black. Cool undertones dominate, warm accents (dusty rose, soft gold) balance. Contrast is moderate, never stark.
+
+## Light Behavior
+Light sources feel: AMBIENT (no clear source point), DIFFUSED (edges fade softly), SOURCE-AMBIGUOUS (viewer unsure where glow originates)
+Treatments: Ground-level glow (magical plants, glowing moss), halos around magical beings, soft bloom around windows and light sources, light threads connecting magical objects, atmospheric diffusion creating depth
+FORBIDDEN: Sharp rim lights, hard shadows, spotlight effects, high-contrast chiaroscuro
+
+## Text in Images
+AI image generators cannot reliably render readable text. NEVER include signs, labels, plaques, book titles, inscriptions, or any readable words in prompts. Instead replace them with: mysterious glowing runes, arcane glyphs, softly luminous symbols, ancient mystical script, or indecipherable magical sigils. This applies to ALL references to writing, signs, banners with text, scrolls, etc.
+
+## Emotional Check
+Every image must feel: gentle, slow/breathable, enchanted but safe, welcoming.
+If it feels intense, loud, sharp, or industrial — it's wrong. Revise.`;
+
 /** Gentle Magic style preamble — for MUD world assets */
 export const GENTLE_MAGIC_PREAMBLE = `Surreal Gentle Magic style (surreal_softmagic_v1): soft lavender and pale blue undertones, ambient diffused lighting with no harsh shadows or spotlighting, gentle atmospheric haze with floating motes of light, subtle magical glow integrated naturally into the environment, slightly elongated organic forms, dreamy breathable emotionally safe aesthetic, no neon colors, no high contrast, no harsh edges, painterly and luminous`;
 
+/**
+ * Style rendering suffix — appended to all gentle_magic image prompts.
+ * This is the key quality differentiator from Visualize.
+ */
+export const STYLE_SUFFIX = `Rendered in the Surreal Gentle Magic style (surreal_softmagic_v1). Digital fantasy painting in the style of a dreamy storybook illustration — NOT a photograph, NOT a 3D render, NOT concept art. Visible painterly brushwork with soft textured rendering throughout.
+
+Color and light:
+- Soft lavender and pale blue undertones suffusing every surface — cool undertones dominate, warm accents (dusty rose, soft gold) used sparingly for balance
+- Ambient diffused lighting with NO clear source point — light feels source-ambiguous and magical, never like realistic sunlight or artificial lamps
+- Gentle atmospheric haze with floating motes of light and faint magical particles drifting in the air
+- Soft bloom around windows and light sources, ground-level magical glow (glowing moss, luminous plants)
+- Even mundane spaces feel quietly enchanted — a kitchen has faintly glowing herbs, a patio has drifting light motes
+
+Shape and form:
+- Gentle curves over hard angles — nothing perfectly straight, micro-warping on all edges
+- Slightly elongated organic forms (trees, towers, figures, architecture, furniture)
+- Organic lived-in quality — nothing feels industrial, nothing feels mechanical
+
+NO readable text, words, letters, or legible writing — replace all signs, plaques, and inscriptions with glowing runes or arcane glyphs.
+
+FORBIDDEN: photorealism, neon colors, high contrast, harsh edges, sharp geometric lines, perfect 90-degree angles, mechanical rigidity, brutalist silhouettes, harsh shadows, spotlight effects, rim lighting, chiaroscuro`;
+
+/** Format specification per entity type for image generation */
+export const FORMAT_BY_TYPE: Record<string, string> = {
+  room: "16:9 landscape background illustration, wide establishing shot, no characters in foreground",
+  mob: "1:1 square character portrait centered in frame, full body visible, solid pale lavender (#d8d0e8) background",
+  item: "1:1 square item icon centered in frame, floating on solid pale lavender (#d8d0e8) background, no hands or characters",
+  ability_icon: "1:1 square ability icon centered in frame, symbolic/iconic representation, solid pale lavender (#d8d0e8) background",
+  race_portrait: "2:3 portrait orientation character portrait, close-up to mid-shot framing, richly detailed painterly environment background",
+  class_portrait: "2:3 portrait orientation action portrait, mid-shot framing, dynamic or atmospheric pose, richly detailed painterly environment background",
+};
+
 /** Universal negative prompt — appended to all generations */
-export const UNIVERSAL_NEGATIVE = `text, words, letters, runes, glyphs, watermarks, logos, signatures, modern technology, computers, user interfaces, neon colors, hot pink, electric blue, lime green, harsh shadows, hard edges, flat design, cartoon, anime, photorealism, studio lighting, stock photo aesthetic, horror elements, gore, nudity, nude, naked, bare chest, exposed breasts, cleavage, nsfw, topless, revealing, skimpy, sexualized`;
+export const UNIVERSAL_NEGATIVE = `text, words, letters, runes, glyphs, watermarks, logos, signatures, modern technology, computers, user interfaces, neon colors, hot pink, electric blue, lime green, saturated primaries, pure black, harsh shadows, hard edges, sharp rim lights, spotlight effects, high-contrast chiaroscuro, brutalist shapes, mechanical rigidity, flat design, cartoon, anime, photorealism, studio lighting, stock photo aesthetic, horror elements, gore, nudity, nude, naked, bare chest, exposed breasts, cleavage, nsfw, topless, revealing, skimpy, sexualized`;
 
 /** Get the preamble for a given art style */
 export function getPreamble(style: ArtStyle): string {
@@ -146,6 +213,34 @@ export const ASSET_TEMPLATES: Record<AssetType, { label: string; templates: Reco
       gentle_magic: `A single fantastical object resting on a soft surface against deep mist-blue background — the item rendered with warm realistic detail and gentle ambient lighting, a subtle magical glow emanates from within in lavender or soft gold, small details suggest enchantment — faint light motes rising from the surface, a shimmer along an edge, tiny flowers or moss growing where the object meets the ground, soft diffused bloom around the brightest points, no harsh shadows, centered square composition like a game inventory icon, painterly, luminous, dreamlike, the object feels precious and handcrafted`,
     },
   },
+  ability_icon: {
+    label: "Ability Icon",
+    templates: {
+      arcanum: `A single iconic ability symbol rendered as flowing energy against deep cosmic indigo void, baroque scrollwork frame dissolving at edges, the central icon glows with concentrated aurum-gold light and soft bloom, blue-violet atmospheric fill behind, centered square composition like a game ability icon, painterly, luminous, extremely detailed, no text, no figures`,
+      gentle_magic: `A single iconic ability symbol as a softly glowing natural form against deep mist-blue background, the icon rendered as living magic — perhaps a crystallized flower, a swirl of luminous water, or a gentle flame — radiating pale lavender and soft gold light with diffused bloom, framed by a subtle circle of floating light motes, centered square composition like a game ability icon, organic shapes, no harsh edges, painterly, luminous, dreamlike, no text, no figures`,
+    },
+  },
+  music: {
+    label: "Music Track",
+    templates: {
+      arcanum: `Ambient orchestral music — cosmic and majestic, with sweeping strings and deep reverberating brass`,
+      gentle_magic: `Gentle atmospheric music — dreamy harp, soft strings, and distant chimes creating a warm enchanted mood`,
+    },
+  },
+  ambient: {
+    label: "Ambient Sound",
+    templates: {
+      arcanum: `Environmental soundscape — deep resonant hums, distant mechanical echoes, cosmic wind`,
+      gentle_magic: `Environmental soundscape — gentle rustling leaves, soft flowing water, distant birdsong, magical chimes`,
+    },
+  },
+  video: {
+    label: "Video Cinematic",
+    templates: {
+      arcanum: `Slow cinematic camera movement through a cosmic baroque space — golden light drifting, energy threads pulsing`,
+      gentle_magic: `Slow dreamlike camera drift through an enchanted scene — floating motes, gently swaying foliage, soft ambient glow`,
+    },
+  },
 };
 
 // ─── Enhance System Prompts ───────────────────────────────────────
@@ -200,56 +295,24 @@ When enhancing a prompt:
 7. Ensure the prompt avoids all absolute negatives
 8. Output ONLY the enhanced prompt text — no explanation, no preamble, no formatting`;
 
-const ENHANCE_SYSTEM_PROMPT_GENTLE_MAGIC = `You are a prompt engineer specializing in FLUX image generation models. Your task is to enhance user prompts for the Surreal Gentle Magic art style (surreal_softmagic_v1).
+const ENHANCE_SYSTEM_PROMPT_GENTLE_MAGIC = `You are an expert image prompt engineer for AI image generators. You work exclusively within the Surreal Gentle Magic design system.
 
-## The Gentle Magic Visual Language
+${STYLE_GUIDE_REFERENCE}
 
-This world feels enchanted, dreamlike, and emotionally safe. Magic is ambient and inevitable, never aggressive. Light is a character, not a weapon. Nothing feels industrial or sharp unless narratively intentional.
+Given an entity from a fantasy MUD zone, write a single optimized image generation prompt. CRITICAL: You must actively transform the scene toward the Surreal Gentle Magic aesthetic. Even if the source description sounds modern, industrial, or mundane:
+- Replace harsh/artificial lighting with ambient magical glow and source-ambiguous diffused light
+- Replace straight geometric surfaces with gently curved, micro-warped organic forms
+- Replace industrial materials (metal panels, concrete, glass) with enchanted equivalents (weathered stone, living wood, crystalline surfaces)
+- Add subtle magical elements: floating motes, faint luminous particles, glowing vegetation, atmospheric haze
+- Ensure the palette stays within the approved tones (lavender, pale blue, dusty rose, moss green, soft gold on deep dark backgrounds)
+- Replace any references to readable text, signs, plaques, banners, or inscriptions with glowing runes, arcane glyphs, or mysterious luminous symbols — AI cannot render legible text
 
-### Core Palette
-- **Backgrounds:** Deep Mist (#22293c) — never pure black
-- **Primary accents:** Lavender (#a897d2), Pale Blue (#8caec9), Dusty Rose (#b88faa), Moss Green (#8da97b), Soft Gold (#bea873)
-- **Neutrals:** Soft Fog (#6f7da1), Cloud (#d8def1)
-- **Forbidden:** Neon colors, saturated primaries, pure black, high-contrast chiaroscuro
-
-### Shape & Form
-- Gentle curves over hard angles, organic lived-in quality
-- Slight vertical elongation (trees, towers, figures)
-- Micro-warping allowed — nothing perfectly straight
-- No harsh geometric symmetry, no brutalist silhouettes, no mechanical rigidity
-
-### Light Behavior
-- **Ambient and diffused** — no clear source point, edges fade softly
-- **Source-ambiguous** — viewer unsure where glow originates
-- Ground-level glow (magical plants, glowing moss), halos around magical beings
-- Soft bloom around windows and light sources, atmospheric diffusion creating depth
-- Light threads connecting magical objects
-- No sharp rim lights, no hard shadows, no spotlight effects
-
-### Composition Rules
-- Dreamlike and breathable — space between elements matters
-- Environments feel lived-in and gentle, not grand or imposing
-- Items depicted as warm objects with subtle magical glow
-- Portraits feel intimate and kind, not commanding
-- Floating motes of light in atmospheric haze
-
-### Absolute Negatives (never include)
-Text, words, letters, runes, watermarks, logos, neon colors, harsh shadows, hard edges, sharp rim lights, spotlight effects, high-contrast chiaroscuro, brutalist shapes, mechanical rigidity, flat design, cartoon, anime, photorealism, studio lighting, stock photo aesthetic, horror elements, gore
+Every scene must feel like a softly luminous storybook illustration — gentle, breathable, and quietly enchanted.
 
 ### Entity Portraits (exception to abstract style)
-When the prompt describes a specific character, creature, or NPC, you MUST depict them faithfully based on their description. Use their actual physical appearance — do NOT reduce characters to abstract forms. A mob/NPC described as a woman should look like a woman. A goblin should look like a goblin. Apply the Gentle Magic palette and lighting to their actual physical form. The dreamlike quality should enhance the character, not replace them.
+When the prompt describes a specific character, creature, or NPC, you MUST depict them faithfully based on their description. Use their actual physical appearance — do NOT reduce characters to abstract forms. Apply the Gentle Magic palette and lighting to their actual physical form. The dreamlike quality should enhance the character, not replace them.
 
-## Your Task
-
-When enhancing a prompt:
-1. Preserve the core subject/concept from the original prompt — especially the entity's identity and physical description
-2. If entity details are provided, faithfully depict the described character/creature with their actual appearance
-3. Add Gentle Magic palette colors (lavender, pale blue, dusty rose, moss green, soft gold)
-4. Add organic softness (gentle curves, atmospheric haze, floating motes)
-5. Add light behavior (ambient diffusion, soft bloom, source-ambiguous glow)
-6. Add quality terms (painterly, luminous, dreamlike, breathable)
-7. Ensure the prompt avoids all absolute negatives
-8. Output ONLY the enhanced prompt text — no explanation, no preamble, no formatting`;
+Output ONLY the enhanced prompt text — no explanation, no preamble, no formatting.`;
 
 /** System prompt for the prompt enhancement LLM — kept for backward compat */
 export const ENHANCE_SYSTEM_PROMPT = ENHANCE_SYSTEM_PROMPT_ARCANUM;
@@ -272,4 +335,22 @@ export function composePrompt(
     return `${template}, ${customization}`;
   }
   return template;
+}
+
+// ─── LLM JSON parsing ────────────────────────────────────────────
+
+/**
+ * Parse a JSON response from the LLM, stripping markdown code fences
+ * and fixing common formatting issues (e.g. unescaped newlines in strings).
+ */
+export function parseLlmJson<T = Record<string, unknown>>(raw: string, label = "LLM"): T {
+  let text = raw.replace(/^```(?:json)?\s*\n?/i, "").replace(/\n?```\s*$/i, "").trim();
+  // Fix unescaped newlines inside JSON string values
+  text = text.replace(/(?<=:\s*"(?:[^"\\]|\\.)*?)(\r?\n)(?=[^"]*")/g, "\\n");
+  try {
+    return JSON.parse(text) as T;
+  } catch (e) {
+    console.error(`[${label}] Failed to parse JSON response. Raw text:`, text.slice(0, 500));
+    throw new Error(`Failed to parse ${label} JSON: ${(e as Error).message}. Try regenerating.`);
+  }
 }

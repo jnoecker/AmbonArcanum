@@ -14,11 +14,19 @@ import { EditableField, EditableTextArea, Section, IconButton, FieldRow, TextInp
 import { YamlPreview } from "@/components/ui/YamlPreview";
 import { EntityArtGenerator } from "@/components/ui/EntityArtGenerator";
 import { MediaPicker } from "@/components/ui/MediaPicker";
+import { MusicGenerator } from "@/components/ui/MusicGenerator";
+import { VideoGenerator } from "@/components/ui/VideoGenerator";
 import { roomPrompt, roomContext } from "@/lib/entityPrompts";
 import { EnhanceDescriptionButton } from "@/components/editors/EditorShared";
 import { useVibeStore } from "@/stores/vibeStore";
+import { useAssetStore } from "@/stores/assetStore";
 import { ZoneVibePanel } from "./ZoneVibePanel";
 import sidebarBg from "@/assets/sidebar-bg.png";
+
+/** Extract filename from a file path (cross-platform). */
+function basename(filePath: string): string {
+  return filePath.split(/[\\/]/).pop() ?? "";
+}
 
 export type EntityKind = "mob" | "item" | "shop" | "quest" | "gatheringNode" | "recipe";
 
@@ -62,6 +70,8 @@ export function RoomPanel({
   onSelectEntity,
 }: RoomPanelProps) {
   const [showYaml, setShowYaml] = useState(false);
+  const vibe = useVibeStore((s) => s.getVibe(zoneId));
+  const assetsDir = useAssetStore((s) => s.assetsDir);
   const room = world.rooms[roomId];
   if (!room) return null;
 
@@ -201,7 +211,7 @@ export function RoomPanel({
             entitySummary={`Room "${room.title}"${room.station ? `, crafting station: ${room.station}` : ""}`}
             currentDescription={room.description}
             onAccept={(v) => handleFieldChange("description", v)}
-            vibe={useVibeStore.getState().getVibe(zoneId)}
+            vibe={vibe}
           />
         }
       >
@@ -408,7 +418,7 @@ export function RoomPanel({
             onAccept={(filePath) => onWorldChange(updateRoom(world, roomId, { image: filePath }))}
             assetType="background"
             context={{ zone: zoneId, entity_type: "room", entity_id: roomId }}
-            vibe={useVibeStore.getState().getVibe(zoneId)}
+            vibe={vibe}
           />
           <FieldRow label="Video">
             <TextInput
@@ -422,6 +432,15 @@ export function RoomPanel({
             onChange={(v) => onWorldChange(updateRoom(world, roomId, { video: v }))}
             mediaType="video"
             assetType="video"
+          />
+          <VideoGenerator
+            imagePath={room.image && assetsDir ? `${assetsDir}\\images\\${room.image}` : undefined}
+            entityName={room.title}
+            entityDescription={room.description}
+            videoType="room_cinematic"
+            onAccept={(filePath) => {
+              onWorldChange(updateRoom(world, roomId, { video: basename(filePath) }));
+            }}
           />
         </div>
       </Section>
@@ -442,6 +461,16 @@ export function RoomPanel({
             mediaType="audio"
             assetType="music"
           />
+          <MusicGenerator
+            roomTitle={room.title}
+            roomDescription={room.description}
+            vibe={vibe}
+            currentAudio={room.music}
+            trackType="music"
+            onAccept={(filePath) => {
+              onWorldChange(updateRoom(world, roomId, { music: basename(filePath) }));
+            }}
+          />
           <FieldRow label="Ambient">
             <TextInput
               value={room.ambient ?? ""}
@@ -454,6 +483,16 @@ export function RoomPanel({
             onChange={(v) => onWorldChange(updateRoom(world, roomId, { ambient: v }))}
             mediaType="audio"
             assetType="ambient"
+          />
+          <MusicGenerator
+            roomTitle={room.title}
+            roomDescription={room.description}
+            vibe={vibe}
+            currentAudio={room.ambient}
+            trackType="ambient"
+            onAccept={(filePath) => {
+              onWorldChange(updateRoom(world, roomId, { ambient: basename(filePath) }));
+            }}
           />
           <FieldRow label="Audio">
             <TextInput

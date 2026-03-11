@@ -313,6 +313,8 @@ export interface ClassDefinitionConfig {
   startRoom?: string;
   threatMultiplier?: number;
   image?: string;
+  outfitDescription?: string;
+  showcaseRace?: string;
 }
 
 // ─── Character Creation ────────────────────────────────────────────
@@ -329,6 +331,16 @@ export interface RaceDefinitionConfig {
   abilities?: string[];
   image?: string;
   statMods?: StatMap;
+  bodyDescription?: string;
+  staffPrompt?: string;
+}
+
+// ─── Player Tiers ───────────────────────────────────────────────────
+
+export interface TierDefinitionConfig {
+  displayName: string;
+  levels: string;
+  visualDescription: string;
 }
 
 // ─── Images ─────────────────────────────────────────────────────────
@@ -393,6 +405,7 @@ export interface AppConfig {
   friends: FriendsConfig;
   images: ImagesConfig;
   globalAssets: Record<string, string>;
+  playerTiers?: Record<string, TierDefinitionConfig>;
   /** Raw YAML content for unrecognized sections */
   rawSections: Record<string, unknown>;
 }

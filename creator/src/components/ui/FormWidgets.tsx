@@ -320,6 +320,46 @@ export function CheckboxInput({
   );
 }
 
+/** Commit-on-blur multi-line textarea. */
+export function CommitTextarea({
+  label,
+  value,
+  onCommit,
+  placeholder,
+  rows = 3,
+}: {
+  label: string;
+  value: string;
+  onCommit: (v: string) => void;
+  placeholder?: string;
+  rows?: number;
+}) {
+  const [draft, setDraft] = useState(value);
+  const [focused, setFocused] = useState(false);
+
+  if (!focused && draft !== value) {
+    setDraft(value);
+  }
+
+  return (
+    <div className="mt-1">
+      <label className="text-xs text-text-muted">{label}</label>
+      <textarea
+        rows={rows}
+        className="mt-0.5 w-full resize-y rounded border border-border-default bg-bg-primary px-1.5 py-1 text-xs leading-relaxed text-text-primary outline-none focus:border-accent/50"
+        placeholder={placeholder}
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onFocus={() => setFocused(true)}
+        onBlur={() => {
+          setFocused(false);
+          if (draft !== value) onCommit(draft);
+        }}
+      />
+    </div>
+  );
+}
+
 /** Small icon button used for add/delete actions in lists. */
 export function IconButton({
   onClick,

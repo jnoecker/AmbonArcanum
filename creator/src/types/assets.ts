@@ -41,6 +41,7 @@ export type AssetType =
   | "empty_state"
   | "entity_portrait"
   | "ability_sprite"
+  | "ability_icon"
   | "zone_map"
   | "splash_hero"
   | "loading_vignette"
@@ -50,7 +51,10 @@ export type AssetType =
   | "item"
   | "player_sprite"
   | "race_portrait"
-  | "class_portrait";
+  | "class_portrait"
+  | "music"
+  | "ambient"
+  | "video";
 
 /** Mirrors the Rust Settings struct */
 export interface Settings {

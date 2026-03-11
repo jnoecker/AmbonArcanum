@@ -90,6 +90,7 @@ export function parseAppConfigYaml(content: string): AppConfig {
     friends: parseFriendsConfig(engine.friends),
     images: parseImagesConfig(root.images),
     globalAssets: parseGlobalAssets(root.globalAssets),
+    playerTiers: parsePlayerTiers(root.playerTiers),
     rawSections: collectRawSections(root, engine),
   };
 }
@@ -311,6 +312,22 @@ function parseGlobalAssets(raw: unknown): Record<string, string> {
   return result;
 }
 
+function parsePlayerTiers(raw: unknown): Record<string, import("@/types/config").TierDefinitionConfig> | undefined {
+  if (!raw || typeof raw !== "object") return undefined;
+  const result: Record<string, import("@/types/config").TierDefinitionConfig> = {};
+  for (const [k, v] of Object.entries(raw as Record<string, unknown>)) {
+    if (v && typeof v === "object") {
+      const tier = v as Record<string, unknown>;
+      result[k] = {
+        displayName: asString(tier.displayName, k),
+        levels: asString(tier.levels, ""),
+        visualDescription: asString(tier.visualDescription, ""),
+      };
+    }
+  }
+  return Object.keys(result).length > 0 ? result : undefined;
+}
+
 function parseMapSection<T>(raw: unknown, key: string): Record<string, T> {
   if (!raw || typeof raw !== "object") return {};
   const section = (raw as Record<string, unknown>)[key];
@@ -329,7 +346,7 @@ function collectRawSections(
   engine: Record<string, unknown>,
 ): Record<string, unknown> {
   const knownRoot = new Set([
-    "server", "engine", "progression", "images", "globalAssets", "world", "persistence",
+    "server", "engine", "progression", "images", "globalAssets", "playerTiers", "world", "persistence",
     "login", "transport", "demo", "observability", "admin",
     "logging", "database", "redis", "grpc", "gateway", "sharding",
     "videos", "audio",
@@ -585,6 +602,7 @@ async function loadSplitConfig(projectDir: string): Promise<AppConfig | null> {
       // assets.yaml
       images: parseImagesConfig(assetsRaw.images ?? assetsRaw),
       globalAssets: parseGlobalAssets(assetsRaw.globalAssets),
+      playerTiers: parsePlayerTiers(assetsRaw.playerTiers),
 
       rawSections: {},
     };

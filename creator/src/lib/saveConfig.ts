@@ -213,6 +213,8 @@ export async function saveConfig(mudDir: string): Promise<void> {
         if (cls.startRoom) obj.startRoom = cls.startRoom;
         if (cls.threatMultiplier != null) obj.threatMultiplier = cls.threatMultiplier;
         if (cls.image) obj.image = cls.image;
+        if (cls.outfitDescription) obj.outfitDescription = cls.outfitDescription;
+        if (cls.showcaseRace) obj.showcaseRace = cls.showcaseRace;
         return obj;
       },
     );
@@ -230,6 +232,8 @@ export async function saveConfig(mudDir: string): Promise<void> {
         if (race.image) obj.image = race.image;
         if (race.statMods && Object.keys(race.statMods).length > 0)
           obj.statMods = race.statMods;
+        if (race.bodyDescription) obj.bodyDescription = race.bodyDescription;
+        if (race.staffPrompt) obj.staffPrompt = race.staffPrompt;
         return obj;
       },
     );
@@ -509,6 +513,7 @@ async function saveSplitConfig(projectDir: string): Promise<void> {
     write("assets", cleanObj({
       images: config.images,
       globalAssets: Object.keys(config.globalAssets).length > 0 ? config.globalAssets : undefined,
+      playerTiers: config.playerTiers && Object.keys(config.playerTiers).length > 0 ? config.playerTiers : undefined,
     })),
   ]);
 
