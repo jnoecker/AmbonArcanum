@@ -1,14 +1,12 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { useZoneStore, type ZoneState } from "@/stores/zoneStore";
-import { useConfigStore } from "@/stores/configStore";
 import { useProjectStore } from "@/stores/projectStore";
-import type { Tab, ConfigSubTab } from "@/types/project";
+import type { Tab } from "@/types/project";
 import type { WorldFile } from "@/types/world";
 import { useGlobalSearch, ENTITY_TYPE_LABELS } from "@/lib/useGlobalSearch";
 import { NewZoneDialog } from "./NewZoneDialog";
 import { ConfirmDialog } from "./ConfirmDialog";
-import panelHeader from "@/assets/panel-header.jpg";
 import sidebarBg from "@/assets/sidebar-bg.png";
 import {
   addRoom,
@@ -220,9 +218,7 @@ function ZoneTree({
 
 export function Sidebar() {
   const zones = useZoneStore((s) => s.zones);
-  const configDirty = useConfigStore((s) => s.dirty);
   const openTab = useProjectStore((s) => s.openTab);
-  const setConfigSubTab = useProjectStore((s) => s.setConfigSubTab);
   const activeTabId = useProjectStore((s) => s.activeTabId);
 
   const closeTab = useProjectStore((s) => s.closeTab);
@@ -307,14 +303,14 @@ export function Sidebar() {
         <div className="grid grid-cols-2 gap-2">
           {[
             { id: "studio", label: "Studio", kind: "studio" as const },
-            { id: "config", label: "Config", kind: "config" as const },
+            { id: "config", label: "Character", kind: "config" as const },
             { id: "sprites", label: "Sprites", kind: "sprites" as const },
             { id: "console", label: "Console", kind: "console" as const },
           ].map((entry) => (
             <button
               key={entry.id}
               onClick={() => {
-                if (entry.id === "config") setConfigSubTab("characterStudio");
+                if (entry.id === "config") useProjectStore.getState().setConfigSubTab("characterStudio");
                 openTab({ id: entry.id, kind: entry.kind, label: entry.label });
               }}
               className={`rounded-2xl border px-3 py-3 text-left text-sm transition ${
@@ -430,50 +426,6 @@ export function Sidebar() {
               ))}
             </ul>
           )}
-        </div>
-
-        <div className="my-3 h-8 overflow-hidden rounded-2xl">
-          <img
-            src={panelHeader}
-            alt=""
-            className="h-full w-full object-cover opacity-35"
-          />
-        </div>
-
-        <div className="py-2">
-          <h2 className="mb-3 font-display text-sm text-text-primary">
-            Config
-          </h2>
-          <ul className="flex flex-col gap-0.5">
-            {(
-              [
-                { label: "Character Studio", subTab: "characterStudio" as ConfigSubTab },
-                { label: "Ability Studio", subTab: "abilityStudio" as ConfigSubTab },
-                { label: "World Systems", subTab: "worldSystems" as ConfigSubTab },
-                { label: "Content Studio", subTab: "contentStudio" as ConfigSubTab },
-                { label: "Operations", subTab: "operations" as ConfigSubTab },
-              ]
-            ).map((entry) => (
-              <li key={entry.subTab}>
-                <button
-                  onClick={() => {
-                    setConfigSubTab(entry.subTab);
-                    openTab({ id: "config", kind: "config", label: "Config" });
-                  }}
-                  className={`w-full rounded-2xl border px-3 py-2 text-left text-sm transition ${
-                    activeTabId === "config"
-                      ? "border-[rgba(184,216,232,0.35)] bg-[linear-gradient(135deg,rgba(168,151,210,0.16),rgba(140,174,201,0.12))] text-text-primary"
-                      : "border-white/8 bg-black/10 text-text-secondary hover:bg-white/8 hover:text-text-primary"
-                  }`}
-                >
-                  {entry.label}
-                  {entry.subTab === "characterStudio" && configDirty && (
-                    <span className="ml-1 text-accent">*</span>
-                  )}
-                </button>
-              </li>
-            ))}
-          </ul>
         </div>
         </>
         )}

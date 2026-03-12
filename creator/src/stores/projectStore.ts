@@ -4,6 +4,8 @@ import type {
   Project,
   Tab,
   ConfigSubTab,
+  CharacterStudioSubView,
+  AbilityStudioSubView,
   StudioSubView,
   WorldSystemsSubView,
   ContentStudioSubView,
@@ -23,6 +25,8 @@ interface ProjectStore {
   tabs: Tab[];
   activeTabId: string | null;
   configSubTab: ConfigSubTab;
+  characterStudioSubView: CharacterStudioSubView;
+  abilityStudioSubView: AbilityStudioSubView;
   studioSubView: StudioSubView;
   worldSystemsSubView: WorldSystemsSubView;
   contentStudioSubView: ContentStudioSubView;
@@ -39,6 +43,8 @@ interface ProjectStore {
   /** Restore previously open tabs after project load. */
   restoreTabs: (tabs: Tab[], activeTabId: string | null) => void;
   setConfigSubTab: (subTab: ConfigSubTab) => void;
+  setCharacterStudioSubView: (subView: CharacterStudioSubView) => void;
+  setAbilityStudioSubView: (subView: AbilityStudioSubView) => void;
   setStudioSubView: (subView: StudioSubView) => void;
   setWorldSystemsSubView: (subView: WorldSystemsSubView) => void;
   setContentStudioSubView: (subView: ContentStudioSubView) => void;
@@ -52,6 +58,8 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
   tabs: [],
   activeTabId: null,
   configSubTab: "characterStudio" as ConfigSubTab,
+  characterStudioSubView: "classes",
+  abilityStudioSubView: "stats",
   studioSubView: "home",
   worldSystemsSubView: "overview",
   contentStudioSubView: "overview",
@@ -63,6 +71,9 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
       project,
       tabs: [{ id: "studio", kind: "studio", label: "Studio" }],
       activeTabId: "studio",
+      configSubTab: "characterStudio",
+      characterStudioSubView: "classes",
+      abilityStudioSubView: "stats",
       studioSubView: "home",
       worldSystemsSubView: "overview",
       contentStudioSubView: "overview",
@@ -96,6 +107,8 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
 
   restoreTabs: (tabs, activeTabId) => set({ tabs, activeTabId }),
   setConfigSubTab: (subTab) => set({ configSubTab: subTab }),
+  setCharacterStudioSubView: (characterStudioSubView) => set({ characterStudioSubView }),
+  setAbilityStudioSubView: (abilityStudioSubView) => set({ abilityStudioSubView }),
   setStudioSubView: (studioSubView) => set({ studioSubView }),
   setWorldSystemsSubView: (worldSystemsSubView) => set({ worldSystemsSubView }),
   setContentStudioSubView: (contentStudioSubView) => set({ contentStudioSubView }),

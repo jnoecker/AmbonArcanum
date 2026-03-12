@@ -76,7 +76,6 @@ export function ContentStudio({
   activeView: ContentStudioSubView;
   onViewChange: (view: ContentStudioSubView) => void;
 }) {
-  const current = CONTENT_STUDIO_VIEWS.find((view) => view.id === activeView) ?? CONTENT_STUDIO_VIEWS[0]!;
   const achievementCount = Object.keys(config.achievementCategories).length;
   const criterionCount = Object.keys(config.achievementCriterionTypes).length;
   const objectiveCount = Object.keys(config.questObjectiveTypes).length;
@@ -84,49 +83,29 @@ export function ContentStudio({
 
   return (
     <div className="flex flex-col gap-6">
-      <section className="rounded-[30px] border border-white/10 bg-[linear-gradient(145deg,rgba(73,84,118,0.94),rgba(49,60,90,0.92))] p-6 shadow-[0_18px_60px_rgba(9,12,24,0.32)]">
-        <p className="text-[11px] uppercase tracking-[0.35em] text-text-muted">{current.eyebrow}</p>
-        <h2 className="mt-3 max-w-4xl font-display text-4xl text-text-primary">{current.title}</h2>
-        <p className="mt-3 max-w-3xl text-sm leading-7 text-text-secondary">{current.description}</p>
-
-        <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <MetricCard label="Achievement Categories" value={achievementCount} description="Top-level reward groupings" />
-          <MetricCard label="Criterion Types" value={criterionCount} description="Progress verbs and formats" />
-          <MetricCard label="Quest Objectives" value={objectiveCount} description="Quest step vocabulary" />
-          <MetricCard label="Global Assets" value={globalAssetCount} description="Registered asset keys" />
-        </div>
-
-        <div className="mt-5 flex flex-wrap gap-2">
-          {CONTENT_STUDIO_VIEWS.map((view) => (
-            <button
-              key={view.id}
-              onClick={() => onViewChange(view.id)}
-              className={`rounded-full border px-4 py-2 text-xs font-medium transition ${
-                activeView === view.id
-                  ? "border-[rgba(184,216,232,0.35)] bg-[linear-gradient(135deg,rgba(168,151,210,0.2),rgba(140,174,201,0.14))] text-text-primary"
-                  : "border-white/10 bg-black/10 text-text-secondary hover:bg-white/10 hover:text-text-primary"
-              }`}
-            >
-              {view.label}
-            </button>
-          ))}
-        </div>
-      </section>
-
       {activeView === "overview" && (
-        <div className="grid gap-5 xl:grid-cols-3">
-          {CONTENT_STUDIO_VIEWS.filter((view) => view.id !== "overview").map((view) => (
-            <button
-              key={view.id}
-              onClick={() => onViewChange(view.id)}
-              className="rounded-[26px] border border-white/10 bg-[linear-gradient(160deg,rgba(56,66,96,0.9),rgba(39,48,72,0.92))] p-5 text-left shadow-[0_16px_42px_rgba(9,12,24,0.22)] transition hover:border-[rgba(184,216,232,0.2)] hover:bg-[linear-gradient(160deg,rgba(63,73,105,0.94),rgba(43,52,79,0.96))]"
-            >
-              <p className="text-[11px] uppercase tracking-[0.3em] text-text-muted">{view.eyebrow}</p>
-              <h3 className="mt-3 font-display text-2xl text-text-primary">{view.label}</h3>
-              <p className="mt-3 text-sm leading-7 text-text-secondary">{view.description}</p>
-              <div className="mt-4 text-xs uppercase tracking-[0.2em] text-accent">Open workspace</div>
-            </button>
-          ))}
+        <div className="grid gap-5">
+          <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <MetricCard label="Achievement Categories" value={achievementCount} description="Top-level reward groupings" />
+            <MetricCard label="Criterion Types" value={criterionCount} description="Progress verbs and formats" />
+            <MetricCard label="Quest Objectives" value={objectiveCount} description="Quest step vocabulary" />
+            <MetricCard label="Global Assets" value={globalAssetCount} description="Registered asset keys" />
+          </section>
+
+          <div className="grid gap-5 xl:grid-cols-3">
+            {CONTENT_STUDIO_VIEWS.filter((view) => view.id !== "overview").map((view) => (
+              <button
+                key={view.id}
+                onClick={() => onViewChange(view.id)}
+                className="rounded-[26px] border border-white/10 bg-[linear-gradient(160deg,rgba(56,66,96,0.9),rgba(39,48,72,0.92))] p-5 text-left shadow-[0_16px_42px_rgba(9,12,24,0.22)] transition hover:border-[rgba(184,216,232,0.2)] hover:bg-[linear-gradient(160deg,rgba(63,73,105,0.94),rgba(43,52,79,0.96))]"
+              >
+                <p className="text-[11px] uppercase tracking-[0.3em] text-text-muted">{view.eyebrow}</p>
+                <h3 className="mt-3 font-display text-2xl text-text-primary">{view.label}</h3>
+                <p className="mt-3 text-sm leading-7 text-text-secondary">{view.description}</p>
+                <div className="mt-4 text-xs uppercase tracking-[0.2em] text-accent">Open workspace</div>
+              </button>
+            ))}
+          </div>
         </div>
       )}
 

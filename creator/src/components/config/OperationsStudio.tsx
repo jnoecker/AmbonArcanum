@@ -63,38 +63,8 @@ export function OperationsStudio({
   activeView: OperationsSubView;
   onViewChange: (view: OperationsSubView) => void;
 }) {
-  const current = OPERATIONS_VIEWS.find((view) => view.id === activeView) ?? OPERATIONS_VIEWS[0]!;
-
   return (
     <div className="flex flex-col gap-6">
-      <section className="rounded-[30px] border border-white/10 bg-[linear-gradient(145deg,rgba(73,84,118,0.94),rgba(49,60,90,0.92))] p-4 shadow-[0_18px_60px_rgba(9,12,24,0.32)]">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <p className="text-[11px] uppercase tracking-[0.35em] text-text-muted">{current.eyebrow}</p>
-            <div className="mt-2 flex flex-wrap items-center gap-3">
-              <h2 className="font-display text-3xl text-text-primary">{current.label}</h2>
-              <span className="text-sm text-text-secondary">{current.description}</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-4 flex flex-wrap gap-2">
-          {OPERATIONS_VIEWS.map((view) => (
-            <button
-              key={view.id}
-              onClick={() => onViewChange(view.id)}
-              className={`rounded-full border px-4 py-2 text-xs font-medium transition ${
-                activeView === view.id
-                  ? "border-[rgba(184,216,232,0.48)] bg-[linear-gradient(135deg,rgba(168,151,210,0.3),rgba(140,174,201,0.2))] text-white shadow-[0_10px_24px_rgba(137,155,214,0.18)]"
-                  : "border-white/10 bg-black/10 text-text-secondary hover:bg-white/10 hover:text-text-primary"
-              }`}
-            >
-              {view.label}
-            </button>
-          ))}
-        </div>
-      </section>
-
       {activeView === "overview" && (
         <div className="grid gap-4 xl:grid-cols-2">
           {OPERATIONS_VIEWS.filter((view) => view.id !== "overview").map((view) => (
