@@ -239,7 +239,7 @@ export function ConfigEditor() {
               <WorkspaceSection
                 kicker="Races"
                 title="Race designer"
-                description="Race lore, traits, stat modifiers, portraits, and staff-tier overrides stay adjacent so each race reads as one coherent design."
+                description="Race lore, traits, stat modifiers, portraits, and staff-tier overrides."
               >
                 <RaceDesigner config={config} onChange={handleChange} />
               </WorkspaceSection>

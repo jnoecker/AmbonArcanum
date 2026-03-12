@@ -217,7 +217,7 @@ export function AbilityDesigner({
               <p className="text-[11px] uppercase tracking-[0.24em] text-text-muted">Ability designer</p>
               <h4 className="mt-2 font-display text-3xl text-text-primary">{selected.displayName}</h4>
               <p className="mt-2 max-w-2xl text-sm leading-7 text-text-secondary">
-                Balance target rules, class access, effect payloads, and icon identity from one workbench.
+                Target rules, class access, effects, and icon identity.
               </p>
             </div>
             <div className="flex flex-wrap gap-2">

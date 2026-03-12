@@ -431,7 +431,7 @@ export function RuntimeHandoffStudio() {
             <p className="text-[11px] uppercase tracking-[0.32em] text-text-muted">Handoff</p>
             <h3 className="mt-2 font-display text-2xl text-text-primary">Canonical world to live runtime</h3>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-text-secondary">
-              Save the canonical world, validate it, optionally export a local runtime bundle, then publish the exact runtime files the live MUD expects.
+              Save, validate, export, publish, and deploy.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -558,7 +558,7 @@ export function RuntimeHandoffStudio() {
 
         <StepCard
           title="6. Publish player sprites"
-          description="Deploy the sprite atlas files managed by the sprite workflow."
+          description="Deploy the player sprite atlas files."
           state={steps.sprites}
           actionLabel="Publish sprites"
           disabled={!hasR2}

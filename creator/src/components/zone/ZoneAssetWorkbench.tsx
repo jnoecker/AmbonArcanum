@@ -413,9 +413,9 @@ export function ZoneAssetWorkbench({ zoneId, world, onWorldChange }: ZoneAssetWo
     <section className="rounded-[28px] border border-white/10 bg-[linear-gradient(160deg,rgba(54,63,90,0.95),rgba(42,53,79,0.92))] p-5 shadow-[0_18px_50px_rgba(9,12,24,0.24)]">
       <div className="mb-5 flex items-center justify-between gap-4">
         <div>
-          <h2 className="font-display text-xl text-text-primary">Zone asset workbench</h2>
+          <h2 className="font-display text-xl text-text-primary">Zone assets</h2>
           <p className="mt-1 text-sm text-text-secondary">
-            Generate named entity art and zone-wide fallback images from the same Surreal Gentle Magic pipeline.
+            Entity art and zone defaults.
           </p>
         </div>
         <div className="min-w-40">

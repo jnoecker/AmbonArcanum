@@ -169,7 +169,7 @@ export function RaceDesigner({
               <p className="text-[11px] uppercase tracking-[0.24em] text-text-muted">Race designer</p>
               <h4 className="mt-2 font-display text-3xl text-text-primary">{selected.displayName}</h4>
               <p className="mt-2 max-w-2xl text-sm leading-7 text-text-secondary">
-                Shape the body language, lore, traits, and stat identity of this race from one workbench.
+                Lore, traits, body language, and stat identity.
               </p>
             </div>
             <div className="flex flex-wrap gap-2">

@@ -29,7 +29,7 @@ export function CommandDesigner({
     <DefinitionWorkbench
       title="Command designer"
       countLabel="Commands"
-      description="Keep usage strings, discovery categories, and staff visibility rules together so the command surface stays curated."
+      description="Usage strings, categories, and staff visibility."
       addPlaceholder="New command id"
       searchPlaceholder="Search commands"
       emptyMessage="No commands match the current search."

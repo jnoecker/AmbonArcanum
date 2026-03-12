@@ -28,7 +28,7 @@ const OPERATIONS_VIEWS: Array<{
     id: "delivery",
     label: "Handoff",
     eyebrow: "Handoff",
-    title: "Run the full world handoff from one explicit workflow.",
+    title: "Save, validate, publish, and deploy.",
     description: "Save the canonical world, validate it, export a runtime bundle, and publish the exact files the live MUD expects.",
   },
 ];
@@ -122,7 +122,7 @@ export function OperationsStudio({
         <StudioSection
           kicker="Services"
           title="API and provider credentials"
-          description="LLM, image generation, and R2 credentials stay together so provider swaps and auth changes do not touch the rest of the config."
+          description="LLM, image generation, and R2 credentials."
         >
           <ApiSettingsPanel initialSection="providers" />
         </StudioSection>

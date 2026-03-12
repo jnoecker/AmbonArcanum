@@ -83,7 +83,7 @@ export function CraftingStudio({
       <DefinitionWorkbench
         title="Crafting skill designer"
         countLabel="Crafting skills"
-        description="Maintain gathering and crafting disciplines in one roster so recipe authors have a clear canonical list."
+        description="Gathering and crafting skill definitions."
         addPlaceholder="New skill id"
         searchPlaceholder="Search skills"
         emptyMessage="No crafting skills match the current search."
@@ -101,7 +101,7 @@ export function CraftingStudio({
       <DefinitionWorkbench
         title="Station type designer"
         countLabel="Station types"
-        description="Define the named station surfaces that recipes and room stations can reference."
+        description="Station types used by recipes and rooms."
         addPlaceholder="New station type id"
         searchPlaceholder="Search station types"
         emptyMessage="No station types match the current search."

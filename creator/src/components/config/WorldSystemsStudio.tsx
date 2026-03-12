@@ -26,14 +26,14 @@ const WORLD_SYSTEM_VIEWS: Array<{
     label: "Overview",
     eyebrow: "Map",
     title: "Move through world rules by domain instead of by tab strip.",
-    description: "Each system area now opens as its own focused workspace so balance passes and runtime edits stop collapsing into one long scroll.",
+    description: "World rules grouped by domain.",
   },
   {
     id: "world",
     label: "World & Server",
     eyebrow: "Foundation",
     title: "Shape startup, entry points, and server behavior together.",
-    description: "World references, start rooms, server ports, and runtime-facing global behavior belong in the same operator view.",
+    description: "World references, start rooms, server ports, and runtime behavior.",
   },
   {
     id: "combat",
@@ -46,29 +46,29 @@ const WORLD_SYSTEM_VIEWS: Array<{
     id: "progression",
     label: "Progression & Stats",
     eyebrow: "Growth",
-    title: "Keep level curve and stat language adjacent.",
-    description: "Character growth only stays coherent when level rewards and the stat system are edited as one balancing surface.",
+    title: "Level curve and stats.",
+    description: "Level rewards and the stat system.",
   },
   {
     id: "travel",
     label: "Travel & Commands",
     eyebrow: "Flow",
-    title: "Author movement, recall, and command language together.",
+    title: "Movement, recall, and commands.",
     description: "Navigation rules and the commands that expose them are one player-facing conversation, not separate maintenance chores.",
   },
   {
     id: "economy",
     label: "Economy & Crafting",
     eyebrow: "Production",
-    title: "Tune money and making things in the same workspace.",
-    description: "Buy/sell pressure, harvesting cadence, and crafting mastery affect the same reward loops and should live together.",
+    title: "Economy and crafting.",
+    description: "Buy/sell settings, harvesting cadence, and crafting mastery.",
   },
   {
     id: "social",
     label: "Social Systems",
     eyebrow: "Community",
-    title: "Group, guild, and friends rules now share one social design surface.",
-    description: "Social friction and organization hierarchy are easier to reason about when the whole social layer is visible together.",
+    title: "Groups, guilds, and friends.",
+    description: "Social defaults and hierarchy.",
   },
 ];
 
@@ -187,14 +187,14 @@ export function WorldSystemsStudio({
           <StudioSection
             kicker="World topology"
             title="World resources, start rooms, and spawn rules"
-            description="Use one view for global world references, namespaced start rooms, and other startup-critical location rules."
+            description="Global world references and namespaced start rooms."
           >
             <WorldPanel config={config} onChange={onChange} />
           </StudioSection>
           <StudioSection
             kicker="Server runtime"
             title="Ports and server process behavior"
-            description="Server-facing config stays together so local boot and deployment handoff remain easy to validate."
+            description="Ports and server process settings."
           >
             <ServerPanel config={config} onChange={onChange} />
           </StudioSection>
@@ -206,7 +206,7 @@ export function WorldSystemsStudio({
           <StudioSection
             kicker="Combat pacing"
             title="Combat loop"
-            description="Damage floors, tick cadence, feedback, and throughput belong in the same balancing pass."
+            description="Damage floors, tick cadence, feedback, and throughput."
           >
             <CombatPanel config={config} onChange={onChange} />
           </StudioSection>
@@ -239,7 +239,7 @@ export function WorldSystemsStudio({
           <StudioSection
             kicker="Stat language"
             title="Stats and bindings"
-            description="Keep stat names, descriptions, and mechanical bindings together so the rest of the design vocabulary stays readable."
+            description="Stat names, descriptions, and bindings."
           >
             <StatsPanel config={config} onChange={onChange} />
           </StudioSection>
@@ -258,7 +258,7 @@ export function WorldSystemsStudio({
           <StudioSection
             kicker="Command language"
             title="Commands and discoverability"
-            description="Help-facing command metadata belongs beside the systems it exposes, not in an isolated registry."
+            description="Usage strings, categories, and staff visibility."
           >
             <CommandDesigner config={config} onChange={onChange} />
           </StudioSection>
@@ -288,7 +288,7 @@ export function WorldSystemsStudio({
         <StudioSection
           kicker="Social layer"
           title="Groups, guilds, and friends"
-          description="Party pacing, social reach, guild defaults, and permission hierarchy now share one social systems view."
+          description="Party pacing, guild defaults, and permission hierarchy."
         >
           <GuildDesigner config={config} onChange={onChange} />
         </StudioSection>
