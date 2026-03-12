@@ -21,8 +21,8 @@ const OPERATIONS_VIEWS: Array<{
     id: "services",
     label: "Services",
     eyebrow: "Providers",
-    title: "Manage image, LLM, and CDN credentials in one place.",
-    description: "All external service settings stay isolated from creator workflows so world editing and infrastructure editing do not mix.",
+    title: "Manage image, LLM, and CDN credentials.",
+    description: "Keep provider settings separate from world editing.",
   },
   {
     id: "delivery",

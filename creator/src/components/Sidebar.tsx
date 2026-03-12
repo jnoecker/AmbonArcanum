@@ -300,7 +300,7 @@ export function Sidebar() {
             Worldmaker
           </h2>
           <p className="mt-1 text-xs leading-5 text-text-secondary">
-            Shape the world, keep the vibe coherent, and move from draft to approved assets.
+            Build zones, tune systems, and review assets.
           </p>
         </div>
 

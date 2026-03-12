@@ -43,7 +43,7 @@ export function CharacterCreationStudio({
       <DefinitionWorkbench
         title="Gender designer"
         countLabel="Gender definitions"
-        description="Keep displayed gender labels and sprite filename codes in one place so character presentation rules remain explicit."
+        description="Manage displayed gender labels and sprite filename codes."
         addPlaceholder="New gender id"
         searchPlaceholder="Search genders"
         emptyMessage="No genders match the current search."
