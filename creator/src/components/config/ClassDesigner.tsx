@@ -170,7 +170,7 @@ export function ClassDesigner({
               <p className="text-[11px] uppercase tracking-[0.24em] text-text-muted">Class designer</p>
               <h4 className="mt-2 font-display text-3xl text-text-primary">{selected.displayName}</h4>
               <p className="mt-2 max-w-2xl text-sm leading-7 text-text-secondary">
-                Tune progression, identity, and presentation for this class in one place.
+                Tune progression, identity, and presentation for this class.
               </p>
             </div>
             <div className="flex flex-wrap gap-2">

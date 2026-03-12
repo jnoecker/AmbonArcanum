@@ -35,7 +35,7 @@ const CONFIG_WORKSPACES: WorkspaceDef[] = [
     label: "Character Studio",
     eyebrow: "People",
     title: "Design classes, races, and player presentation together.",
-    description: "Character creation, class identity, race identity, sprite progression, and wear slots belong in one place.",
+    description: "Classes, races, character setup, and sprite rules.",
     maxWidth: "max-w-6xl",
   },
   {
@@ -43,7 +43,7 @@ const CONFIG_WORKSPACES: WorkspaceDef[] = [
     label: "Ability Studio",
     eyebrow: "Powers",
     title: "Tune stats, abilities, and status effects as one combat language.",
-    description: "Keep scaling, ability definitions, and status systems adjacent so balance changes stay coherent.",
+    description: "Balance stats, abilities, and status effects together.",
     maxWidth: "max-w-5xl",
   },
   {
@@ -51,7 +51,7 @@ const CONFIG_WORKSPACES: WorkspaceDef[] = [
     label: "World Systems",
     eyebrow: "Rules",
     title: "Shape world rules, progression, combat, and game flow.",
-    description: "Server-facing config, systemic progression, economy, and travel now live together instead of across unrelated tabs.",
+    description: "Progression, combat, economy, travel, and runtime rules.",
     maxWidth: "max-w-5xl",
   },
   {
@@ -59,7 +59,7 @@ const CONFIG_WORKSPACES: WorkspaceDef[] = [
     label: "Content Studio",
     eyebrow: "Content",
     title: "Manage quest-facing content, achievements, and shared presentation assets.",
-    description: "Content and player-facing rewards are easier to review when they are not buried under systems tabs.",
+    description: "Achievements, quest taxonomy, crafting, commands, and guilds.",
     maxWidth: "max-w-5xl",
   },
   {
@@ -67,7 +67,7 @@ const CONFIG_WORKSPACES: WorkspaceDef[] = [
     label: "Operations",
     eyebrow: "Ops",
     title: "Keep deployment-facing settings and external services contained.",
-    description: "Infrastructure and API credentials are isolated from world design so they do not pollute creator workflows.",
+    description: "Providers, delivery credentials, and runtime handoff.",
     maxWidth: "max-w-4xl",
   },
   {
@@ -75,7 +75,7 @@ const CONFIG_WORKSPACES: WorkspaceDef[] = [
     label: "Raw YAML",
     eyebrow: "Advanced",
     title: "Inspect the raw config when you need exact control.",
-    description: "Fallback editing stays available, but it is no longer the primary experience.",
+    description: "Direct YAML editing for exact changes.",
     maxWidth: "max-w-5xl",
   },
 ];
@@ -226,18 +226,12 @@ export function ConfigEditor() {
         </div>
 
         <div className={`relative z-10 mx-auto flex flex-col gap-6 px-6 py-5 ${workspace.maxWidth}`}>
-          <section className="rounded-[30px] border border-white/10 bg-[linear-gradient(145deg,rgba(73,84,118,0.94),rgba(49,60,90,0.92))] p-5 shadow-[0_18px_60px_rgba(9,12,24,0.32)]">
-            <p className="text-[11px] uppercase tracking-[0.35em] text-text-muted">{workspace.eyebrow}</p>
-            <h1 className="mt-2 max-w-4xl font-display text-3xl text-text-primary">{workspace.title}</h1>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-text-secondary">{workspace.description}</p>
-          </section>
-
           {activeWorkspace === "characterStudio" && (
             <>
               <WorkspaceSection
                 kicker="Classes"
                 title="Class designer"
-                description="Class identity, scaling, visual direction, and start-room overrides are edited together here."
+                description="Class identity, scaling, visual direction, and start-room overrides."
               >
                 <ClassDesigner config={config} onChange={handleChange} />
               </WorkspaceSection>
@@ -253,7 +247,7 @@ export function ConfigEditor() {
               <WorkspaceSection
                 kicker="Character foundations"
                 title="Creation, slots, and sprite progression"
-                description="Starting state, genders, wear-slot layout, and player sprite conventions now live in one creator-facing surface."
+                description="Starting state, genders, wear slots, and sprite conventions."
               >
                 <div className="flex flex-col gap-6">
                   <CharacterCreationStudio config={config} onChange={handleChange} />

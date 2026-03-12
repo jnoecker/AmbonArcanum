@@ -251,7 +251,7 @@ export function WorldSystemsStudio({
           <StudioSection
             kicker="Travel rules"
             title="Navigation and recall"
-            description="Movement and recall rules are part of the same player flow and should be edited in one place."
+            description="Movement and recall rules for the player journey."
           >
             <NavigationPanel config={config} onChange={onChange} />
           </StudioSection>
