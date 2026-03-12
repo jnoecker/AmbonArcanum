@@ -172,9 +172,7 @@ export function MediaStudio({ zoneId, world, onWorldChange }: MediaStudioProps) 
         <div>
           <p className="text-[11px] uppercase tracking-[0.28em] text-text-muted">Media studio</p>
           <h2 className="mt-2 font-display text-2xl text-text-primary">Score the world and stage its motion.</h2>
-          <p className="mt-2 max-w-3xl text-sm leading-7 text-text-secondary">
-            Keep zone defaults, room-specific tracks, and cinematics together so ambience feels authored instead of scattered.
-          </p>
+          <p className="mt-2 max-w-3xl text-sm leading-7 text-text-secondary">Zone audio, room audio, and cinematics.</p>
         </div>
         <div className="rounded-full border border-white/10 bg-white/6 px-4 py-2 text-xs text-text-secondary">
           {roomEntries.length} rooms in {world.zone}
@@ -286,9 +284,7 @@ export function MediaStudio({ zoneId, world, onWorldChange }: MediaStudioProps) 
             <div className="flex items-center justify-between gap-4">
               <div>
                 <h3 className="font-display text-lg text-text-primary">Room staging</h3>
-                <p className="mt-1 text-xs leading-6 text-text-secondary">
-                  Pick a room and keep its specific soundtrack, ambience, and cinematic together.
-                </p>
+                <p className="mt-1 text-xs leading-6 text-text-secondary">Choose a room.</p>
               </div>
               <select
                 value={selectedRoomId ?? ""}

@@ -392,9 +392,7 @@ export function AbilityStudio() {
       <div className="mb-5 flex items-center justify-between gap-4">
         <div>
           <h2 className="font-display text-xl text-text-primary">Ability studio</h2>
-          <p className="mt-1 text-sm text-text-secondary">
-            Generate and review ability and status-effect icons in one place, grouped by class and ready for approval.
-          </p>
+          <p className="mt-1 text-sm text-text-secondary">Ability and status-effect icons by class.</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <button

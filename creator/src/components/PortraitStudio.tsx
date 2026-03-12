@@ -319,7 +319,7 @@ export function PortraitStudio({ selectedZoneId }: { selectedZoneId: string | nu
       <div className="mb-5 flex items-center justify-between gap-4">
         <div>
           <h2 className="font-display text-xl text-text-primary">Portrait studio</h2>
-          <p className="mt-1 text-sm text-text-secondary">Batch and review race and class portraits with a shared portrait template workflow.</p>
+          <p className="mt-1 text-sm text-text-secondary">Race and class portraits.</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <button

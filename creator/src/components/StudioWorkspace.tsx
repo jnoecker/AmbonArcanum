@@ -14,8 +14,8 @@ import type { StudioSubView } from "@/types/project";
 
 const STUDIO_VIEWS: Array<{ id: StudioSubView; label: string; description: string }> = [
   { id: "home", label: "Home", description: "Atlas, recent assets, and world direction at a glance." },
-  { id: "zoneArt", label: "Zone Art", description: "Vibes, fallback defaults, and entity art workbench." },
-  { id: "customAssets", label: "Custom Assets", description: "Free-form asset generation with optional zone grounding." },
+  { id: "zoneArt", label: "Zone Art", description: "Vibes, defaults, and entity art." },
+  { id: "customAssets", label: "Custom Assets", description: "Free-form asset generation." },
   { id: "media", label: "Media", description: "Music, ambience, and cinematic staging." },
   { id: "portraits", label: "Portraits", description: "Race and class portrait creation." },
   { id: "abilities", label: "Abilities", description: "Ability and status-effect icon generation." },
@@ -130,9 +130,7 @@ export function StudioWorkspace() {
         <p className="text-[11px] uppercase tracking-[0.35em] text-text-muted">Studio</p>
         <div className="mt-2 flex flex-wrap items-center gap-3">
           <h1 className="font-display text-3xl text-text-primary">{activeStudioView.label}</h1>
-          <span className="rounded-full border border-white/10 bg-black/10 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-text-secondary">
-            Focused workbench
-          </span>
+          <span className="rounded-full border border-white/10 bg-black/10 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-text-secondary">Mode</span>
         </div>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-text-secondary">{activeStudioView.description}</p>
       </div>
@@ -175,7 +173,7 @@ export function StudioWorkspace() {
       <div className={`flex flex-col gap-2 overflow-y-auto pr-1 ${compact ? "max-h-[18rem]" : "max-h-[38rem]"}`}>
         {sortedZones.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-white/12 bg-white/4 px-4 py-6 text-sm text-text-muted">
-            Open a world folder to begin curating zones and assets.
+            Open a world folder to load zones and assets.
           </div>
         ) : (
           sortedZones.map(([zoneId, zoneState]) => {
@@ -253,8 +251,8 @@ export function StudioWorkspace() {
           <h2 className="font-display text-xl text-text-primary">{selectedZone ? selectedZone.data.zone : "Select a zone"}</h2>
           <p className="mt-1 text-sm text-text-secondary">
             {selectedZone
-              ? "Move into a focused workbench for this zone instead of scrolling through every studio surface at once."
-              : "Open a world folder and pick a zone to start using the studio."}
+              ? "Open the selected zone or jump into art."
+              : "Open a world folder and pick a zone."}
           </p>
         </div>
         {selectedZone && (
@@ -307,10 +305,9 @@ export function StudioWorkspace() {
               <div className="grid gap-5 lg:grid-cols-[minmax(0,1.05fr)_minmax(17rem,0.95fr)] lg:items-start">
                 <div className="max-w-2xl">
                   <p className="text-[11px] uppercase tracking-[0.35em] text-text-muted">Surreal Gentle Magic</p>
-                  <h1 className="mt-3 font-display text-3xl leading-[1.04] text-text-primary lg:text-[2.6rem]">Build the world from one place.</h1>
+                  <h1 className="mt-3 font-display text-3xl leading-[1.04] text-text-primary lg:text-[2.6rem]">Build the world.</h1>
                   <p className="mt-3 max-w-xl text-sm leading-7 text-text-secondary">
-                    Move between focused workbenches instead of one giant scroll. Pick the surface you want,
-                    then stay in that mode until the task is done.
+                    Pick a surface, stay in that mode, and keep moving.
                   </p>
                   <div className="mt-5 grid gap-3 sm:grid-cols-2">
                     {quickActions.map((action) => (
@@ -403,7 +400,7 @@ export function StudioWorkspace() {
                   />
                 ) : (
                   <div className="rounded-[20px] border border-dashed border-white/12 bg-white/4 px-4 py-8 text-sm text-text-muted">
-                    Select a zone to generate or edit its Surreal Gentle Magic vibe summary.
+                    Select a zone to edit its vibe.
                   </div>
                 )}
               </div>
@@ -411,7 +408,7 @@ export function StudioWorkspace() {
             <div className="flex flex-col gap-6 xl:col-span-4">
               <div className="rounded-[28px] border border-white/10 bg-[linear-gradient(160deg,rgba(54,63,90,0.95),rgba(42,53,79,0.92))] p-5 shadow-[0_18px_50px_rgba(9,12,24,0.24)]">
                 <div className="mb-4 flex items-center justify-between">
-                  <h2 className="font-display text-xl text-text-primary">Focused workbenches</h2>
+                  <h2 className="font-display text-xl text-text-primary">Workspaces</h2>
                   <span className="text-[11px] uppercase tracking-[0.24em] text-text-muted">Quick switch</span>
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
@@ -478,7 +475,7 @@ export function StudioWorkspace() {
           ) : (
             <section className="rounded-[28px] border border-white/10 bg-[linear-gradient(160deg,rgba(54,63,90,0.95),rgba(42,53,79,0.92))] p-5 shadow-[0_18px_50px_rgba(9,12,24,0.24)]">
               <div className="rounded-[22px] border border-dashed border-white/12 bg-white/4 px-4 py-8 text-sm text-text-muted">
-                Open a world folder and select a zone to start using the zone art workbench.
+                Open a world folder and select a zone to start.
               </div>
             </section>
           )

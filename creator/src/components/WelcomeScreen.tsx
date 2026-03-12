@@ -71,15 +71,14 @@ export function WelcomeScreen({ onNewProject }: WelcomeScreenProps) {
               Build enchanted worlds, systems, and assets in one creator.
             </h1>
             <p className="mt-4 max-w-2xl text-sm leading-7 text-text-secondary lg:text-base">
-              Ambon Creator now unifies the generation pipeline with the world editor. Open a canonical
-              world folder, shape its atmosphere, and produce assets without switching tools.
+              Open a world, shape it, generate assets, and hand it off.
             </p>
             <div className="mt-6 grid gap-3 sm:grid-cols-2">
               {[
-                "Open the canonical world folder and keep it as the source of truth.",
-                "Generate assets, approve variants, and review media inside the same studio.",
-                "Move from design to runtime handoff without leaving the app.",
-                "Stay in one visual system: Surreal Gentle Magic.",
+                "Open a world folder.",
+                "Generate and review assets.",
+                "Publish and deploy from handoff.",
+                "Surreal Gentle Magic.",
               ].map((line) => (
                 <div key={line} className="rounded-[20px] border border-white/8 bg-black/10 px-4 py-3 text-sm leading-6 text-text-secondary">
                   {line}
@@ -191,7 +190,7 @@ export function WelcomeScreen({ onNewProject }: WelcomeScreenProps) {
               </ul>
             ) : (
               <div className="rounded-[22px] border border-dashed border-white/10 bg-black/12 px-4 py-8 text-sm leading-7 text-text-muted">
-                No recent projects yet. Open your canonical world folder or create a new one to seed the studio.
+                No recent projects yet.
               </div>
             )}
           </div>

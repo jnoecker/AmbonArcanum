@@ -388,8 +388,7 @@ export function ApiSettingsPanel({
 
           {showDeploymentActions && (
             <div className="mt-1 rounded-[20px] border border-white/10 bg-black/10 px-4 py-3 text-[11px] leading-6 text-text-secondary">
-              Runtime config deployment now lives in the dedicated handoff workspace under Operations.
-              Keep credentials here, then use the guided handoff flow to save, validate, export, and deploy from one place.
+              Runtime publishing now lives in Operations / Handoff.
             </div>
           )}
         </div>

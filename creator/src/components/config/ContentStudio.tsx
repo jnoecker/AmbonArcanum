@@ -16,29 +16,29 @@ const CONTENT_STUDIO_VIEWS: Array<{
     id: "overview",
     label: "Overview",
     eyebrow: "Content",
-    title: "Move through authored content by purpose instead of by registry stack.",
-    description: "Achievements, quest taxonomy, and shared presentation assets each get a focused surface instead of competing in one long scroll.",
+    title: "Content by domain.",
+    description: "Achievements, quest taxonomy, and shared assets.",
   },
   {
     id: "achievements",
     label: "Achievements",
     eyebrow: "Recognition",
-    title: "Shape achievement language and tracking vocabulary together.",
-    description: "Categories and criterion types are part of the same reward grammar and should be reviewed side by side.",
+    title: "Achievement categories and criteria.",
+    description: "Reward labels and progress criteria.",
   },
   {
     id: "quests",
     label: "Quest Taxonomy",
     eyebrow: "Structure",
-    title: "Keep quest verbs and completion models in one authoring view.",
-    description: "Objective and completion types define how zone-authored quests read and behave, so they belong in one safe editing surface.",
+    title: "Quest objectives and completion types.",
+    description: "Quest structure and completion rules.",
   },
   {
     id: "assets",
     label: "Shared Assets",
     eyebrow: "Presentation",
-    title: "Curate the global asset language the client can reuse everywhere.",
-    description: "Only explicitly registered assets are exported, so this workspace doubles as the source of truth for runtime-safe global visuals.",
+    title: "Shared global assets.",
+    description: "Registered client-facing assets.",
   },
 ];
 
@@ -93,7 +93,7 @@ export function ContentStudio({
           <MetricCard label="Achievement Categories" value={achievementCount} description="Top-level reward groupings" />
           <MetricCard label="Criterion Types" value={criterionCount} description="Progress verbs and formats" />
           <MetricCard label="Quest Objectives" value={objectiveCount} description="Quest step vocabulary" />
-          <MetricCard label="Global Assets" value={globalAssetCount} description="Explicit runtime-safe registrations" />
+          <MetricCard label="Global Assets" value={globalAssetCount} description="Registered asset keys" />
         </div>
 
         <div className="mt-5 flex flex-wrap gap-2">
@@ -134,7 +134,7 @@ export function ContentStudio({
         <StudioSection
           kicker="Progression content"
           title="Achievement language"
-          description="Categories and criterion definitions now live in a focused content workbench instead of a stacked registry pair."
+          description="Categories and criterion definitions."
         >
           <AchievementDesigner config={config} onChange={onChange} />
         </StudioSection>
@@ -144,7 +144,7 @@ export function ContentStudio({
         <StudioSection
           kicker="Quest language"
           title="Quest taxonomy designer"
-          description="Objective and completion vocabularies stay together so authored quest structure remains readable and migration-safe."
+          description="Objective and completion vocabularies."
         >
           <QuestTaxonomyDesigner config={config} onChange={onChange} />
         </StudioSection>
@@ -154,7 +154,7 @@ export function ContentStudio({
         <StudioSection
           kicker="Shared assets"
           title="Global presentation assets"
-          description="This is the only exported global asset set now, which keeps runtime URLs clean and CDN hygiene intentional."
+          description="Global assets exported with runtime config."
         >
           <GlobalAssetsPanel config={config} onChange={onChange} />
         </StudioSection>
