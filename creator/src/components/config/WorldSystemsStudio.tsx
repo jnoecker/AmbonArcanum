@@ -106,7 +106,6 @@ export function WorldSystemsStudio({
   activeView: WorldSystemsSubView;
   onViewChange: (view: WorldSystemsSubView) => void;
 }) {
-  const current = WORLD_SYSTEM_VIEWS.find((view) => view.id === activeView) ?? WORLD_SYSTEM_VIEWS[0]!;
   const zoneCount = config.world.resources.length;
   const classStartCount = Object.keys(config.classStartRooms).length;
   const commandCount = Object.keys(config.commands).length;
@@ -114,53 +113,32 @@ export function WorldSystemsStudio({
 
   return (
     <div className="flex flex-col gap-6">
-      <section className="rounded-[30px] border border-white/10 bg-[linear-gradient(145deg,rgba(73,84,118,0.94),rgba(49,60,90,0.92))] p-5 shadow-[0_18px_60px_rgba(9,12,24,0.32)]">
-        <p className="text-[11px] uppercase tracking-[0.35em] text-text-muted">{current.eyebrow}</p>
-        <h2 className="mt-2 max-w-4xl font-display text-3xl text-text-primary">{current.title}</h2>
-        <p className="mt-2 max-w-3xl text-sm leading-6 text-text-secondary">{current.description}</p>
-
-        <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <div className="rounded-[22px] border border-white/10 bg-black/12 p-4">
-            <div className="text-[11px] uppercase tracking-[0.24em] text-text-muted">Resources</div>
-            <div className="mt-2 font-display text-3xl text-text-primary">{zoneCount}</div>
-            <div className="mt-2 text-xs text-text-secondary">World files in the active project</div>
-          </div>
-          <div className="rounded-[22px] border border-white/10 bg-black/12 p-4">
-            <div className="text-[11px] uppercase tracking-[0.24em] text-text-muted">Class Starts</div>
-            <div className="mt-2 font-display text-3xl text-text-primary">{classStartCount}</div>
-            <div className="mt-2 text-xs text-text-secondary">Class-specific spawn overrides</div>
-          </div>
-          <div className="rounded-[22px] border border-white/10 bg-black/12 p-4">
-            <div className="text-[11px] uppercase tracking-[0.24em] text-text-muted">Commands</div>
-            <div className="mt-2 font-display text-3xl text-text-primary">{commandCount}</div>
-            <div className="mt-2 text-xs text-text-secondary">Help-facing command entries</div>
-          </div>
-          <div className="rounded-[22px] border border-white/10 bg-black/12 p-4">
-            <div className="text-[11px] uppercase tracking-[0.24em] text-text-muted">Abilities</div>
-            <div className="mt-2 font-display text-3xl text-text-primary">{abilityCount}</div>
-            <div className="mt-2 text-xs text-text-secondary">Current balancing vocabulary</div>
-          </div>
-        </div>
-
-        <div className="mt-4 flex flex-wrap gap-2">
-          {WORLD_SYSTEM_VIEWS.map((view) => (
-            <button
-              key={view.id}
-              onClick={() => onViewChange(view.id)}
-              className={`rounded-full border px-4 py-2 text-xs font-medium transition ${
-                activeView === view.id
-                  ? "border-[rgba(184,216,232,0.48)] bg-[linear-gradient(135deg,rgba(168,151,210,0.3),rgba(140,174,201,0.2))] text-white shadow-[0_10px_24px_rgba(137,155,214,0.18)]"
-                  : "border-white/10 bg-black/10 text-text-secondary hover:bg-white/10 hover:text-text-primary"
-              }`}
-            >
-              {view.label}
-            </button>
-          ))}
-        </div>
-      </section>
-
       {activeView === "overview" && (
-        <div className="grid gap-4 xl:grid-cols-2">
+        <div className="grid gap-4">
+          <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="rounded-[22px] border border-white/10 bg-black/12 p-4">
+              <div className="text-[11px] uppercase tracking-[0.24em] text-text-muted">Resources</div>
+              <div className="mt-2 font-display text-3xl text-text-primary">{zoneCount}</div>
+              <div className="mt-2 text-xs text-text-secondary">World files in the active project</div>
+            </div>
+            <div className="rounded-[22px] border border-white/10 bg-black/12 p-4">
+              <div className="text-[11px] uppercase tracking-[0.24em] text-text-muted">Class Starts</div>
+              <div className="mt-2 font-display text-3xl text-text-primary">{classStartCount}</div>
+              <div className="mt-2 text-xs text-text-secondary">Class-specific spawn overrides</div>
+            </div>
+            <div className="rounded-[22px] border border-white/10 bg-black/12 p-4">
+              <div className="text-[11px] uppercase tracking-[0.24em] text-text-muted">Commands</div>
+              <div className="mt-2 font-display text-3xl text-text-primary">{commandCount}</div>
+              <div className="mt-2 text-xs text-text-secondary">Help-facing command entries</div>
+            </div>
+            <div className="rounded-[22px] border border-white/10 bg-black/12 p-4">
+              <div className="text-[11px] uppercase tracking-[0.24em] text-text-muted">Abilities</div>
+              <div className="mt-2 font-display text-3xl text-text-primary">{abilityCount}</div>
+              <div className="mt-2 text-xs text-text-secondary">Current balancing vocabulary</div>
+            </div>
+          </section>
+
+          <div className="grid gap-4 xl:grid-cols-2">
           {WORLD_SYSTEM_VIEWS.filter((view) => view.id !== "overview").map((view) => (
             <button
               key={view.id}
@@ -179,6 +157,7 @@ export function WorldSystemsStudio({
               <p className="mt-3 text-sm leading-6 text-text-secondary">{view.description}</p>
             </button>
           ))}
+          </div>
         </div>
       )}
 

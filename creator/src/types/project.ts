@@ -32,6 +32,18 @@ export type ConfigSubTab =
   | "operations"
   | "rawYaml";
 
+export type CharacterStudioSubView =
+  | "classes"
+  | "races"
+  | "creation"
+  | "equipment"
+  | "sprites";
+
+export type AbilityStudioSubView =
+  | "stats"
+  | "abilities"
+  | "conditions";
+
 export type StudioSubView =
   | "home"
   | "zoneArt"

@@ -3,7 +3,7 @@ import { useConfigStore } from "@/stores/configStore";
 import { useProjectStore } from "@/stores/projectStore";
 import { saveProjectConfig } from "@/lib/saveConfig";
 import type { AppConfig } from "@/types/config";
-import type { ConfigSubTab } from "@/types/project";
+import type { AbilityStudioSubView, CharacterStudioSubView, ConfigSubTab } from "@/types/project";
 import configBg from "@/assets/config-bg.png";
 import subtoolbarBg from "@/assets/subtoolbar-bg.jpg";
 import { StatsPanel } from "./panels/StatsPanel";
@@ -80,6 +80,20 @@ const CONFIG_WORKSPACES: WorkspaceDef[] = [
   },
 ];
 
+const CHARACTER_STUDIO_VIEWS: Array<{ id: CharacterStudioSubView; label: string; title: string; description: string }> = [
+  { id: "classes", label: "Classes", title: "Class designer", description: "Class identity, scaling, visual direction, and start-room overrides." },
+  { id: "races", label: "Races", title: "Race designer", description: "Race lore, traits, stat modifiers, portraits, and staff-tier overrides." },
+  { id: "creation", label: "Creation", title: "Character creation", description: "Starting state and gender definitions." },
+  { id: "equipment", label: "Equipment", title: "Equipment slots", description: "Wear slots and layout." },
+  { id: "sprites", label: "Sprites", title: "Sprite rules", description: "Image serving, sprite tiers, and player tier visuals." },
+];
+
+const ABILITY_STUDIO_VIEWS: Array<{ id: AbilityStudioSubView; label: string; title: string; description: string }> = [
+  { id: "stats", label: "Stats", title: "Stat definitions and bindings", description: "Primary stats and their bindings." },
+  { id: "abilities", label: "Abilities", title: "Ability designer", description: "Class restrictions, costs, cooldowns, targets, and effects." },
+  { id: "conditions", label: "Conditions", title: "Condition designer", description: "Status effects, stack rules, and ticking behavior." },
+];
+
 function WorkspaceSection({
   kicker,
   title,
@@ -109,7 +123,10 @@ export function ConfigEditor() {
   const updateConfig = useConfigStore((s) => s.updateConfig);
   const project = useProjectStore((s) => s.project);
   const activeWorkspace = useProjectStore((s) => s.configSubTab);
-  const setActiveWorkspace = useProjectStore((s) => s.setConfigSubTab);
+  const characterStudioSubView = useProjectStore((s) => s.characterStudioSubView);
+  const setCharacterStudioSubView = useProjectStore((s) => s.setCharacterStudioSubView);
+  const abilityStudioSubView = useProjectStore((s) => s.abilityStudioSubView);
+  const setAbilityStudioSubView = useProjectStore((s) => s.setAbilityStudioSubView);
   const worldSystemsSubView = useProjectStore((s) => s.worldSystemsSubView);
   const setWorldSystemsSubView = useProjectStore((s) => s.setWorldSystemsSubView);
   const contentStudioSubView = useProjectStore((s) => s.contentStudioSubView);
@@ -158,6 +175,73 @@ export function ConfigEditor() {
     () => CONFIG_WORKSPACES.find((entry) => entry.id === activeWorkspace) ?? CONFIG_WORKSPACES[0]!,
     [activeWorkspace],
   );
+  const headerSubTabs = useMemo(() => {
+    if (activeWorkspace === "characterStudio") {
+      return {
+        active: characterStudioSubView,
+        items: CHARACTER_STUDIO_VIEWS.map((view) => ({ id: view.id, label: view.label })),
+        onChange: (id: string) => setCharacterStudioSubView(id as CharacterStudioSubView),
+      };
+    }
+    if (activeWorkspace === "abilityStudio") {
+      return {
+        active: abilityStudioSubView,
+        items: ABILITY_STUDIO_VIEWS.map((view) => ({ id: view.id, label: view.label })),
+        onChange: (id: string) => setAbilityStudioSubView(id as AbilityStudioSubView),
+      };
+    }
+    if (activeWorkspace === "worldSystems") {
+      return {
+        active: worldSystemsSubView,
+        items: [
+          { id: "overview", label: "Overview" },
+          { id: "world", label: "World & Server" },
+          { id: "combat", label: "Combat Loop" },
+          { id: "progression", label: "Progression & Stats" },
+          { id: "travel", label: "Travel & Commands" },
+          { id: "economy", label: "Economy & Crafting" },
+          { id: "social", label: "Social Systems" },
+        ],
+        onChange: (id: string) => setWorldSystemsSubView(id as typeof worldSystemsSubView),
+      };
+    }
+    if (activeWorkspace === "contentStudio") {
+      return {
+        active: contentStudioSubView,
+        items: [
+          { id: "overview", label: "Overview" },
+          { id: "achievements", label: "Achievements" },
+          { id: "quests", label: "Quest Taxonomy" },
+          { id: "assets", label: "Shared Assets" },
+        ],
+        onChange: (id: string) => setContentStudioSubView(id as typeof contentStudioSubView),
+      };
+    }
+    if (activeWorkspace === "operations") {
+      return {
+        active: operationsSubView,
+        items: [
+          { id: "overview", label: "Overview" },
+          { id: "services", label: "Services" },
+          { id: "delivery", label: "Handoff" },
+        ],
+        onChange: (id: string) => setOperationsSubView(id as typeof operationsSubView),
+      };
+    }
+    return null;
+  }, [
+    abilityStudioSubView,
+    activeWorkspace,
+    characterStudioSubView,
+    contentStudioSubView,
+    operationsSubView,
+    setContentStudioSubView,
+    setOperationsSubView,
+    setWorldSystemsSubView,
+    setAbilityStudioSubView,
+    setCharacterStudioSubView,
+    worldSystemsSubView,
+  ]);
 
   if (!config) {
     return (
@@ -172,12 +256,28 @@ export function ConfigEditor() {
       <div className="relative shrink-0 overflow-hidden border-b border-border-default bg-bg-secondary">
         <img src={subtoolbarBg} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-[0.1]" />
         <div className="relative z-10 flex items-center justify-between gap-4 px-5 py-3">
-          <div>
-            <p className="text-[11px] uppercase tracking-[0.34em] text-text-muted">Config Studio</p>
+          <div className="min-w-0 flex-1">
             <div className="mt-2 flex flex-wrap items-center gap-3">
               <h2 className="font-display text-2xl text-text-primary">{workspace.label}</h2>
               <span className="text-xs text-text-secondary">{workspace.description}</span>
             </div>
+            {headerSubTabs && (
+              <div className="mt-4 flex flex-wrap gap-2">
+                {headerSubTabs.items.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => headerSubTabs.onChange(item.id)}
+                    className={`rounded-full border px-4 py-2 text-xs font-medium transition ${
+                      headerSubTabs.active === item.id
+                        ? "border-[rgba(184,216,232,0.48)] bg-[linear-gradient(135deg,rgba(168,151,210,0.3),rgba(140,174,201,0.2))] text-white shadow-[0_10px_24px_rgba(137,155,214,0.18)]"
+                        : "border-white/10 bg-black/10 text-text-secondary hover:bg-white/10 hover:text-text-primary"
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
           <div className="flex items-center gap-2">
             {dirty && <span className="text-xs text-accent">modified</span>}
@@ -189,22 +289,6 @@ export function ConfigEditor() {
               {saving ? "Saving..." : "Save Config"}
             </button>
           </div>
-        </div>
-
-        <div className="relative z-10 flex flex-wrap gap-2 px-5 pb-4">
-          {CONFIG_WORKSPACES.map((entry) => (
-            <button
-              key={entry.id}
-              onClick={() => setActiveWorkspace(entry.id)}
-              className={`rounded-full border px-4 py-2 text-xs font-medium transition ${
-                activeWorkspace === entry.id
-                  ? "border-[rgba(184,216,232,0.48)] bg-[linear-gradient(135deg,rgba(168,151,210,0.3),rgba(140,174,201,0.2))] text-white shadow-[0_10px_24px_rgba(137,155,214,0.18)]"
-                  : "border-white/10 bg-black/10 text-text-secondary hover:bg-white/10 hover:text-text-primary"
-              }`}
-            >
-              {entry.label}
-            </button>
-          ))}
         </div>
 
         {saveError && (
@@ -228,62 +312,92 @@ export function ConfigEditor() {
         <div className={`relative z-10 mx-auto flex flex-col gap-6 px-6 py-5 ${workspace.maxWidth}`}>
           {activeWorkspace === "characterStudio" && (
             <>
+              {characterStudioSubView === "classes" && (
               <WorkspaceSection
                 kicker="Classes"
-                title="Class designer"
-                description="Class identity, scaling, visual direction, and start-room overrides."
+                title={CHARACTER_STUDIO_VIEWS.find((view) => view.id === "classes")!.title}
+                description={CHARACTER_STUDIO_VIEWS.find((view) => view.id === "classes")!.description}
               >
                 <ClassDesigner config={config} onChange={handleChange} />
               </WorkspaceSection>
+              )}
 
+              {characterStudioSubView === "races" && (
               <WorkspaceSection
                 kicker="Races"
-                title="Race designer"
-                description="Race lore, traits, stat modifiers, portraits, and staff-tier overrides."
+                title={CHARACTER_STUDIO_VIEWS.find((view) => view.id === "races")!.title}
+                description={CHARACTER_STUDIO_VIEWS.find((view) => view.id === "races")!.description}
               >
                 <RaceDesigner config={config} onChange={handleChange} />
               </WorkspaceSection>
+              )}
 
+              {characterStudioSubView === "creation" && (
               <WorkspaceSection
                 kicker="Character foundations"
-                title="Creation, slots, and sprite progression"
-                description="Starting state, genders, wear slots, and sprite conventions."
+                title={CHARACTER_STUDIO_VIEWS.find((view) => view.id === "creation")!.title}
+                description={CHARACTER_STUDIO_VIEWS.find((view) => view.id === "creation")!.description}
+              >
+                <CharacterCreationStudio config={config} onChange={handleChange} />
+              </WorkspaceSection>
+              )}
+
+              {characterStudioSubView === "equipment" && (
+              <WorkspaceSection
+                kicker="Equipment"
+                title={CHARACTER_STUDIO_VIEWS.find((view) => view.id === "equipment")!.title}
+                description={CHARACTER_STUDIO_VIEWS.find((view) => view.id === "equipment")!.description}
+              >
+                <EquipmentSlotsPanel config={config} onChange={handleChange} />
+              </WorkspaceSection>
+              )}
+
+              {characterStudioSubView === "sprites" && (
+              <WorkspaceSection
+                kicker="Sprites"
+                title={CHARACTER_STUDIO_VIEWS.find((view) => view.id === "sprites")!.title}
+                description={CHARACTER_STUDIO_VIEWS.find((view) => view.id === "sprites")!.description}
               >
                 <div className="flex flex-col gap-6">
-                  <CharacterCreationStudio config={config} onChange={handleChange} />
-                  <EquipmentSlotsPanel config={config} onChange={handleChange} />
                   <ImagesPanel config={config} onChange={handleChange} />
                   <PlayerTiersPanel config={config} onChange={handleChange} />
                 </div>
               </WorkspaceSection>
+              )}
             </>
           )}
 
           {activeWorkspace === "abilityStudio" && (
             <>
+              {abilityStudioSubView === "stats" && (
               <WorkspaceSection
                 kicker="Stats"
-                title="Stat definitions and bindings"
-                description="Keep primary stats and their mechanical bindings near the abilities that depend on them."
+                title={ABILITY_STUDIO_VIEWS.find((view) => view.id === "stats")!.title}
+                description={ABILITY_STUDIO_VIEWS.find((view) => view.id === "stats")!.description}
               >
                 <StatsPanel config={config} onChange={handleChange} />
               </WorkspaceSection>
+              )}
 
+              {abilityStudioSubView === "abilities" && (
               <WorkspaceSection
                 kicker="Abilities"
-                title="Ability designer"
-                description="Class restrictions, cost, cooldown, target type, and effect tuning all stay in one editing pass."
+                title={ABILITY_STUDIO_VIEWS.find((view) => view.id === "abilities")!.title}
+                description={ABILITY_STUDIO_VIEWS.find((view) => view.id === "abilities")!.description}
               >
                 <AbilityDesigner config={config} onChange={handleChange} />
               </WorkspaceSection>
+              )}
 
+              {abilityStudioSubView === "conditions" && (
               <WorkspaceSection
                 kicker="Status effects"
-                title="Condition designer"
-                description="Buffs, debuffs, and ticks are grouped with the rest of the combat language instead of isolated in a separate config strip."
+                title={ABILITY_STUDIO_VIEWS.find((view) => view.id === "conditions")!.title}
+                description={ABILITY_STUDIO_VIEWS.find((view) => view.id === "conditions")!.description}
               >
                 <StatusEffectDesigner config={config} onChange={handleChange} />
               </WorkspaceSection>
+              )}
             </>
           )}
 

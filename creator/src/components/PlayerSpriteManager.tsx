@@ -69,10 +69,18 @@ function SpriteThumbnail({ fileName }: { fileName: string | undefined }) {
 function SpriteLightbox({
   spriteKey: key,
   fileName,
+  canRegenerate,
+  canDelete,
+  onRegenerate,
+  onDelete,
   onClose,
 }: {
   spriteKey: string;
   fileName: string;
+  canRegenerate: boolean;
+  canDelete: boolean;
+  onRegenerate: () => void;
+  onDelete: () => void;
   onClose: () => void;
 }) {
   const src = useImageSrc(fileName);
@@ -108,6 +116,22 @@ function SpriteLightbox({
           </div>
         )}
         <span className="font-mono text-xs text-text-secondary">{key}</span>
+        <div className="flex gap-2">
+          <button
+            onClick={onRegenerate}
+            disabled={!canRegenerate}
+            className="rounded-full border border-accent/40 px-4 py-2 text-xs text-accent transition-colors hover:bg-accent/10 disabled:opacity-40"
+          >
+            Regenerate
+          </button>
+          <button
+            onClick={onDelete}
+            disabled={!canDelete}
+            className="rounded-full border border-status-error/40 px-4 py-2 text-xs text-status-error transition-colors hover:bg-status-error/10 disabled:opacity-40"
+          >
+            Delete
+          </button>
+        </div>
         <button
           onClick={onClose}
           className="absolute -right-3 -top-3 flex h-7 w-7 items-center justify-center rounded-full bg-bg-elevated text-text-primary shadow hover:bg-bg-hover"
@@ -138,7 +162,7 @@ export function PlayerSpriteManager() {
   const [deployResult, setDeployResult] = useState<SyncProgress | null>(null);
   const [filterRace, setFilterRace] = useState<string>("all");
   const [filterClass, setFilterClass] = useState<string>("all");
-  const [viewSprite, setViewSprite] = useState<{ key: string; fileName: string } | null>(null);
+  const [viewSprite, setViewSprite] = useState<{ key: string; fileName: string; assetId: string; race: string; cls: string; tier: SpriteTier } | null>(null);
 
   // Generation state
   const [generating, setGenerating] = useState<string | null>(null); // spriteKey being generated
@@ -664,7 +688,7 @@ export function PlayerSpriteManager() {
           </code>
           {" | "}Base and staff sprites use <code className="font-mono">base</code> instead of a class key.
           {" | "}Tiers: {allTiers.map((t) => `t${t}`).join(", ")}
-          {" | "}Hover a cell to generate, regenerate, or delete.
+          {" | "}Click a sprite to open the larger view.
         </p>
 
         {filteredRaces.map((race) => (
@@ -717,7 +741,6 @@ export function PlayerSpriteManager() {
                         const isGenerating = generating === key;
                         const isEmpty = !asset;
                         const canGenerate = hasApiKey && !batchRunning && !generating;
-                        const canDelete = !isEmpty && !batchRunning && !generating;
 
                         return (
                           <td
@@ -734,40 +757,34 @@ export function PlayerSpriteManager() {
                                 </div>
                               ) : (
                                 <>
-                                  <SpriteThumbnail fileName={asset?.file_name} />
+                                  <button
+                                    disabled={isEmpty}
+                                    onClick={() => {
+                                      if (asset) {
+                                        setViewSprite({ key, fileName: asset.file_name, assetId: asset.id, race, cls: slotClass, tier });
+                                      }
+                                    }}
+                                    className="h-full w-full disabled:cursor-default"
+                                  >
+                                    <SpriteThumbnail fileName={asset?.file_name} />
+                                  </button>
                                   {/* Hover overlay with actions */}
                                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-0.5 bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
-                                    {!isEmpty && (
-                                      <button
-                                        onClick={() => setViewSprite({ key, fileName: asset.file_name })}
-                                        className="rounded px-1 py-0.5 text-[9px] font-medium text-text-primary hover:bg-white/20"
-                                        title="View larger"
-                                      >
-                                        View
-                                      </button>
-                                    )}
-                                    <div className="flex gap-0.5">
-                                      {canGenerate && (
+                                    {isEmpty ? (
+                                      canGenerate && (
                                         <button
                                           onClick={() => handleGenerateOne(race, slotClass, tier)}
-                                          className="rounded px-1 py-0.5 text-[9px] font-medium text-accent hover:bg-accent/20"
-                                          title={isEmpty ? "Generate" : "Regenerate"}
+                                          className="rounded px-1.5 py-0.5 text-[9px] font-medium text-accent hover:bg-accent/20"
+                                          title="Generate"
                                         >
-                                          {isEmpty ? "Gen" : "Regen"}
+                                          Generate
                                         </button>
-                                      )}
-                                      {canDelete && (
-                                        <button
-                                          onClick={async () => {
-                                            await deleteAsset(asset.id);
-                                          }}
-                                          className="rounded px-1 py-0.5 text-[9px] font-medium text-status-error hover:bg-status-error/20"
-                                          title="Delete sprite"
-                                        >
-                                          Del
-                                        </button>
-                                      )}
-                                    </div>
+                                      )
+                                    ) : (
+                                      <div className="rounded px-1.5 py-0.5 text-[9px] font-medium text-text-primary">
+                                        View
+                                      </div>
+                                    )}
                                   </div>
                                 </>
                               )}
@@ -789,6 +806,17 @@ export function PlayerSpriteManager() {
         <SpriteLightbox
           spriteKey={viewSprite.key}
           fileName={viewSprite.fileName}
+          canRegenerate={!batchRunning && !generating}
+          canDelete={!batchRunning && !generating}
+          onRegenerate={() => {
+            setViewSprite(null);
+            void handleGenerateOne(viewSprite.race, viewSprite.cls, viewSprite.tier);
+          }}
+          onDelete={() => {
+            const assetId = viewSprite.assetId;
+            setViewSprite(null);
+            void deleteAsset(assetId);
+          }}
           onClose={() => setViewSprite(null)}
         />
       )}
