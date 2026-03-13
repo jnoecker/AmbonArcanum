@@ -11,13 +11,14 @@ import {
   tierRange,
   getAllTiers,
   totalSprites,
+  isRaceOnlyTier,
+  type SpriteTier,
 } from "@/lib/spriteMatrix";
 import {
   composePrompt,
   getEnhanceSystemPrompt,
   UNIVERSAL_NEGATIVE,
   ART_STYLE_LABELS,
-  type ArtStyle,
 } from "@/lib/arcanumPrompts";
 import {
   generateSpriteTemplate,
@@ -27,6 +28,7 @@ import {
 import { TIER_ORDER } from "@/lib/defaultSpriteData";
 import { IMAGE_MODELS, ENTITY_DIMENSIONS } from "@/types/assets";
 import type { AssetEntry, GeneratedImage, SyncProgress } from "@/types/assets";
+import type { AppConfig } from "@/types/config";
 import { removeBgAndSave } from "@/lib/useBackgroundRemoval";
 
 interface SpriteImportResult {
@@ -36,9 +38,18 @@ interface SpriteImportResult {
   errors: string[];
 }
 
-/** Convert spriteMatrix tier format (number | "staff") to spritePromptGen format ("t0", "tstaff"). */
-function tierToPromptKey(tier: number | "staff"): string {
+/** Convert spriteMatrix tier format to spritePromptGen format ("t0", "tstaff"). */
+function tierToPromptKey(tier: SpriteTier): string {
   return `t${tier}`;
+}
+
+function displayClassLabel(
+  cls: string,
+  config: AppConfig | null,
+) {
+  return cls === "base"
+    ? "Shared race form"
+    : (config?.classes[cls.toUpperCase()]?.displayName ?? cls);
 }
 
 function SpriteThumbnail({ fileName }: { fileName: string | undefined }) {
@@ -58,10 +69,18 @@ function SpriteThumbnail({ fileName }: { fileName: string | undefined }) {
 function SpriteLightbox({
   spriteKey: key,
   fileName,
+  canRegenerate,
+  canDelete,
+  onRegenerate,
+  onDelete,
   onClose,
 }: {
   spriteKey: string;
   fileName: string;
+  canRegenerate: boolean;
+  canDelete: boolean;
+  onRegenerate: () => void;
+  onDelete: () => void;
   onClose: () => void;
 }) {
   const src = useImageSrc(fileName);
@@ -97,6 +116,22 @@ function SpriteLightbox({
           </div>
         )}
         <span className="font-mono text-xs text-text-secondary">{key}</span>
+        <div className="flex gap-2">
+          <button
+            onClick={onRegenerate}
+            disabled={!canRegenerate}
+            className="rounded-full border border-accent/40 px-4 py-2 text-xs text-accent transition-colors hover:bg-accent/10 disabled:opacity-40"
+          >
+            Regenerate
+          </button>
+          <button
+            onClick={onDelete}
+            disabled={!canDelete}
+            className="rounded-full border border-status-error/40 px-4 py-2 text-xs text-status-error transition-colors hover:bg-status-error/10 disabled:opacity-40"
+          >
+            Delete
+          </button>
+        </div>
         <button
           onClick={onClose}
           className="absolute -right-3 -top-3 flex h-7 w-7 items-center justify-center rounded-full bg-bg-elevated text-text-primary shadow hover:bg-bg-hover"
@@ -116,7 +151,6 @@ export function PlayerSpriteManager() {
   const acceptAsset = useAssetStore((s) => s.acceptAsset);
   const deleteAsset = useAssetStore((s) => s.deleteAsset);
   const artStyle = useAssetStore((s) => s.artStyle);
-  const setArtStyle = useAssetStore((s) => s.setArtStyle);
 
   useEffect(() => {
     loadAssets();
@@ -128,7 +162,7 @@ export function PlayerSpriteManager() {
   const [deployResult, setDeployResult] = useState<SyncProgress | null>(null);
   const [filterRace, setFilterRace] = useState<string>("all");
   const [filterClass, setFilterClass] = useState<string>("all");
-  const [viewSprite, setViewSprite] = useState<{ key: string; fileName: string } | null>(null);
+  const [viewSprite, setViewSprite] = useState<{ key: string; fileName: string; assetId: string; race: string; cls: string; tier: SpriteTier } | null>(null);
 
   // Generation state
   const [generating, setGenerating] = useState<string | null>(null); // spriteKey being generated
@@ -169,22 +203,46 @@ export function PlayerSpriteManager() {
     return map;
   }, [assets]);
 
-  // Count only sprites that match a valid matrix slot
-  const coveredCount = useMemo(() => {
-    let count = 0;
-    for (const race of races) {
-      for (const cls of classes) {
-        for (const tier of tiers) {
-          if (spriteMap.has(spriteKey(race, cls, tier))) count++;
-        }
-      }
-    }
-    return count;
-  }, [races, classes, tiers, spriteMap]);
-
   // Apply filters
   const filteredRaces = filterRace === "all" ? races : [filterRace];
   const filteredClasses = filterClass === "all" ? classes : [filterClass];
+  const sharedTiers = useMemo(() => tiers.filter(isRaceOnlyTier), [tiers]);
+  const classTiers = useMemo(() => tiers.filter((tier) => !isRaceOnlyTier(tier)), [tiers]);
+
+  const spriteSlots = useMemo(() => {
+    const slots: Array<{ race: string; cls: string; tier: SpriteTier }> = [];
+    for (const race of races) {
+      for (const tier of sharedTiers) {
+        slots.push({ race, cls: "base", tier });
+      }
+      for (const cls of classes) {
+        for (const tier of classTiers) {
+          slots.push({ race, cls, tier });
+        }
+      }
+    }
+    return slots;
+  }, [classTiers, classes, races, sharedTiers]);
+
+  const visibleSpriteSlots = useMemo(() => {
+    const slots: Array<{ race: string; cls: string; tier: SpriteTier }> = [];
+    for (const race of filteredRaces) {
+      for (const tier of sharedTiers) {
+        slots.push({ race, cls: "base", tier });
+      }
+      for (const cls of filteredClasses) {
+        for (const tier of classTiers) {
+          slots.push({ race, cls, tier });
+        }
+      }
+    }
+    return slots;
+  }, [classTiers, filteredClasses, filteredRaces, sharedTiers]);
+
+  const coveredCount = useMemo(
+    () => spriteSlots.filter((slot) => spriteMap.has(spriteKey(slot.race, slot.cls, slot.tier))).length,
+    [spriteMap, spriteSlots],
+  );
 
   /** Generate a sprite template (one LLM call, reusable for all sprites). */
   const handleGenerateTemplate = useCallback(async () => {
@@ -208,10 +266,11 @@ export function PlayerSpriteManager() {
   const generateSprite = useCallback(async (
     race: string,
     cls: string,
-    tier: number | "staff",
+    tier: SpriteTier,
   ): Promise<boolean> => {
     const key = spriteKey(race, cls, tier);
     const tierKey = tierToPromptKey(tier);
+    const promptClass = isRaceOnlyTier(tier) ? "base" : cls;
 
     let finalPrompt: string;
 
@@ -219,7 +278,7 @@ export function PlayerSpriteManager() {
     if (spriteTemplate) {
       finalPrompt = fillSpriteTemplate(spriteTemplate, {
         race: race.toUpperCase(),
-        playerClass: cls.toUpperCase(),
+        playerClass: promptClass.toUpperCase(),
         tier: tierKey,
       });
     } else {
@@ -234,11 +293,11 @@ export function PlayerSpriteManager() {
         try {
           const systemPrompt = getEnhanceSystemPrompt(artStyle);
           const raceDef = config?.races[race.toUpperCase()];
-          const classDef = config?.classes[cls.toUpperCase()];
+          const classDef = promptClass === "base" ? undefined : config?.classes[promptClass.toUpperCase()];
           const context = [
             `Race: ${raceDef?.displayName ?? race}`,
             raceDef?.description ? `Race description: ${raceDef.description}` : null,
-            `Class: ${classDef?.displayName ?? cls}`,
+            `Class: ${promptClass === "base" ? "Base" : (classDef?.displayName ?? promptClass)}`,
             classDef?.description ? `Class description: ${classDef.description}` : null,
             `Tier: ${tierKey}`,
           ].filter(Boolean).join("\n");
@@ -287,7 +346,7 @@ export function PlayerSpriteManager() {
   const handleGenerateOne = useCallback(async (
     race: string,
     cls: string,
-    tier: number | "staff",
+    tier: SpriteTier,
   ) => {
     const key = spriteKey(race, cls, tier);
     setGenerating(key);
@@ -303,18 +362,7 @@ export function PlayerSpriteManager() {
 
   /** Batch generate all missing sprites (respects current filters). */
   const handleBatchGenerate = useCallback(async () => {
-    // Collect missing sprite slots
-    const missing: Array<{ race: string; cls: string; tier: number | "staff" }> = [];
-    for (const race of filteredRaces) {
-      for (const cls of filteredClasses) {
-        for (const tier of tiers) {
-          const key = spriteKey(race, cls, tier);
-          if (!spriteMap.has(key)) {
-            missing.push({ race, cls, tier });
-          }
-        }
-      }
-    }
+    const missing = visibleSpriteSlots.filter((slot) => !spriteMap.has(spriteKey(slot.race, slot.cls, slot.tier)));
 
     if (missing.length === 0) return;
 
@@ -355,7 +403,7 @@ export function PlayerSpriteManager() {
     setGenerating(null);
     setBatchRunning(false);
     await loadAssets();
-  }, [filteredRaces, filteredClasses, tiers, spriteMap, settings, generateSprite, loadAssets]);
+  }, [visibleSpriteSlots, spriteMap, settings, generateSprite, loadAssets]);
 
   const handleAbortBatch = useCallback(() => {
     abortRef.current = true;
@@ -393,17 +441,21 @@ export function PlayerSpriteManager() {
     }
   }, []);
 
-  const missingInView = useMemo(() => {
-    let count = 0;
-    for (const race of filteredRaces) {
-      for (const cls of filteredClasses) {
-        for (const tier of tiers) {
-          if (!spriteMap.has(spriteKey(race, cls, tier))) count++;
-        }
-      }
-    }
-    return count;
-  }, [filteredRaces, filteredClasses, tiers, spriteMap]);
+  const missingInView = useMemo(
+    () => visibleSpriteSlots.filter((slot) => !spriteMap.has(spriteKey(slot.race, slot.cls, slot.tier))).length,
+    [spriteMap, visibleSpriteSlots],
+  );
+  const tableRows = useMemo(
+    () => [
+      { cls: "base", label: "Shared race form", shared: true },
+      ...filteredClasses.map((cls) => ({
+        cls,
+        label: displayClassLabel(cls, config),
+        shared: false,
+      })),
+    ],
+    [config, filteredClasses],
+  );
 
   if (races.length === 0 || classes.length === 0) {
     return (
@@ -428,16 +480,9 @@ export function PlayerSpriteManager() {
         </span>
 
         <div className="ml-auto flex items-center gap-2">
-          {/* Art style */}
-          <select
-            value={artStyle}
-            onChange={(e) => setArtStyle(e.target.value as ArtStyle)}
-            className="rounded border border-border-default bg-bg-primary px-1.5 py-1 text-[10px] text-text-primary outline-none"
-          >
-            {Object.entries(ART_STYLE_LABELS).map(([id, label]) => (
-              <option key={id} value={id}>{label}</option>
-            ))}
-          </select>
+          <div className="rounded border border-border-default bg-bg-primary px-2 py-1 text-[10px] text-text-secondary">
+            {ART_STYLE_LABELS[artStyle]}
+          </div>
 
           {/* Generate template */}
           <button
@@ -639,10 +684,11 @@ export function PlayerSpriteManager() {
         <p className="mb-3 text-[10px] text-text-muted">
           Filename format:{" "}
           <code className="font-mono">
-            player_sprites/&#123;race&#125;_&#123;class&#125;_t&#123;tier&#125;.png
+            player_sprites/&#123;race&#125;_&#123;class-or-base&#125;_t&#123;tier&#125;.png
           </code>
+          {" | "}Base and staff sprites use <code className="font-mono">base</code> instead of a class key.
           {" | "}Tiers: {allTiers.map((t) => `t${t}`).join(", ")}
-          {" | "}Hover a cell to generate, regenerate, or delete.
+          {" | "}Click a sprite to open the larger view.
         </p>
 
         {filteredRaces.map((race) => (
@@ -672,18 +718,29 @@ export function PlayerSpriteManager() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredClasses.map((cls) => (
-                    <tr key={cls}>
+                  {tableRows.map((row) => (
+                    <tr key={row.cls}>
                       <td className="border border-border-default bg-bg-secondary px-2 py-1 text-xs text-text-secondary">
-                        {config.classes[cls.toUpperCase()]?.displayName ?? cls}
+                        {row.label}
                       </td>
                       {tiers.map((tier) => {
-                        const key = spriteKey(race, cls, tier);
+                        const slotClass = isRaceOnlyTier(tier) ? "base" : row.cls;
+                        const isUnavailable = row.shared ? !isRaceOnlyTier(tier) : isRaceOnlyTier(tier);
+                        if (isUnavailable) {
+                          return (
+                            <td key={tier} className="border border-border-default bg-bg-primary/40 p-0.5">
+                              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded text-[9px] text-text-muted/60">
+                                --
+                              </div>
+                            </td>
+                          );
+                        }
+
+                        const key = spriteKey(race, slotClass, tier);
                         const asset = spriteMap.get(key);
                         const isGenerating = generating === key;
                         const isEmpty = !asset;
                         const canGenerate = hasApiKey && !batchRunning && !generating;
-                        const canDelete = !isEmpty && !batchRunning && !generating;
 
                         return (
                           <td
@@ -700,40 +757,34 @@ export function PlayerSpriteManager() {
                                 </div>
                               ) : (
                                 <>
-                                  <SpriteThumbnail fileName={asset?.file_name} />
+                                  <button
+                                    disabled={isEmpty}
+                                    onClick={() => {
+                                      if (asset) {
+                                        setViewSprite({ key, fileName: asset.file_name, assetId: asset.id, race, cls: slotClass, tier });
+                                      }
+                                    }}
+                                    className="h-full w-full disabled:cursor-default"
+                                  >
+                                    <SpriteThumbnail fileName={asset?.file_name} />
+                                  </button>
                                   {/* Hover overlay with actions */}
                                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-0.5 bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
-                                    {!isEmpty && (
-                                      <button
-                                        onClick={() => setViewSprite({ key, fileName: asset.file_name })}
-                                        className="rounded px-1 py-0.5 text-[9px] font-medium text-text-primary hover:bg-white/20"
-                                        title="View larger"
-                                      >
+                                    {isEmpty ? (
+                                      canGenerate && (
+                                        <button
+                                          onClick={() => handleGenerateOne(race, slotClass, tier)}
+                                          className="rounded px-1.5 py-0.5 text-[9px] font-medium text-accent hover:bg-accent/20"
+                                          title="Generate"
+                                        >
+                                          Generate
+                                        </button>
+                                      )
+                                    ) : (
+                                      <div className="rounded px-1.5 py-0.5 text-[9px] font-medium text-text-primary">
                                         View
-                                      </button>
+                                      </div>
                                     )}
-                                    <div className="flex gap-0.5">
-                                      {canGenerate && (
-                                        <button
-                                          onClick={() => handleGenerateOne(race, cls, tier)}
-                                          className="rounded px-1 py-0.5 text-[9px] font-medium text-accent hover:bg-accent/20"
-                                          title={isEmpty ? "Generate" : "Regenerate"}
-                                        >
-                                          {isEmpty ? "Gen" : "Regen"}
-                                        </button>
-                                      )}
-                                      {canDelete && (
-                                        <button
-                                          onClick={async () => {
-                                            await deleteAsset(asset.id);
-                                          }}
-                                          className="rounded px-1 py-0.5 text-[9px] font-medium text-status-error hover:bg-status-error/20"
-                                          title="Delete sprite"
-                                        >
-                                          Del
-                                        </button>
-                                      )}
-                                    </div>
                                   </div>
                                 </>
                               )}
@@ -755,6 +806,17 @@ export function PlayerSpriteManager() {
         <SpriteLightbox
           spriteKey={viewSprite.key}
           fileName={viewSprite.fileName}
+          canRegenerate={!batchRunning && !generating}
+          canDelete={!batchRunning && !generating}
+          onRegenerate={() => {
+            setViewSprite(null);
+            void handleGenerateOne(viewSprite.race, viewSprite.cls, viewSprite.tier);
+          }}
+          onDelete={() => {
+            const assetId = viewSprite.assetId;
+            setViewSprite(null);
+            void deleteAsset(assetId);
+          }}
           onClose={() => setViewSprite(null)}
         />
       )}

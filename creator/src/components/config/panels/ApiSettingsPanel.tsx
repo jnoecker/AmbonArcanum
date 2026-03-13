@@ -1,13 +1,7 @@
 import { useState, useEffect } from "react";
-import { invoke } from "@tauri-apps/api/core";
 import { useAssetStore } from "@/stores/assetStore";
-import { useProjectStore } from "@/stores/projectStore";
-import { useZoneStore } from "@/stores/zoneStore";
-import { useConfigStore } from "@/stores/configStore";
-import { saveProjectConfig } from "@/lib/saveConfig";
-import { buildMonolithicConfig } from "@/lib/exportMud";
 import { IMAGE_MODELS } from "@/types/assets";
-import type { Settings, SyncProgress } from "@/types/assets";
+import type { Settings } from "@/types/assets";
 
 const LLM_PROVIDERS = [
   { id: "deepinfra", label: "DeepInfra", keyField: "deepinfra_api_key" as const },
@@ -20,7 +14,13 @@ const IMAGE_PROVIDERS = [
   { id: "runware", label: "Runware" },
 ];
 
-export function ApiSettingsPanel() {
+export function ApiSettingsPanel({
+  initialSection = "providers",
+  showDeploymentActions = true,
+}: {
+  initialSection?: "providers" | "delivery";
+  showDeploymentActions?: boolean;
+}) {
   const settings = useAssetStore((s) => s.settings);
   const loadSettings = useAssetStore((s) => s.loadSettings);
   const saveSettings = useAssetStore((s) => s.saveSettings);
@@ -29,11 +29,6 @@ export function ApiSettingsPanel() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [deploying, setDeploying] = useState(false);
-  const [deployResult, setDeployResult] = useState<string | null>(null);
-  const [deployingZones, setDeployingZones] = useState(false);
-  const [zoneDeployResult, setZoneDeployResult] = useState<string | null>(null);
-  const mudDir = useProjectStore((s) => s.project?.mudDir);
 
   useEffect(() => {
     loadSettings();
@@ -68,11 +63,13 @@ export function ApiSettingsPanel() {
   const filteredModels = IMAGE_MODELS.filter(
     (m) => m.provider === draft.image_provider,
   );
+  const showProviderSections = initialSection !== "delivery";
+  const showDeliverySection = initialSection !== "providers";
 
   return (
     <div className="flex flex-col gap-6">
       {/* ─── API Keys ─────────────────────────────────────────── */}
-      <div>
+      {showProviderSections && <div>
         <h3 className="mb-3 font-display text-xs uppercase tracking-widest text-text-muted">
           API Keys
         </h3>
@@ -140,10 +137,10 @@ export function ApiSettingsPanel() {
             />
           </div>
         </div>
-      </div>
+      </div>}
 
       {/* ─── Provider Selection ───────────────────────────────── */}
-      <div className="border-t border-border-default pt-4">
+      {showProviderSections && <div className="border-t border-border-default pt-4">
         <h3 className="mb-3 font-display text-xs uppercase tracking-widest text-text-muted">
           Providers
         </h3>
@@ -211,10 +208,10 @@ export function ApiSettingsPanel() {
             </div>
           </div>
         </div>
-      </div>
+      </div>}
 
       {/* ─── Image Model ──────────────────────────────────────── */}
-      <div className="border-t border-border-default pt-4">
+      {showProviderSections && <div className="border-t border-border-default pt-4">
         <label className="mb-1 block font-display text-[10px] uppercase tracking-widest text-text-muted">
           Default Image Model
         </label>
@@ -245,10 +242,10 @@ export function ApiSettingsPanel() {
             </label>
           ))}
         </div>
-      </div>
+      </div>}
 
       {/* ─── Enhance Model ────────────────────────────────────── */}
-      <div>
+      {showProviderSections && <div>
         <label className="mb-1 block font-display text-[10px] uppercase tracking-widest text-text-muted">
           Prompt Enhancement Model
         </label>
@@ -263,10 +260,10 @@ export function ApiSettingsPanel() {
         <p className="mt-1 text-[10px] text-text-muted">
           Used by DeepInfra and OpenRouter providers
         </p>
-      </div>
+      </div>}
 
       {/* ─── Generation Options ───────────────────────────────── */}
-      <div className="border-t border-border-default pt-4">
+      {showProviderSections && <div className="border-t border-border-default pt-4">
         <h3 className="mb-3 font-display text-xs uppercase tracking-widest text-text-muted">
           Generation Options
         </h3>
@@ -305,10 +302,10 @@ export function ApiSettingsPanel() {
             Runs client-side AI background removal on sprite-type assets (mobs, items, abilities, player sprites, race/class portraits) after generation. The transparent version is saved as a variant alongside the original.
           </p>
         </div>
-      </div>
+      </div>}
 
       {/* ─── R2 Section ───────────────────────────────────────── */}
-      <div className="border-t border-border-default pt-4">
+      {showDeliverySection && <div className="border-t border-border-default pt-4">
         <h3 className="mb-3 font-display text-xs uppercase tracking-widest text-text-muted">
           Cloudflare R2 (Asset CDN)
         </h3>
@@ -389,97 +386,13 @@ export function ApiSettingsPanel() {
             </p>
           </div>
 
-          {/* Deploy Config */}
-          <div className="mt-1 border-t border-border-muted pt-3">
-            <div className="flex items-center gap-2">
-              <button
-                onClick={async () => {
-                  if (!mudDir) return;
-                  setDeploying(true);
-                  setDeployResult(null);
-                  try {
-                    const project = useProjectStore.getState().project;
-                    const configContent = project?.format === "standalone"
-                      ? buildMonolithicConfig()
-                      : undefined;
-                    const url = await invoke<string>("deploy_config_to_r2", {
-                      mudDir,
-                      configContent,
-                    });
-                    setDeployResult(`Deployed to ${url}`);
-                  } catch (e) {
-                    setDeployResult(`Failed: ${e}`);
-                  } finally {
-                    setDeploying(false);
-                  }
-                }}
-                disabled={deploying || !mudDir || !draft.r2_bucket}
-                className="rounded bg-gradient-to-r from-accent-muted to-accent px-4 py-1.5 text-xs font-medium text-accent-emphasis transition-all hover:shadow-[var(--glow-aurum)] hover:brightness-110 disabled:opacity-50"
-              >
-                {deploying ? "Deploying..." : "Deploy Config to R2"}
-              </button>
-              {deployResult && (
-                <span className={`text-[10px] ${deployResult.startsWith("Failed") ? "text-status-error" : "text-status-success"}`}>
-                  {deployResult}
-                </span>
-              )}
+          {showDeploymentActions && (
+            <div className="mt-1 rounded-[20px] border border-white/10 bg-black/10 px-4 py-3 text-[11px] leading-6 text-text-secondary">
+              Runtime publishing now lives in Operations / Handoff.
             </div>
-            <p className="mt-1 text-[10px] text-text-muted">
-              Uploads application-local.yaml to R2 for the demo cluster to pull
-            </p>
-
-            <div className="mt-2 flex items-center gap-2">
-              <button
-                onClick={async () => {
-                  if (!mudDir) return;
-                  setDeployingZones(true);
-                  setZoneDeployResult(null);
-                  try {
-                    const project = useProjectStore.getState().project;
-                    const format = project?.format;
-                    const result = await invoke<SyncProgress>("deploy_zones_to_r2", { mudDir, format });
-
-                    // Write explicit zone list to world.resources in config
-                    const zones = useZoneStore.getState().zones;
-                    const resources = Array.from(zones.keys()).sort()
-                      .map((id) => `world/${id}.yaml`);
-                    const currentConfig = useConfigStore.getState().config;
-                    if (currentConfig && resources.length > 0) {
-                      useConfigStore.getState().updateConfig({
-                        ...currentConfig,
-                        world: { ...currentConfig.world, resources },
-                      });
-                      const project = useProjectStore.getState().project;
-                      if (project) await saveProjectConfig(project);
-                    }
-
-                    setZoneDeployResult(
-                      `${result.uploaded} zone${result.uploaded !== 1 ? "s" : ""} deployed` +
-                      (result.failed > 0 ? `, ${result.failed} failed` : ""),
-                    );
-                  } catch (e) {
-                    setZoneDeployResult(`Failed: ${e}`);
-                  } finally {
-                    setDeployingZones(false);
-                  }
-                }}
-                disabled={deployingZones || !mudDir || !draft.r2_bucket}
-                className="rounded bg-gradient-to-r from-accent-muted to-accent px-4 py-1.5 text-xs font-medium text-accent-emphasis transition-all hover:shadow-[var(--glow-aurum)] hover:brightness-110 disabled:opacity-50"
-              >
-                {deployingZones ? "Deploying..." : "Deploy Zones to R2"}
-              </button>
-              {zoneDeployResult && (
-                <span className={`text-[10px] ${zoneDeployResult.startsWith("Failed") ? "text-status-error" : "text-status-success"}`}>
-                  {zoneDeployResult}
-                </span>
-              )}
-            </div>
-            <p className="mt-1 text-[10px] text-text-muted">
-              Uploads all zone YAML files to R2 for the demo cluster to pull
-            </p>
-          </div>
+          )}
         </div>
-      </div>
+      </div>}
 
       {/* Save — sticky at bottom */}
       <div className="sticky bottom-0 -mx-6 border-t border-border-default bg-bg-secondary px-6 py-3">

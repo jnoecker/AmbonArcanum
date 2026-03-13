@@ -1,14 +1,12 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { useZoneStore, type ZoneState } from "@/stores/zoneStore";
-import { useConfigStore } from "@/stores/configStore";
 import { useProjectStore } from "@/stores/projectStore";
-import type { Tab, ConfigSubTab } from "@/types/project";
+import type { Tab } from "@/types/project";
 import type { WorldFile } from "@/types/world";
 import { useGlobalSearch, ENTITY_TYPE_LABELS } from "@/lib/useGlobalSearch";
 import { NewZoneDialog } from "./NewZoneDialog";
 import { ConfirmDialog } from "./ConfirmDialog";
-import panelHeader from "@/assets/panel-header.jpg";
 import sidebarBg from "@/assets/sidebar-bg.png";
 import {
   addRoom,
@@ -135,35 +133,36 @@ function ZoneTree({
 
   return (
     <li className="group/zone">
-      <div className="flex items-center">
+      <div className="flex items-center gap-1">
         <button
           onClick={() => setExpanded((v) => !v)}
-          className="w-4 shrink-0 text-center text-[10px] text-text-muted"
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[10px] text-text-muted transition hover:bg-white/8 hover:text-text-primary"
         >
           {expanded ? "\u25BE" : "\u25B8"}
         </button>
         <button
           onClick={handleZoneClick}
-          className={`min-w-0 flex-1 rounded px-1.5 py-1 text-left text-xs transition-colors ${
+          className={`min-w-0 flex-1 rounded-2xl border px-3 py-2 text-left text-sm transition ${
             isActive
-              ? "bg-bg-hover text-text-primary"
-              : "text-text-secondary hover:bg-bg-hover hover:text-text-primary"
+              ? "border-[rgba(184,216,232,0.35)] bg-[linear-gradient(135deg,rgba(168,151,210,0.16),rgba(140,174,201,0.12))] text-text-primary"
+              : "border-white/8 bg-black/10 text-text-secondary hover:bg-white/8 hover:text-text-primary"
           }`}
         >
-          <span className="truncate">{zoneId}</span>
-          {zoneState.dirty && <span className="ml-1 text-accent">*</span>}
+          <span className="truncate font-medium">{zoneState.data.zone || zoneId}</span>
+          <span className="ml-2 truncate text-[11px] text-text-muted">{zoneId}</span>
+          {zoneState.dirty && <span className="ml-2 text-[11px] text-[rgb(214,177,193)]">Unsaved</span>}
         </button>
         <button
           onClick={() => onDelete(zoneId)}
-          className="ml-0.5 hidden rounded px-1 text-[10px] text-text-muted transition-colors hover:bg-status-danger/10 hover:text-status-danger group-hover/zone:block"
+          className="hidden rounded-full border border-white/8 px-2 py-1 text-[10px] text-text-muted transition hover:border-status-danger/40 hover:text-status-danger group-hover/zone:block"
           title="Delete zone"
         >
-          &times;
+          Remove
         </button>
       </div>
 
       {expanded && (
-        <div className="ml-4 mt-0.5 flex flex-col gap-0.5 border-l border-border-default pl-2">
+        <div className="ml-10 mt-2 flex flex-col gap-2 border-l border-white/8 pl-4">
           {CATEGORIES.map((cat) => {
             const collection = world[cat.collection] as Record<string, Record<string, unknown>> | undefined;
             const entries = collection ? Object.entries(collection) : [];
@@ -171,20 +170,20 @@ function ZoneTree({
 
             return (
               <div key={cat.key}>
-                <div className="flex items-center gap-1">
-                  <span className="text-[10px] uppercase tracking-wider text-text-muted">
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] uppercase tracking-[0.22em] text-text-muted">
                     {cat.label}
                   </span>
-                  <span className="text-[10px] text-text-muted">
+                  <span className="text-[11px] text-text-muted">
                     {entries.length}
                   </span>
                   {cat.addFn && (
                     <button
                       onClick={() => handleAdd(cat)}
-                      className="ml-auto rounded px-1 text-[10px] text-text-muted transition-colors hover:bg-bg-elevated hover:text-text-primary"
+                      className="ml-auto rounded-full border border-white/8 px-2 py-1 text-[10px] text-text-muted transition hover:bg-white/8 hover:text-text-primary"
                       title={`Add ${cat.label.replace(/s$/, "").toLowerCase()}`}
                     >
-                      +
+                      Add
                     </button>
                   )}
                 </div>
@@ -196,7 +195,7 @@ function ZoneTree({
                         <li key={id}>
                           <button
                             onClick={() => handleEntityClick(cat, id)}
-                            className="w-full truncate rounded px-1.5 py-0.5 text-left text-[11px] text-text-muted transition-colors hover:bg-bg-hover hover:text-text-secondary"
+                            className="w-full truncate rounded-xl px-2 py-1 text-left text-[12px] text-text-muted transition hover:bg-white/8 hover:text-text-secondary"
                             title={id}
                           >
                             {name || id}
@@ -219,9 +218,7 @@ function ZoneTree({
 
 export function Sidebar() {
   const zones = useZoneStore((s) => s.zones);
-  const configDirty = useConfigStore((s) => s.dirty);
   const openTab = useProjectStore((s) => s.openTab);
-  const setConfigSubTab = useProjectStore((s) => s.setConfigSubTab);
   const activeTabId = useProjectStore((s) => s.activeTabId);
 
   const closeTab = useProjectStore((s) => s.closeTab);
@@ -282,15 +279,53 @@ export function Sidebar() {
   );
 
   return (
-    <div className="relative flex h-full w-56 shrink-0 flex-col border-r border-border-default bg-bg-secondary">
-      {/* Background image */}
+    <aside className="relative flex h-full w-[21rem] shrink-0 flex-col overflow-hidden rounded-[32px] border border-white/10 bg-[linear-gradient(165deg,rgba(53,63,92,0.92),rgba(37,45,68,0.95))] shadow-[0_18px_56px_rgba(8,10,18,0.32)]">
       <img
         src={sidebarBg}
         alt=""
-        className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-[0.12]"
+        className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-[0.14]"
       />
-      {/* Search */}
-      <div className="relative z-10 shrink-0 border-b border-border-default px-3 py-2">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-48 bg-[linear-gradient(180deg,rgba(168,151,210,0.18),transparent)]" />
+
+      <div className="relative z-10 border-b border-white/10 px-4 py-4">
+        <div className="mb-4">
+          <p className="text-[11px] uppercase tracking-[0.32em] text-text-muted">
+            Workspace
+          </p>
+          <h2 className="mt-2 font-display text-2xl text-text-primary">
+            Worldmaker
+          </h2>
+          <p className="mt-1 text-xs leading-5 text-text-secondary">
+            Build zones, tune systems, and review assets.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
+          {[
+            { id: "studio", label: "Studio", kind: "studio" as const },
+            { id: "config", label: "Character", kind: "config" as const },
+            { id: "sprites", label: "Sprites", kind: "sprites" as const },
+            { id: "console", label: "Console", kind: "console" as const },
+          ].map((entry) => (
+            <button
+              key={entry.id}
+              onClick={() => {
+                if (entry.id === "config") useProjectStore.getState().setConfigSubTab("characterStudio");
+                openTab({ id: entry.id, kind: entry.kind, label: entry.label });
+              }}
+              className={`rounded-2xl border px-3 py-3 text-left text-sm transition ${
+                activeTabId === entry.id
+                  ? "border-[rgba(184,216,232,0.35)] bg-[linear-gradient(135deg,rgba(168,151,210,0.16),rgba(140,174,201,0.12))] text-text-primary"
+                  : "border-white/8 bg-black/10 text-text-secondary hover:bg-white/8 hover:text-text-primary"
+              }`}
+            >
+              {entry.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="relative z-10 shrink-0 px-4 py-3">
         <div className="relative">
           <input
             ref={searchRef}
@@ -299,12 +334,12 @@ export function Sidebar() {
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleSearchKeyDown}
             placeholder="Search... (Ctrl+K)"
-            className="h-7 w-full rounded border border-border-default bg-bg-primary px-2 pr-6 text-xs text-text-primary outline-none placeholder:text-text-muted focus:border-accent"
+            className="h-10 w-full rounded-full border border-white/10 bg-black/15 px-4 pr-10 text-sm text-text-primary outline-none placeholder:text-text-muted focus:border-[rgba(184,216,232,0.38)]"
           />
           {query && (
             <button
               onClick={clearQuery}
-              className="absolute right-1.5 top-1/2 -translate-y-1/2 text-xs text-text-muted hover:text-text-primary"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-text-muted hover:text-text-primary"
             >
               &times;
             </button>
@@ -312,16 +347,17 @@ export function Sidebar() {
         </div>
       </div>
 
-      {/* Zones section (or search results) */}
-      <div className="relative z-10 flex-1 overflow-y-auto">
+      <div className="relative z-10 flex-1 overflow-y-auto px-4 pb-4">
         {isSearching ? (
-          <div className="px-3 py-2">
+          <div className="py-2">
             {grouped.size === 0 ? (
-              <p className="text-xs text-text-muted">No results</p>
+              <p className="rounded-2xl border border-dashed border-white/10 bg-black/10 px-4 py-6 text-sm text-text-muted">
+                No results for that search yet.
+              </p>
             ) : (
               [...grouped.entries()].map(([zoneId, entries]) => (
-                <div key={zoneId} className="mb-3">
-                  <h3 className="mb-1 font-display text-xs text-text-muted">
+                <div key={zoneId} className="mb-4">
+                  <h3 className="mb-2 font-display text-sm text-text-primary">
                     {zoneId}
                   </h3>
                   <ul className="flex flex-col gap-0.5">
@@ -337,9 +373,9 @@ export function Sidebar() {
                             openTab(tab);
                             clearQuery();
                           }}
-                          className="flex w-full items-center gap-1.5 rounded px-2 py-1 text-left text-xs transition-colors text-text-secondary hover:bg-bg-hover hover:text-text-primary"
+                          className="flex w-full items-center gap-2 rounded-2xl border border-white/8 bg-black/10 px-3 py-2 text-left text-xs transition hover:bg-white/8 hover:text-text-primary"
                         >
-                          <span className="shrink-0 rounded bg-bg-elevated px-1 py-0.5 font-mono text-[10px] text-text-muted">
+                          <span className="shrink-0 rounded-full bg-white/8 px-2 py-1 font-mono text-[10px] text-text-muted">
                             {ENTITY_TYPE_LABELS[entry.entityType]}
                           </span>
                           <span className="truncate">{entry.displayName}</span>
@@ -358,23 +394,25 @@ export function Sidebar() {
           </div>
         ) : (
         <>
-        <div className="px-3 py-2">
-          <div className="mb-2 flex items-center justify-between">
-            <h2 className="font-display text-xs uppercase tracking-widest text-text-muted">
+        <div className="py-2">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="font-display text-sm text-text-primary">
               Zones
             </h2>
             {hasProject && (
               <button
                 onClick={() => setShowNewZone(true)}
-                className="rounded px-1.5 py-0.5 text-xs text-text-muted transition-colors hover:bg-bg-elevated hover:text-text-primary"
+                className="rounded-full border border-white/10 bg-black/10 px-3 py-1 text-xs text-text-secondary transition hover:bg-white/8 hover:text-text-primary"
                 title="New Zone"
               >
-                +
+                New zone
               </button>
             )}
           </div>
           {sortedZones.length === 0 ? (
-            <p className="text-xs text-text-muted">No zones loaded</p>
+            <p className="rounded-2xl border border-dashed border-white/10 bg-black/10 px-4 py-6 text-sm text-text-muted">
+              No zones loaded.
+            </p>
           ) : (
             <ul className="flex flex-col gap-0.5">
               {sortedZones.map(([zoneId, zoneState]) => (
@@ -389,82 +427,12 @@ export function Sidebar() {
             </ul>
           )}
         </div>
-
-        {/* Decorative divider */}
-        <div className="mx-3 my-1 h-6 overflow-hidden rounded">
-          <img
-            src={panelHeader}
-            alt=""
-            className="h-full w-full object-cover opacity-40"
-          />
-        </div>
-
-        {/* Config section */}
-        <div className="px-3 py-2">
-          <h2 className="mb-2 font-display text-xs uppercase tracking-widest text-text-muted">
-            Config
-          </h2>
-          <ul className="flex flex-col gap-0.5">
-            {(
-              [
-                { label: "Game Config", subTab: "server" as ConfigSubTab },
-                { label: "World", subTab: "world" as ConfigSubTab },
-                { label: "Classes", subTab: "classes" as ConfigSubTab },
-                { label: "Races", subTab: "races" as ConfigSubTab },
-                { label: "Equipment", subTab: "equipmentSlots" as ConfigSubTab },
-              ]
-            ).map((entry) => (
-              <li key={entry.subTab}>
-                <button
-                  onClick={() => {
-                    setConfigSubTab(entry.subTab);
-                    openTab({ id: "config", kind: "config", label: "Config" });
-                  }}
-                  className={`w-full rounded px-2 py-1 text-left text-sm transition-colors ${
-                    activeTabId === "config"
-                      ? "bg-bg-hover text-text-primary"
-                      : "text-text-secondary hover:bg-bg-hover hover:text-text-primary"
-                  }`}
-                >
-                  {entry.label}
-                  {entry.subTab === "server" && configDirty && (
-                    <span className="ml-1 text-accent">*</span>
-                  )}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
         </>
         )}
       </div>
 
-      {/* Bottom shortcuts */}
-      <div className="relative z-10 border-t border-border-default px-3 py-2">
-        <button
-          onClick={() =>
-            openTab({ id: "sprites", kind: "sprites", label: "Sprites" })
-          }
-          className={`w-full rounded px-2 py-1 text-left text-sm transition-colors ${
-            activeTabId === "sprites"
-              ? "bg-bg-hover text-text-primary"
-              : "text-text-secondary hover:bg-bg-hover hover:text-text-primary"
-          }`}
-        >
-          Player Sprites
-        </button>
-        <button
-          onClick={() =>
-            openTab({ id: "console", kind: "console", label: "Console" })
-          }
-          className={`w-full rounded px-2 py-1 text-left text-sm transition-colors ${
-            activeTabId === "console"
-              ? "bg-bg-hover text-text-primary"
-              : "text-text-secondary hover:bg-bg-hover hover:text-text-primary"
-          }`}
-        >
-          Console
-        </button>
+      <div className="relative z-10 border-t border-white/10 px-4 py-3 text-[11px] text-text-muted">
+        `Ctrl+K` search • `Ctrl+S` save • `Ctrl+,` settings
       </div>
 
       {showNewZone && <NewZoneDialog onClose={() => setShowNewZone(false)} />}
@@ -478,6 +446,6 @@ export function Sidebar() {
           onCancel={() => setDeleteTarget(null)}
         />
       )}
-    </div>
+    </aside>
   );
 }

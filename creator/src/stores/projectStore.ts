@@ -1,6 +1,16 @@
 import { create } from "zustand";
 import { saveUIState, loadUIState } from "@/lib/uiPersistence";
-import type { Project, Tab, ConfigSubTab } from "@/types/project";
+import type {
+  Project,
+  Tab,
+  ConfigSubTab,
+  CharacterStudioSubView,
+  AbilityStudioSubView,
+  StudioSubView,
+  WorldSystemsSubView,
+  ContentStudioSubView,
+  OperationsSubView,
+} from "@/types/project";
 
 /** Navigation target for sidebar -> zone editor entity selection. */
 export interface PendingNavigation {
@@ -15,6 +25,12 @@ interface ProjectStore {
   tabs: Tab[];
   activeTabId: string | null;
   configSubTab: ConfigSubTab;
+  characterStudioSubView: CharacterStudioSubView;
+  abilityStudioSubView: AbilityStudioSubView;
+  studioSubView: StudioSubView;
+  worldSystemsSubView: WorldSystemsSubView;
+  contentStudioSubView: ContentStudioSubView;
+  operationsSubView: OperationsSubView;
   pendingNavigation: PendingNavigation | null;
 
   setProject: (project: Project) => void;
@@ -27,6 +43,12 @@ interface ProjectStore {
   /** Restore previously open tabs after project load. */
   restoreTabs: (tabs: Tab[], activeTabId: string | null) => void;
   setConfigSubTab: (subTab: ConfigSubTab) => void;
+  setCharacterStudioSubView: (subView: CharacterStudioSubView) => void;
+  setAbilityStudioSubView: (subView: AbilityStudioSubView) => void;
+  setStudioSubView: (subView: StudioSubView) => void;
+  setWorldSystemsSubView: (subView: WorldSystemsSubView) => void;
+  setContentStudioSubView: (subView: ContentStudioSubView) => void;
+  setOperationsSubView: (subView: OperationsSubView) => void;
   navigateTo: (nav: PendingNavigation) => void;
   consumeNavigation: () => PendingNavigation | null;
 }
@@ -35,14 +57,27 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
   project: null,
   tabs: [],
   activeTabId: null,
-  configSubTab: "server" as ConfigSubTab,
+  configSubTab: "characterStudio" as ConfigSubTab,
+  characterStudioSubView: "classes",
+  abilityStudioSubView: "stats",
+  studioSubView: "home",
+  worldSystemsSubView: "overview",
+  contentStudioSubView: "overview",
+  operationsSubView: "overview",
   pendingNavigation: null,
 
   setProject: (project) =>
     set({
       project,
-      tabs: [{ id: "console", kind: "console", label: "Console" }],
-      activeTabId: "console",
+      tabs: [{ id: "studio", kind: "studio", label: "Studio" }],
+      activeTabId: "studio",
+      configSubTab: "characterStudio",
+      characterStudioSubView: "classes",
+      abilityStudioSubView: "stats",
+      studioSubView: "home",
+      worldSystemsSubView: "overview",
+      contentStudioSubView: "overview",
+      operationsSubView: "overview",
     }),
 
   closeProject: () =>
@@ -72,6 +107,12 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
 
   restoreTabs: (tabs, activeTabId) => set({ tabs, activeTabId }),
   setConfigSubTab: (subTab) => set({ configSubTab: subTab }),
+  setCharacterStudioSubView: (characterStudioSubView) => set({ characterStudioSubView }),
+  setAbilityStudioSubView: (abilityStudioSubView) => set({ abilityStudioSubView }),
+  setStudioSubView: (studioSubView) => set({ studioSubView }),
+  setWorldSystemsSubView: (worldSystemsSubView) => set({ worldSystemsSubView }),
+  setContentStudioSubView: (contentStudioSubView) => set({ contentStudioSubView }),
+  setOperationsSubView: (operationsSubView) => set({ operationsSubView }),
 
   navigateTo: (nav) => {
     const tab: Tab = { id: `zone:${nav.zoneId}`, kind: "zone", label: nav.zoneId };

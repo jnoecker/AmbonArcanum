@@ -22,14 +22,55 @@ export interface ServerState {
   lastError?: string;
 }
 
-export type TabKind = "zone" | "config" | "console" | "sprites";
+export type TabKind = "studio" | "zone" | "config" | "console" | "sprites";
 
 export type ConfigSubTab =
-  | "server" | "world" | "stats" | "classes" | "races" | "equipmentSlots" | "abilities"
-  | "statusEffects" | "combat" | "mobTiers" | "playerTiers" | "progression"
-  | "economy" | "regen" | "crafting" | "navigation" | "commands" | "group" | "charCreate" | "images"
-  | "achievements" | "quests" | "globalAssets"
-  | "rawYaml" | "apiSettings";
+  | "characterStudio"
+  | "abilityStudio"
+  | "worldSystems"
+  | "contentStudio"
+  | "operations"
+  | "rawYaml";
+
+export type CharacterStudioSubView =
+  | "classes"
+  | "races"
+  | "creation"
+  | "equipment"
+  | "sprites";
+
+export type AbilityStudioSubView =
+  | "stats"
+  | "abilities"
+  | "conditions";
+
+export type StudioSubView =
+  | "home"
+  | "zoneArt"
+  | "customAssets"
+  | "media"
+  | "portraits"
+  | "abilities";
+
+export type WorldSystemsSubView =
+  | "overview"
+  | "world"
+  | "combat"
+  | "progression"
+  | "travel"
+  | "economy"
+  | "social";
+
+export type ContentStudioSubView =
+  | "overview"
+  | "achievements"
+  | "quests"
+  | "assets";
+
+export type OperationsSubView =
+  | "overview"
+  | "services"
+  | "delivery";
 
 export interface Tab {
   id: string;

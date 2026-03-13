@@ -83,7 +83,13 @@ export function GlobalAssetsPanel({ config, onChange }: ConfigPanelProps) {
       filters: [{ name: "Images", extensions: ["png", "jpg", "jpeg", "webp"] }],
     });
     if (!selected) return;
-    const entry = await importAsset(selected as string, "background");
+    const entry = await importAsset(
+      selected as string,
+      "background",
+      { zone: "", entity_type: "global_asset", entity_id: key },
+      `custom:global:${key}`,
+      true,
+    );
     if (entry) {
       updateAssets({ ...assets, [key]: entry.file_name });
     }
@@ -98,7 +104,7 @@ export function GlobalAssetsPanel({ config, onChange }: ConfigPanelProps) {
       <Section title="Global Assets">
         <p className="mb-3 text-xs text-text-secondary">
           Key-value pairs saved to <code className="font-mono text-accent">application.yaml</code> under{" "}
-          <code className="font-mono text-accent">ambonmud.globalAssets</code>.
+          <code className="font-mono text-accent">ambonmud.images.globalAssets</code>.
           Use the asset generator to create images, then register them here by key name.
         </p>
 
