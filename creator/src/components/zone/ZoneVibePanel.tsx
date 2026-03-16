@@ -68,11 +68,11 @@ function DefaultThumb({ fileName, label, generating }: { fileName?: string; labe
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/80"
           onClick={() => setExpanded(false)}
         >
-          <div className="relative mx-8 max-h-[85vh] max-w-[85vw]" onClick={(e) => e.stopPropagation()}>
+          <div className="relative mx-8 max-h-[85vh] max-w-[85vw]">
             <img
               src={src}
               alt={label}
-              className="max-h-[85vh] max-w-[85vw] rounded-lg object-contain shadow-2xl"
+              className="max-h-[85vh] max-w-[85vw] cursor-pointer rounded-lg object-contain shadow-2xl"
             />
             <div className="absolute left-0 right-0 top-full mt-3 text-center">
               <span className="rounded-full bg-black/60 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-text-muted backdrop-blur-sm">
