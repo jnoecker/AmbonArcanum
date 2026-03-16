@@ -75,7 +75,9 @@ function dimensionsForKind(kind: EntityKind | DefaultImageKind): { width: number
 
 function updateEntityImage(world: WorldFile, entity: BrowseEntity, image: string): WorldFile {
   if (entity.kind === "room") {
-    return { ...world, rooms: { ...world.rooms, [entity.id]: { ...world.rooms[entity.id]!, image } } };
+    const room = world.rooms[entity.id];
+    if (!room) return world;
+    return { ...world, rooms: { ...world.rooms, [entity.id]: { ...room, image } } };
   }
   const collection = entity.kind === "mob" ? "mobs" : entity.kind === "item" ? "items" : "shops";
   const entities = world[collection] as Record<string, Record<string, unknown>> | undefined;
