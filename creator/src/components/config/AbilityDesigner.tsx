@@ -125,9 +125,9 @@ export function AbilityDesigner({
   ) => {
     const nextEffect =
       effectPatch.type && effectPatch.type !== ability.effect.type
-        ? { type: effectPatch.type, ...effectPatch }
+        ? { type: effectPatch.type } as AbilityEffectConfig
         : { ...ability.effect, ...effectPatch };
-    patch({ effect: nextEffect as AbilityEffectConfig });
+    patch({ effect: nextEffect });
   };
 
   return (

@@ -136,9 +136,10 @@ export function DefinitionWorkbench<T>({
                     ))}
                   </div>
                 )}
-                {renderSummary(item) && (
-                  <div className="mt-3 text-xs text-text-secondary">{renderSummary(item)}</div>
-                )}
+                {(() => {
+                  const summary = renderSummary(item);
+                  return summary ? <div className="mt-3 text-xs text-text-secondary">{summary}</div> : null;
+                })()}
               </button>
             );
           })}

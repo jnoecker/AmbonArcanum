@@ -125,30 +125,25 @@ select,
 }
 
 .room-handle-plus:hover {
-  background: rgba(200, 151, 46, 0.4) !important;
-  border-color: rgba(200, 151, 46, 0.7) !important;
-  color: rgba(226, 188, 106, 0.9) !important;
+  background: rgba(168, 151, 210, 0.4) !important;
+  border-color: rgba(168, 151, 210, 0.7) !important;
+  color: rgba(219, 227, 248, 0.9) !important;
 }
 
 /* ─── Animation Keyframes ─── */
 @keyframes aurum-pulse {
-  0%, 100% { opacity: 0.7; box-shadow: 0 0 8px rgba(200, 151, 46, 0.3); }
-  50%      { opacity: 1;   box-shadow: 0 0 20px rgba(200, 151, 46, 0.6); }
+  0%, 100% { opacity: 0.7; box-shadow: 0 0 8px rgba(168, 151, 210, 0.3); }
+  50%      { opacity: 1;   box-shadow: 0 0 20px rgba(168, 151, 210, 0.6); }
 }
 
 @keyframes crimson-pulse {
-  0%, 100% { opacity: 0.7; box-shadow: 0 0 6px rgba(138, 42, 60, 0.2); }
-  50%      { opacity: 1;   box-shadow: 0 0 16px rgba(138, 42, 60, 0.5); }
+  0%, 100% { opacity: 0.7; box-shadow: 0 0 6px rgba(197, 168, 168, 0.2); }
+  50%      { opacity: 1;   box-shadow: 0 0 16px rgba(197, 168, 168, 0.5); }
 }
 
 @keyframes slow-rotate {
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
-}
-
-@keyframes thread-trace {
-  0%   { background-position: 0% 50%; }
-  100% { background-position: 200% 50%; }
 }
 
 /* ─── Utility Classes ─── */
@@ -164,10 +159,10 @@ select,
   animation: slow-rotate 60s linear infinite;
 }
 
-/* ─── Focus ring (Aurum unfurl) ─── */
+/* ─── Focus ring (Accent unfurl) ─── */
 *:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px rgba(200, 151, 46, 0.3);
+  box-shadow: 0 0 0 2px rgba(168, 151, 210, 0.3);
   transition: box-shadow 200ms var(--ease-unfurl);
 }
 

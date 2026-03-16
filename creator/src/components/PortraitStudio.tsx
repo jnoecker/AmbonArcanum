@@ -184,27 +184,28 @@ export function PortraitStudio({ selectedZoneId }: { selectedZoneId: string | nu
   );
 
   const persistPortrait = useCallback((target: PortraitTarget, fileName: string) => {
-    if (!config) return;
+    const latest = useConfigStore.getState().config;
+    if (!latest) return;
     if (target.kind === "race") {
-      const existing = config.races[target.id]!;
+      const existing = latest.races[target.id]!;
       updateConfig({
-        ...config,
+        ...latest,
         races: {
-          ...config.races,
+          ...latest.races,
           [target.id]: { ...existing, image: fileName },
         },
       });
       return;
     }
-    const existing = config.classes[target.id]!;
+    const existing = latest.classes[target.id]!;
     updateConfig({
-      ...config,
+      ...latest,
       classes: {
-        ...config.classes,
+        ...latest.classes,
         [target.id]: { ...existing, image: fileName },
       },
     });
-  }, [config, updateConfig]);
+  }, [updateConfig]);
 
   const generateTemplateAction = async () => {
     if (!config || !hasLlmKey) return;

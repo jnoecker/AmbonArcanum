@@ -193,16 +193,18 @@ export function CustomAssetStudio({ selectedZoneId }: { selectedZoneId: string |
   }, [globalAssetKey]);
 
   const persistGlobalAsset = useCallback((fileName: string) => {
-    if (!config || !globalAssetKey.trim()) return;
+    if (!globalAssetKey.trim()) return;
+    const latest = useConfigStore.getState().config;
+    if (!latest) return;
     const key = slugify(globalAssetKey);
     updateConfig({
-      ...config,
+      ...latest,
       globalAssets: {
-        ...config.globalAssets,
+        ...latest.globalAssets,
         [key]: fileName,
       },
     });
-  }, [config, globalAssetKey, updateConfig]);
+  }, [globalAssetKey, updateConfig]);
 
   const generatePrompt = useCallback(async () => {
     if (!description.trim()) return "";

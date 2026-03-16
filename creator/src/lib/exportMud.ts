@@ -114,6 +114,7 @@ function resolveRoomId(
 
   if (matches.length === 1) return `${matches[0]}:${trimmed}`;
   if (fallbackZone && matches.includes(fallbackZone)) return `${fallbackZone}:${trimmed}`;
+  if (matches.length > 1) return trimmed;
   if (fallbackZone) return `${fallbackZone}:${trimmed}`;
   return trimmed;
 }

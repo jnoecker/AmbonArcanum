@@ -140,9 +140,12 @@ export function AssetGallery({ onClose }: { onClose: () => void }) {
     [assets, syncScope],
   );
 
+  const previewCacheRef = useRef(previewCache);
+  previewCacheRef.current = previewCache;
+
   const loadPreview = useCallback(
     (entry: AssetEntry) => {
-      if (previewCache[entry.id] || !assetsDir) return;
+      if (previewCacheRef.current[entry.id] || !assetsDir) return;
       const path = localAssetPath(assetsDir, entry);
       invoke<string>("read_media_data_url", { path })
         .then((dataUrl) => {
@@ -150,7 +153,7 @@ export function AssetGallery({ onClose }: { onClose: () => void }) {
         })
         .catch(() => {});
     },
-    [assetsDir, previewCache],
+    [assetsDir],
   );
 
   useEffect(() => {

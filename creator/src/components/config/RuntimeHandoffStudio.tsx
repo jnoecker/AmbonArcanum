@@ -187,6 +187,7 @@ export function RuntimeHandoffStudio() {
       setStepState("save", {
         status: "success",
         detail: details.join(" | "),
+        errors: [],
       });
     } catch (error) {
       setStepState("save", {
@@ -344,6 +345,7 @@ export function RuntimeHandoffStudio() {
       setStepState("config", {
         status: "success",
         detail: `Runtime config deployed to ${url}`,
+        errors: [],
       });
     } catch (error) {
       setStepState("config", {
