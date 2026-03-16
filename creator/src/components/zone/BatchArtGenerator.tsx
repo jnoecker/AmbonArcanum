@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import type { WorldFile } from "@/types/world";
 import { ART_STYLE_LABELS } from "@/lib/arcanumPrompts";
 import { useAssetStore } from "@/stores/assetStore";
@@ -35,6 +35,15 @@ export function BatchArtGenerator({
   const imageProvider = settings?.image_provider ?? "deepinfra";
 
   const acceptAsset = useAssetStore((s) => s.acceptAsset);
+
+  // Close on Escape when not running
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !running) onClose();
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [onClose, running]);
 
   const toggleTarget = (idx: number) => {
     setTargets((prev) => prev.map((t, i) => (i === idx ? { ...t, checked: !t.checked } : t)));
@@ -96,8 +105,8 @@ export function BatchArtGenerator({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-      <div className="mx-4 flex max-h-[80vh] w-full max-w-lg flex-col rounded-lg border border-border-default bg-bg-secondary shadow-xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={running ? undefined : onClose}>
+      <div className="mx-4 flex max-h-[80vh] w-full max-w-lg flex-col rounded-lg border border-border-default bg-bg-secondary shadow-xl" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between border-b border-border-default px-5 py-3">
           <h2 className="font-display text-sm tracking-wide text-text-primary">
             Batch Art — {zoneId}

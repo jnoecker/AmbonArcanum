@@ -385,10 +385,14 @@ export function ZoneAssetWorkbench({ zoneId, world, onWorldChange }: ZoneAssetWo
 
   const handleVariantSelect = async (entry: AssetEntry) => {
     if (!selectedVariantGroup) return;
-    await setActiveVariant(selectedVariantGroup, entry.id);
-    setPreviewEntry(entry);
-    persistImageSelection(entry.file_name);
-    await refreshVariants();
+    try {
+      await setActiveVariant(selectedVariantGroup, entry.id);
+      setPreviewEntry(entry);
+      persistImageSelection(entry.file_name);
+      await refreshVariants();
+    } catch (e) {
+      setError(String(e));
+    }
   };
 
   const handleRemoveBg = async () => {

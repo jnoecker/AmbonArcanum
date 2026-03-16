@@ -27,8 +27,8 @@ function portraitAssetType(target: PortraitTarget): "race_portrait" | "class_por
   return target.kind === "race" ? "race_portrait" : "class_portrait";
 }
 
-function dimensionsForPortrait(kind: PortraitKind): { width: number; height: number } {
-  return kind === "race" ? { width: 512, height: 768 } : { width: 512, height: 768 };
+function dimensionsForPortrait(_kind: PortraitKind): { width: number; height: number } {
+  return { width: 512, height: 768 };
 }
 
 function buildRaceContext(id: string, race: NonNullable<ReturnType<typeof useConfigStore.getState>["config"]>["races"][string]): string {
@@ -85,7 +85,7 @@ export function PortraitStudio({ selectedZoneId }: { selectedZoneId: string | nu
   const [variants, setVariants] = useState<AssetEntry[]>([]);
   const [previewEntry, setPreviewEntry] = useState<AssetEntry | null>(null);
   const [generatingTemplate, setGeneratingTemplate] = useState(false);
-  const [generatingPrompt, setGeneratingPrompt] = useState(false);
+  const [generatingPrompt] = useState(false);
   const [generatingImage, setGeneratingImage] = useState(false);
   const [batchGenerating, setBatchGenerating] = useState<PortraitKind | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -187,7 +187,8 @@ export function PortraitStudio({ selectedZoneId }: { selectedZoneId: string | nu
     const latest = useConfigStore.getState().config;
     if (!latest) return;
     if (target.kind === "race") {
-      const existing = latest.races[target.id]!;
+      const existing = latest.races[target.id];
+      if (!existing) return;
       updateConfig({
         ...latest,
         races: {
@@ -197,7 +198,8 @@ export function PortraitStudio({ selectedZoneId }: { selectedZoneId: string | nu
       });
       return;
     }
-    const existing = latest.classes[target.id]!;
+    const existing = latest.classes[target.id];
+    if (!existing) return;
     updateConfig({
       ...latest,
       classes: {
@@ -224,9 +226,8 @@ export function PortraitStudio({ selectedZoneId }: { selectedZoneId: string | nu
     }
   };
 
-  const handleGeneratePrompt = async () => {
+  const handleGeneratePrompt = () => {
     if (!selectedTarget) return;
-    setGeneratingPrompt(true);
     setError(null);
     try {
       if (template) {
@@ -236,8 +237,6 @@ export function PortraitStudio({ selectedZoneId }: { selectedZoneId: string | nu
       }
     } catch (e) {
       setError(String(e));
-    } finally {
-      setGeneratingPrompt(false);
     }
   };
 
@@ -305,10 +304,14 @@ export function PortraitStudio({ selectedZoneId }: { selectedZoneId: string | nu
 
   const handleVariantSelect = async (entry: AssetEntry) => {
     if (!selectedTarget) return;
-    await setActiveVariant(selectedVariantGroup, entry.id);
-    setPreviewEntry(entry);
-    persistPortrait(selectedTarget, entry.file_name);
-    await refreshVariants();
+    try {
+      await setActiveVariant(selectedVariantGroup, entry.id);
+      setPreviewEntry(entry);
+      persistPortrait(selectedTarget, entry.file_name);
+      await refreshVariants();
+    } catch (e) {
+      setError(String(e));
+    }
   };
 
   if (!config) {

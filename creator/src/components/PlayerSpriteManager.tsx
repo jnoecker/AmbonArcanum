@@ -174,11 +174,12 @@ export function PlayerSpriteManager() {
   const [spriteTemplate, setSpriteTemplate] = useState<SpritePromptTemplate | null>(null);
   const [generatingTemplate, setGeneratingTemplate] = useState(false);
 
-  if (!config) return null;
-
-  const { races, classes, tiers } = getSpriteAxes(config);
-  const allTiers = getAllTiers(config);
-  const total = totalSprites(config);
+  const { races, classes, tiers } = useMemo(
+    () => config ? getSpriteAxes(config) : { races: [] as string[], classes: [] as string[], tiers: [] as SpriteTier[] },
+    [config],
+  );
+  const allTiers = useMemo(() => config ? getAllTiers(config) : [] as SpriteTier[], [config]);
+  const total = useMemo(() => config ? totalSprites(config) : 0, [config]);
 
   const imageProvider = settings?.image_provider ?? "deepinfra";
   const hasApiKey = settings && (
@@ -457,7 +458,7 @@ export function PlayerSpriteManager() {
     [config, filteredClasses],
   );
 
-  if (races.length === 0 || classes.length === 0) {
+  if (!config || races.length === 0 || classes.length === 0) {
     return (
       <div className="p-6 text-sm text-text-muted">
         <p>

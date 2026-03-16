@@ -27,7 +27,10 @@ export function AssetGenerator() {
   const [stage, setStage] = useState<Stage>("compose");
   const [artStyle] = useState<ArtStyle>("gentle_magic");
   const [assetType, setAssetType] = useState<AssetType>("background");
-  const [modelId, setModelId] = useState<string>(IMAGE_MODELS[0].id);
+  const [modelId, setModelId] = useState<string>(() => {
+    const provider = settings?.image_provider ?? "deepinfra";
+    return IMAGE_MODELS.find((m) => m.provider === provider)?.id ?? IMAGE_MODELS[0].id;
+  });
   const [customization, setCustomization] = useState("");
   const [prompt, setPrompt] = useState(() => composePrompt("background", "gentle_magic"));
   const [enhancedPrompt, setEnhancedPrompt] = useState("");
@@ -40,7 +43,11 @@ export function AssetGenerator() {
   // Global asset key (if user wants to save as a config global asset)
   const [globalAssetKey, setGlobalAssetKey] = useState("");
 
-  const hasApiKey = settings && settings.deepinfra_api_key.length > 0;
+  const imageProvider = settings?.image_provider ?? "deepinfra";
+  const hasApiKey = settings && (
+    (imageProvider === "deepinfra" && settings.deepinfra_api_key.length > 0) ||
+    (imageProvider === "runware" && settings.runware_api_key.length > 0)
+  );
 
   const handleTypeChange = (type: AssetType) => {
     setAssetType(type);
@@ -87,8 +94,10 @@ export function AssetGenerator() {
         ? (model as { defaultGuidance: number }).defaultGuidance
         : null;
 
-      const image = await invoke<GeneratedImage>("generate_image", {
+      const command = imageProvider === "runware" ? "runware_generate_image" : "generate_image";
+      const image = await invoke<GeneratedImage>(command, {
         prompt: finalPrompt,
+        negativePrompt: undefined,
         model: modelId,
         width: 1024,
         height: 1024,
@@ -147,7 +156,7 @@ export function AssetGenerator() {
           </div>
           <div className="px-5 py-4">
             <p className="text-sm text-text-secondary">
-              Set your DeepInfra API key in Config &rarr; API Settings before generating assets.
+              Set an image provider API key in Config &rarr; API Settings before generating assets.
             </p>
           </div>
           <div className="flex justify-end border-t border-border-default px-5 py-3">
@@ -222,7 +231,7 @@ export function AssetGenerator() {
                   Model
                 </label>
                 <div className="flex gap-2">
-                  {IMAGE_MODELS.map((model) => (
+                  {IMAGE_MODELS.filter((m) => m.provider === imageProvider).map((model) => (
                     <button
                       key={model.id}
                       onClick={() => setModelId(model.id)}
