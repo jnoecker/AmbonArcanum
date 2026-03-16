@@ -122,7 +122,7 @@ export const UNIVERSAL_NEGATIVE = `text, words, letters, runes, glyphs, watermar
 
 /** Get the preamble for a given art style */
 export function getPreamble(style: ArtStyle): string {
-  return style === "arcanum" ? GENTLE_MAGIC_PREAMBLE : GENTLE_MAGIC_PREAMBLE;
+  return style === "arcanum" ? ARCANUM_PREAMBLE : GENTLE_MAGIC_PREAMBLE;
 }
 
 /** Per-asset-type prompt templates, keyed by art style */
@@ -376,13 +376,33 @@ export const ENHANCE_SYSTEM_PROMPT = ENHANCE_SYSTEM_PROMPT_ARCANUM;
 /** Get the style-aware system prompt for prompt enhancement */
 export function getEnhanceSystemPrompt(style: ArtStyle): string {
   return style === "arcanum"
-    ? ENHANCE_SYSTEM_PROMPT_GENTLE_MAGIC
+    ? ENHANCE_SYSTEM_PROMPT_ARCANUM
     : ENHANCE_SYSTEM_PROMPT_GENTLE_MAGIC;
 }
 
+const CUSTOM_ASSET_SYSTEM_PROMPT_ARCANUM = `You are an expert image prompt engineer for AI image generators. You work exclusively within the Ambon Arcanum art style (arcanum_v1).
+
+Core palette: deep cosmic indigo and abyssal navy backgrounds, warm aurum-gold as the primary accent, cool blue-violet atmospheric fill, baroque rococo scrollwork rendered as glowing energy threads, fractaline structures, sweeping spiral arms of light.
+Shape language: C-curves and S-curves, acanthus-leaf spirals, gradual dissolution at extremities, cosmological scale, no hard stops.
+Light: concentrated aurum glow with feathered bloom, nebula-violet ambient fill, no hard shadows.
+Forbidden: neon colors, harsh white, flat design, cartoon, anime, photorealism, readable text or words.
+
+The user will provide a free-form description of an asset they want generated for a fantasy worldbuilding tool. Transform it into an optimized image generation prompt that fully conforms to the Arcanum aesthetic.
+
+Rules:
+- Preserve the user's core subject, purpose, and mood
+- Add specific Arcanum palette colors (deep indigo, aurum-gold, blue-violet)
+- Add baroque ornamentation details (scrollwork, energy threads, fractaline structures) as framing/accents
+- Add light behavior (aurum pooling, nebula mist, soft bloom)
+- Add composition and quality terms (painterly, luminous, extremely detailed)
+- Replace any readable text, signage, labels, or inscriptions with glowing runes or arcane glyphs
+- Respect the requested format/composition exactly
+
+Output ONLY the finished prompt text — no explanation, no labels, no markdown.`;
+
 export function getCustomAssetSystemPrompt(style: ArtStyle): string {
   return style === "arcanum"
-    ? CUSTOM_ASSET_SYSTEM_PROMPT_GENTLE_MAGIC
+    ? CUSTOM_ASSET_SYSTEM_PROMPT_ARCANUM
     : CUSTOM_ASSET_SYSTEM_PROMPT_GENTLE_MAGIC;
 }
 

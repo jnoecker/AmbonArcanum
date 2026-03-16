@@ -245,27 +245,28 @@ export function AbilityStudio() {
   );
 
   const persistImage = useCallback((target: StudioTarget, fileName: string) => {
-    if (!config) return;
+    const latest = useConfigStore.getState().config;
+    if (!latest) return;
     if (target.kind === "ability") {
-      const ability = config.abilities[target.id]!;
+      const ability = latest.abilities[target.id]!;
       updateConfig({
-        ...config,
+        ...latest,
         abilities: {
-          ...config.abilities,
+          ...latest.abilities,
           [target.id]: { ...ability, image: fileName },
         },
       });
       return;
     }
-    const effect = config.statusEffects[target.id]!;
+    const effect = latest.statusEffects[target.id]!;
     updateConfig({
-      ...config,
+      ...latest,
       statusEffects: {
-        ...config.statusEffects,
+        ...latest.statusEffects,
         [target.id]: { ...effect, image: fileName },
       },
     });
-  }, [config, updateConfig]);
+  }, [updateConfig]);
 
   const generatePromptForTarget = useCallback(async (target: StudioTarget) => {
     if (target.kind === "ability" && target.ability) {

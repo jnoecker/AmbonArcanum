@@ -39,19 +39,19 @@ export function normalizeGlobalAssetMap(assets: Record<string, string>): Record<
 export function normalizeConfigAssetRefs(config: AppConfig): AppConfig {
   return {
     ...config,
-    abilities: mapConfigEntries(config.abilities, (ability) => ({
+    abilities: mapEntries(config.abilities, (ability) => ({
       ...ability,
       image: normalizeAssetRef(ability.image),
     })),
-    statusEffects: mapConfigEntries(config.statusEffects, (effect) => ({
+    statusEffects: mapEntries(config.statusEffects, (effect) => ({
       ...effect,
       image: normalizeAssetRef(effect.image),
     })),
-    classes: mapConfigEntries(config.classes, (cls) => ({
+    classes: mapEntries(config.classes, (cls) => ({
       ...cls,
       image: normalizeAssetRef(cls.image),
     })),
-    races: mapConfigEntries(config.races, (race) => ({
+    races: mapEntries(config.races, (race) => ({
       ...race,
       image: normalizeAssetRef(race.image),
     })),
@@ -74,7 +74,7 @@ export function normalizeWorldAssetRefs(world: WorldFile): WorldFile {
     ...world,
     image: hasEntries(imageDefaults) ? imageDefaults : undefined,
     audio: hasEntries(audioDefaults) ? audioDefaults : undefined,
-    rooms: mapWorldEntries(world.rooms, (room) =>
+    rooms: mapEntries(world.rooms, (room) =>
       compactObject({
         ...room,
         image: normalizeAssetRef(room.image),
@@ -83,24 +83,24 @@ export function normalizeWorldAssetRefs(world: WorldFile): WorldFile {
         ambient: normalizeAssetRef(room.ambient),
         audio: normalizeAssetRef(room.audio),
       })),
-    mobs: mapOptionalWorldEntries(world.mobs, (mob) =>
+    mobs: mapOptionalEntries(world.mobs, (mob) =>
       compactObject({
         ...mob,
         image: normalizeAssetRef(mob.image),
         video: normalizeAssetRef(mob.video),
       })),
-    items: mapOptionalWorldEntries(world.items, (item) =>
+    items: mapOptionalEntries(world.items, (item) =>
       compactObject({
         ...item,
         image: normalizeAssetRef(item.image),
         video: normalizeAssetRef(item.video),
       })),
-    shops: mapOptionalWorldEntries(world.shops, (shop) =>
+    shops: mapOptionalEntries(world.shops, (shop) =>
       compactObject({
         ...shop,
         image: normalizeAssetRef(shop.image),
       })),
-    recipes: mapOptionalWorldEntries(world.recipes, (recipe) =>
+    recipes: mapOptionalEntries(world.recipes, (recipe) =>
       compactObject({
         ...recipe,
         image: normalizeAssetRef(recipe.image),
@@ -108,7 +108,7 @@ export function normalizeWorldAssetRefs(world: WorldFile): WorldFile {
   };
 }
 
-function mapConfigEntries<T>(
+function mapEntries<T>(
   entries: Record<string, T>,
   map: (entry: T) => T,
 ): Record<string, T> {
@@ -119,23 +119,12 @@ function mapConfigEntries<T>(
   return next;
 }
 
-function mapWorldEntries<T>(
-  entries: Record<string, T>,
-  map: (entry: T) => T,
-): Record<string, T> {
-  const next: Record<string, T> = {};
-  for (const [key, value] of Object.entries(entries)) {
-    next[key] = map(value);
-  }
-  return next;
-}
-
-function mapOptionalWorldEntries<T>(
+function mapOptionalEntries<T>(
   entries: Record<string, T> | undefined,
   map: (entry: T) => T,
 ): Record<string, T> | undefined {
   if (!entries) return undefined;
-  return mapWorldEntries(entries, map);
+  return mapEntries(entries, map);
 }
 
 function compactObject<T extends Record<string, unknown>>(value: T): T {
