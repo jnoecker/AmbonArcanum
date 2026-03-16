@@ -144,7 +144,8 @@ export async function runBatchArtGeneration(
   callbacks: ArtGenerationCallbacks,
   autoRemoveBg?: boolean,
 ): Promise<WorldFile> {
-  let updatedWorld = { ...world };
+  // Use a ref-like container so all workers always read/write the latest world
+  const worldRef = { current: { ...world } };
 
   const checkedTargets = targets.filter((t) => t.checked);
   const queue = checkedTargets.map((t) =>
@@ -161,8 +162,8 @@ export async function runBatchArtGeneration(
       callbacks.onTargetUpdate(idx, { status: "generating" });
 
       try {
-        const basePrompt = getTargetPrompt(target, updatedWorld, artStyle);
-        const context = getTargetContext(target, updatedWorld);
+        const basePrompt = getTargetPrompt(target, worldRef.current, artStyle);
+        const context = getTargetContext(target, worldRef.current);
 
         let finalPrompt = basePrompt;
         try {
@@ -233,14 +234,16 @@ export async function runBatchArtGeneration(
           removeBgAndSave(image.data_url, batchAssetType, batchContext, variantGroup).catch(() => {});
         }
 
+        // Update worldRef atomically — always read current value to avoid lost updates
         const { kind, id } = target;
+        const cur = worldRef.current;
         if (kind === "room") {
           const fileName = image.file_path.split(/[\\/]/).pop() ?? image.hash;
-          updatedWorld = {
-            ...updatedWorld,
+          worldRef.current = {
+            ...cur,
             rooms: {
-              ...updatedWorld.rooms,
-              [id]: { ...updatedWorld.rooms[id]!, image: fileName },
+              ...cur.rooms,
+              [id]: { ...cur.rooms[id]!, image: fileName },
             },
           };
         } else {
@@ -250,14 +253,17 @@ export async function runBatchArtGeneration(
               : kind === "item"
                 ? "items"
                 : "shops";
-          const entities = (updatedWorld as Record<string, unknown>)[
+          const entities = (cur as Record<string, unknown>)[
             collection
           ] as Record<string, Record<string, unknown>> | undefined;
           if (entities?.[id]) {
             const fileName = image.file_path.split(/[\\/]/).pop() ?? image.hash;
-            (updatedWorld as Record<string, unknown>)[collection] = {
-              ...entities,
-              [id]: { ...entities[id], image: fileName },
+            worldRef.current = {
+              ...cur,
+              [collection]: {
+                ...entities,
+                [id]: { ...entities[id], image: fileName },
+              },
             };
           }
         }
@@ -276,6 +282,6 @@ export async function runBatchArtGeneration(
   );
   await Promise.all(workers);
 
-  callbacks.onWorldUpdate(updatedWorld);
-  return updatedWorld;
+  callbacks.onWorldUpdate(worldRef.current);
+  return worldRef.current;
 }

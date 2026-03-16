@@ -323,10 +323,14 @@ export function CustomAssetStudio({ selectedZoneId }: { selectedZoneId: string |
 
   const handleVariantSelect = async (entry: AssetEntry) => {
     if (!variantGroup) return;
-    await setActiveVariant(variantGroup, entry.id);
-    setPreviewEntry(entry);
-    persistGlobalAsset(entry.file_name);
-    await refreshVariants();
+    try {
+      await setActiveVariant(variantGroup, entry.id);
+      setPreviewEntry(entry);
+      persistGlobalAsset(entry.file_name);
+      await refreshVariants();
+    } catch (e) {
+      setError(String(e));
+    }
   };
 
   return (

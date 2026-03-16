@@ -25,8 +25,11 @@ export function tierLabel(tier: SpriteTier): string {
 /** Level range for a tier. */
 export function tierRange(tier: SpriteTier, allTiers: SpriteTier[]): string {
   if (tier === "staff") return "Staff";
-  if (tier === 0) return "1-9";
   const numeric = allTiers.filter((t): t is number => t !== "staff").sort((a, b) => a - b);
+  if (tier === 0) {
+    const nextTier = numeric[1];
+    return nextTier !== undefined ? `1-${nextTier - 1}` : "1+";
+  }
   const idx = numeric.indexOf(tier);
   if (idx === -1) return `${tier}+`;
   const nextTier = numeric[idx + 1];

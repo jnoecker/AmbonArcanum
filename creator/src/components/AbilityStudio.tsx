@@ -248,7 +248,8 @@ export function AbilityStudio() {
     const latest = useConfigStore.getState().config;
     if (!latest) return;
     if (target.kind === "ability") {
-      const ability = latest.abilities[target.id]!;
+      const ability = latest.abilities[target.id];
+      if (!ability) return;
       updateConfig({
         ...latest,
         abilities: {
@@ -258,7 +259,8 @@ export function AbilityStudio() {
       });
       return;
     }
-    const effect = latest.statusEffects[target.id]!;
+    const effect = latest.statusEffects[target.id];
+    if (!effect) return;
     updateConfig({
       ...latest,
       statusEffects: {
@@ -384,10 +386,14 @@ export function AbilityStudio() {
 
   const handleVariantSelect = async (entry: AssetEntry) => {
     if (!selectedTarget) return;
-    await setActiveVariant(selectedVariantGroup, entry.id);
-    setPreviewEntry(entry);
-    persistImage(selectedTarget, entry.file_name);
-    await refreshVariants();
+    try {
+      await setActiveVariant(selectedVariantGroup, entry.id);
+      setPreviewEntry(entry);
+      persistImage(selectedTarget, entry.file_name);
+      await refreshVariants();
+    } catch (e) {
+      setError(String(e));
+    }
   };
 
   if (!config) {

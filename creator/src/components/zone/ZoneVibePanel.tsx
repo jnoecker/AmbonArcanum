@@ -82,7 +82,7 @@ export function ZoneVibePanel({ zoneId, world, onWorldChange }: ZoneVibePanelPro
   });
 
   useEffect(() => {
-    loadVibe(zoneId);
+    loadVibe(zoneId).catch(() => {});
   }, [zoneId, loadVibe]);
 
   useEffect(() => {
