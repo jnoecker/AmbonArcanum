@@ -669,10 +669,16 @@ function parseRegenConfig(raw: unknown): AppConfig["regen"] {
     regenPercent: asNumber(s.regenPercent, 0.05),
     inCombatMultiplier: asNumber(s.inCombatMultiplier, 0.5),
     innMultiplier: asNumber(s.innMultiplier, 2.0),
+    // Optional engine keys: kept only when authored so an untouched config
+    // exports exactly as before and the engine applies its own defaults.
+    ...(s.model === "discrete" || s.model === "rate" ? { model: s.model } : {}),
     mana: {
       baseIntervalMillis: asNumber(mana.baseIntervalMillis, 3000),
       minIntervalMillis: asNumber(mana.minIntervalMillis, 1000),
       regenPercent: asNumber(mana.regenPercent, 0.05),
+      ...(typeof mana.inCombatMultiplier === "number"
+        ? { inCombatMultiplier: mana.inCombatMultiplier }
+        : {}),
     },
   };
 }

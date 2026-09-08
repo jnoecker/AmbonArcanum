@@ -495,6 +495,8 @@ export interface EconomyConfig {
 
 // ─── Regen ──────────────────────────────────────────────────────────
 
+export type RegenModel = "discrete" | "rate";
+
 export interface RegenConfig {
   maxPlayersPerTick: number;
   baseIntervalMillis: number;
@@ -503,10 +505,19 @@ export interface RegenConfig {
   inCombatMultiplier: number;
   /** Regen multiplier applied in inn rooms (hp5/mp5 boost). Must be >= 1.0. Default 2.0. */
   innMultiplier: number;
+  /**
+   * How the engine credits regen between its polls (one per master tick).
+   * "discrete": one fixed heal per elapsed interval (intervals below the tick are unreachable).
+   * "rate": each poll credits amount * elapsed / interval to a fractional accumulator.
+   * Omitted = the engine default ("discrete").
+   */
+  model?: RegenModel;
   mana: {
     baseIntervalMillis: number;
     minIntervalMillis: number;
     regenPercent: number;
+    /** In-combat multiplier for mana only (0..1); omitted = inherit regen.inCombatMultiplier. */
+    inCombatMultiplier?: number;
   };
 }
 
