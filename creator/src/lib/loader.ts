@@ -503,6 +503,16 @@ function parseStatsConfig(raw: unknown): AppConfig["stats"] {
       manaRegenMsPerPoint: asNumber(bindings.manaRegenMsPerPoint, 200),
       xpBonusStat: asString(bindings.xpBonusStat, "CHA"),
       xpBonusPerPoint: asNumber(bindings.xpBonusPerPoint, 0.005),
+      // Optional profile keys: carried through only when authored, so a config
+      // that never set them keeps the engine defaults on export.
+      ...(bindings.shieldStat != null ? { shieldStat: asString(bindings.shieldStat, "WIS") } : {}),
+      ...(bindings.shieldStatMultiplier != null
+        ? { shieldStatMultiplier: asNumber(bindings.shieldStatMultiplier, 0.25) }
+        : {}),
+      ...(bindings.shieldLevelScalingRate != null
+        ? { shieldLevelScalingRate: asNumber(bindings.shieldLevelScalingRate, 1.3) }
+        : {}),
+      ...(bindings.xpBonusCap != null ? { xpBonusCap: asNumber(bindings.xpBonusCap, 0) } : {}),
     },
   };
 }
@@ -537,6 +547,7 @@ function parseMobTiersConfig(raw: unknown): AppConfig["mobTiers"] {
       baseGoldMin: asNumber(r.baseGoldMin, defaults.baseGoldMin),
       baseGoldMax: asNumber(r.baseGoldMax, defaults.baseGoldMax),
       goldScalingRate: asNumber(r.goldScalingRate, defaults.goldScalingRate),
+      ...parseLevelAnchors(r.levelAnchors),
     };
   };
   return {
@@ -545,6 +556,22 @@ function parseMobTiersConfig(raw: unknown): AppConfig["mobTiers"] {
     elite: parseTier(tiers.elite, { baseHp: 20, hpScalingRate: 1.1, baseMinDamage: 2, baseMaxDamage: 6, damageScalingRate: 1.1, baseArmor: 1, baseXpReward: 75, xpScalingRate: 1.5, baseGoldMin: 10, baseGoldMax: 25, goldScalingRate: 1.1 }),
     boss: parseTier(tiers.boss, { baseHp: 50, hpScalingRate: 1.1, baseMinDamage: 3, baseMaxDamage: 8, damageScalingRate: 1.1, baseArmor: 3, baseXpReward: 200, xpScalingRate: 1.5, baseGoldMin: 50, baseGoldMax: 100, goldScalingRate: 1.1 }),
   };
+}
+
+/** Optional per-tier level anchors; malformed entries are dropped and validation reports gaps. */
+function parseLevelAnchors(raw: unknown): { levelAnchors?: AppConfig["mobTiers"]["weak"]["levelAnchors"] } {
+  if (!raw || typeof raw !== "object") return {};
+  const out: NonNullable<AppConfig["mobTiers"]["weak"]["levelAnchors"]> = {};
+  for (const [level, anchor] of Object.entries(raw as Record<string, unknown>)) {
+    if (!anchor || typeof anchor !== "object") continue;
+    const a = anchor as Record<string, unknown>;
+    out[String(level).trim()] = {
+      hp: asNumber(a.hp, 0),
+      minDamage: asNumber(a.minDamage, 0),
+      maxDamage: asNumber(a.maxDamage, 0),
+    };
+  }
+  return Object.keys(out).length > 0 ? { levelAnchors: out } : {};
 }
 
 function parseMobActionDelayConfig(raw: unknown): AppConfig["mobActionDelay"] {

@@ -82,6 +82,15 @@ export interface StatBindings {
   manaRegenMsPerPoint: number;
   xpBonusStat: string;
   xpBonusPerPoint: number;
+  /**
+   * Absorb-shield scaling (engine defaults WIS / 0.25 / 1.30 when omitted).
+   * Emitted only when present so untouched configs keep the engine defaults.
+   */
+  shieldStat?: string;
+  shieldStatMultiplier?: number;
+  shieldLevelScalingRate?: number;
+  /** Cap on the xpBonusStat multiplier bonus (0.25 = at most +25%); <= 0 or absent = uncapped. */
+  xpBonusCap?: number;
 }
 
 /**
@@ -364,6 +373,20 @@ export interface MobTierConfig {
   baseGoldMax: number;
   /** Per-level multiplicative growth rate for both gold min and max. */
   goldScalingRate: number;
+  /**
+   * Optional piecewise hp/damage curve keyed by level (string keys, e.g. "15").
+   * When present the engine uses it instead of base * rate^(level-1) for
+   * hp/minDamage/maxDamage: exact at anchors, geometric interpolation between
+   * them, last-segment growth above the highest. XP, gold, and armor keep the
+   * formula. Requires at least two anchors.
+   */
+  levelAnchors?: Record<string, MobTierAnchor>;
+}
+
+export interface MobTierAnchor {
+  hp: number;
+  minDamage: number;
+  maxDamage: number;
 }
 
 export interface MobTiersConfig {
@@ -930,6 +953,13 @@ export interface ClassDefinitionConfig {
   hpScalingRate: number;
   /** Per-level multiplicative growth rate this class contributes to max mana. */
   manaScalingRate: number;
+  /**
+   * Level-1 pool multipliers on progression.rewards.baseHp/baseMana, so class
+   * identity can live in bases while every class shares one scaling rate.
+   * Omitted = 1.0.
+   */
+  baseHpMultiplier?: number;
+  baseManaMultiplier?: number;
   primaryStat?: string;
   /**
    * Ordered stat IDs from most to least valued for this class. Used to resolve

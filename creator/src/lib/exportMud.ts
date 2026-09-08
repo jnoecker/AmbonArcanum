@@ -910,6 +910,8 @@ export function classToPlain(cls: AppConfig["classes"][string]): Record<string, 
     hpScalingRate: cls.hpScalingRate,
     manaScalingRate: cls.manaScalingRate,
   };
+  if (cls.baseHpMultiplier != null) obj.baseHpMultiplier = cls.baseHpMultiplier;
+  if (cls.baseManaMultiplier != null) obj.baseManaMultiplier = cls.baseManaMultiplier;
   if (cls.description) obj.description = cls.description;
   if (cls.backstory) obj.backstory = cls.backstory;
   if (cls.primaryStat) obj.primaryStat = cls.primaryStat;

@@ -150,6 +150,20 @@ export function validateConfig(config: AppConfig): ValidationIssue[] {
         message: `healLevelScalingRate must be >= 1.0 — use 1.0 to disable (got ${b.healLevelScalingRate})`,
       });
     }
+    if (b.shieldLevelScalingRate != null && b.shieldLevelScalingRate < 1) {
+      issues.push({
+        severity: "error",
+        entity: "stats.bindings",
+        message: `shieldLevelScalingRate must be >= 1.0 — use 1.0 to disable (got ${b.shieldLevelScalingRate})`,
+      });
+    }
+    if (b.xpBonusCap != null && b.xpBonusCap < 0) {
+      issues.push({
+        severity: "error",
+        entity: "stats.bindings",
+        message: `xpBonusCap must be >= 0 — use 0 to disable the cap (got ${b.xpBonusCap})`,
+      });
+    }
     if (b.healVarianceMin <= 0 || b.healVarianceMax < b.healVarianceMin) {
       issues.push({
         severity: "error",
@@ -889,6 +903,29 @@ export function validateConfig(config: AppConfig): ValidationIssue[] {
     if (tier.baseArmor < 0) {
       issues.push({ severity: "error", entity, message: "baseArmor must be >= 0" });
     }
+    if (tier.levelAnchors) {
+      const entries = Object.entries(tier.levelAnchors);
+      if (entries.length < 2) {
+        issues.push({ severity: "error", entity, message: "levelAnchors needs at least two anchors to define a curve" });
+      }
+      const parsedLevels = entries.map(([level]) => Number.parseInt(level, 10));
+      if (parsedLevels.some((l) => !Number.isInteger(l) || l < 1)) {
+        issues.push({ severity: "error", entity, message: "levelAnchors keys must be integer levels >= 1" });
+      } else if (new Set(parsedLevels).size !== parsedLevels.length) {
+        issues.push({ severity: "error", entity, message: "levelAnchors keys must be distinct levels" });
+      }
+      for (const [level, anchor] of entries) {
+        if (anchor.hp <= 0) {
+          issues.push({ severity: "error", entity, message: `levelAnchors[${level}].hp must be > 0` });
+        }
+        if (anchor.minDamage <= 0) {
+          issues.push({ severity: "error", entity, message: `levelAnchors[${level}].minDamage must be > 0` });
+        }
+        if (anchor.maxDamage < anchor.minDamage) {
+          issues.push({ severity: "error", entity, message: `levelAnchors[${level}].maxDamage must be >= minDamage` });
+        }
+      }
+    }
     if (tier.baseXpReward < 0) {
       issues.push({ severity: "error", entity, message: "baseXpReward must be >= 0" });
     }
@@ -949,6 +986,20 @@ export function validateConfig(config: AppConfig): ValidationIssue[] {
         severity: "error",
         entity: `class:${id}`,
         message: `hpScalingRate must be in [1.0, 2.0] (got ${cls.hpScalingRate})`,
+      });
+    }
+    if (cls.baseHpMultiplier != null && cls.baseHpMultiplier <= 0) {
+      issues.push({
+        severity: "error",
+        entity: `class:${id}`,
+        message: `baseHpMultiplier must be > 0 (got ${cls.baseHpMultiplier})`,
+      });
+    }
+    if (cls.baseManaMultiplier != null && cls.baseManaMultiplier <= 0) {
+      issues.push({
+        severity: "error",
+        entity: `class:${id}`,
+        message: `baseManaMultiplier must be > 0 (got ${cls.baseManaMultiplier})`,
       });
     }
     if (cls.manaScalingRate != null && (cls.manaScalingRate < 1.0 || cls.manaScalingRate > 2.0)) {

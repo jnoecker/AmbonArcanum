@@ -688,3 +688,46 @@ describe("validateConfig", () => {
     );
   });
 });
+
+
+describe("balance profile key validation", () => {
+  it("rejects malformed levelAnchors and non-positive class base multipliers", () => {
+    const config = structuredClone(BASE_CONFIG);
+    config.mobTiers.standard.levelAnchors = { "1": { hp: 87, minDamage: 8, maxDamage: 10 } };
+    config.mobTiers.elite.levelAnchors = {
+      "1": { hp: 180, minDamage: 7, maxDamage: 9 },
+      "x": { hp: 0, minDamage: 9, maxDamage: 5 },
+    };
+    config.classes = {
+      ...config.classes,
+      tank: { displayName: "Tank", hpScalingRate: 1.12, manaScalingRate: 1.1, baseHpMultiplier: 0 },
+    };
+    config.stats.bindings.xpBonusCap = -1;
+    const messages = validateConfig(config).map((i) => i.message);
+    expect(messages).toContain("levelAnchors needs at least two anchors to define a curve");
+    expect(messages).toContain("levelAnchors keys must be integer levels >= 1");
+    expect(messages).toContain("levelAnchors[x].hp must be > 0");
+    expect(messages).toContain("levelAnchors[x].maxDamage must be >= minDamage");
+    expect(messages).toContain("baseHpMultiplier must be > 0 (got 0)");
+    expect(messages).toContain("xpBonusCap must be >= 0 — use 0 to disable the cap (got -1)");
+  });
+
+  it("accepts a well-formed profile", () => {
+    const config = structuredClone(BASE_CONFIG);
+    config.mobTiers.standard.levelAnchors = {
+      "1": { hp: 87, minDamage: 8, maxDamage: 10 },
+      "30": { hp: 9258, minDamage: 676, maxDamage: 914 },
+    };
+    config.classes = {
+      ...config.classes,
+      tank: { displayName: "Tank", hpScalingRate: 1.12, manaScalingRate: 1.1, baseHpMultiplier: 1.362, baseManaMultiplier: 0.628 },
+    };
+    config.stats.bindings.xpBonusCap = 0.25;
+    config.stats.bindings.shieldLevelScalingRate = 1.12;
+    const messages = validateConfig(config)
+      .filter((i) => i.severity === "error")
+      .map((i) => i.message)
+      .filter((m) => /levelAnchors|Multiplier|xpBonusCap|shield/.test(m));
+    expect(messages).toEqual([]);
+  });
+});
