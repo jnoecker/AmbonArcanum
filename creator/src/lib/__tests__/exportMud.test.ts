@@ -735,3 +735,71 @@ describe("racial ability round-trip", () => {
     expect("racialAbility" in runtime.engine.races.definitions.HUMAN).toBe(false);
   });
 });
+
+
+describe("balance profile keys survive parse and re-export", () => {
+  const yaml = `
+ambonmud:
+  server:
+    telnetPort: 4000
+    webPort: 8080
+  world:
+    startRoom: "hub:start"
+    resources: []
+  progression:
+    maxLevel: 30
+  engine:
+    stats:
+      bindings:
+        meleeLevelScalingRate: 1.12
+        shieldStat: WIS
+        shieldStatMultiplier: 0.25
+        shieldLevelScalingRate: 1.12
+        xpBonusCap: 0.25
+    mob:
+      tiers:
+        standard:
+          baseHp: 87
+          hpScalingRate: 1.12
+          baseMinDamage: 8
+          baseMaxDamage: 10
+          damageScalingRate: 1.12
+          levelAnchors:
+            "1": { hp: 87, minDamage: 8, maxDamage: 10 }
+            "30": { hp: 9258, minDamage: 676, maxDamage: 914 }
+    classes:
+      definitions:
+        bulwark:
+          displayName: Bulwark
+          hpScalingRate: 1.12
+          manaScalingRate: 1.1
+          baseHpMultiplier: 1.362
+          baseManaMultiplier: 0.628
+`;
+
+  it("keeps class base multipliers, tier levelAnchors, shield bindings, and xpBonusCap", () => {
+    const config = parseAppConfigYaml(yaml);
+    expect(config.classes.bulwark.baseHpMultiplier).toBe(1.362);
+    expect(config.mobTiers.standard.levelAnchors?.["30"]).toEqual({ hp: 9258, minDamage: 676, maxDamage: 914 });
+    expect(config.stats.bindings.shieldLevelScalingRate).toBe(1.12);
+    expect(config.stats.bindings.xpBonusCap).toBe(0.25);
+
+    const out = buildMonolithicConfigObject(config, new Map()) as any;
+    const engine = out.engine;
+    expect(engine.classes.definitions.bulwark.baseHpMultiplier).toBe(1.362);
+    expect(engine.classes.definitions.bulwark.baseManaMultiplier).toBe(0.628);
+    expect(engine.mob.tiers.standard.levelAnchors["1"]).toEqual({ hp: 87, minDamage: 8, maxDamage: 10 });
+    expect(engine.mob.tiers.standard.levelAnchors["30"].hp).toBe(9258);
+    expect(engine.stats.bindings.shieldStat).toBe("WIS");
+    expect(engine.stats.bindings.shieldLevelScalingRate).toBe(1.12);
+    expect(engine.stats.bindings.xpBonusCap).toBe(0.25);
+  });
+
+  it("does not invent the optional keys when the source never set them", () => {
+    const config = parseAppConfigYaml(yaml.replace(/ {8}shieldStat:.*\n/, "").replace(/ {8}xpBonusCap:.*\n/, ""));
+    const out = buildMonolithicConfigObject(config, new Map()) as any;
+    expect("shieldStat" in out.engine.stats.bindings).toBe(false);
+    expect("xpBonusCap" in out.engine.stats.bindings).toBe(false);
+    expect("levelAnchors" in out.engine.mob.tiers.weak).toBe(false);
+  });
+});
