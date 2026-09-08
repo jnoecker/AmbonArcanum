@@ -1086,16 +1086,6 @@ export const FIELD_METADATA: Record<string, FieldMeta> = {
     max: 1,
     impact: "medium",
   },
-  "regen.mana.inCombatMultiplier": {
-    label: "Mana In-Combat Regen Multiplier",
-    description:
-      "Optional in-combat multiplier for mana regen only (0..1). Leave unset to inherit regen.inCombatMultiplier; set it to split HP and mana pressure during fights.",
-    section: TuningSection.WorldSocial,
-    min: 0,
-    max: 1,
-    impact: "medium",
-    interactionNote: "Overrides regen.inCombatMultiplier for mana; HP keeps the shared value",
-  },
 
   // ─── World Time ────────────────────────────────────────────────────
 
