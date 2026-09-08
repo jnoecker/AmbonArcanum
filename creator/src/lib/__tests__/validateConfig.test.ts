@@ -255,6 +255,31 @@ describe("validateConfig", () => {
     expect(validateConfig(BASE_CONFIG)).toEqual([]);
   });
 
+  // ─── Regen ───────────────────────────────────────────────────
+  it("accepts the rate regen model with a mana in-combat override", () => {
+    const cfg = {
+      ...BASE_CONFIG,
+      regen: { ...BASE_CONFIG.regen, model: "rate" as const, mana: { ...BASE_CONFIG.regen.mana, inCombatMultiplier: 0.1 } },
+    };
+    expect(validateConfig(cfg)).toEqual([]);
+  });
+
+  it("flags an unknown regen model", () => {
+    const cfg = { ...BASE_CONFIG, regen: { ...BASE_CONFIG.regen, model: "hybrid" as unknown as "rate" } };
+    const issues = validateConfig(cfg);
+    expect(issues).toContainEqual(
+      expect.objectContaining({ entity: "regen", severity: "error", message: expect.stringContaining("model") }),
+    );
+  });
+
+  it("flags a mana in-combat multiplier outside 0..1", () => {
+    const cfg = { ...BASE_CONFIG, regen: { ...BASE_CONFIG.regen, mana: { ...BASE_CONFIG.regen.mana, inCombatMultiplier: 1.5 } } };
+    const issues = validateConfig(cfg);
+    expect(issues).toContainEqual(
+      expect.objectContaining({ entity: "regen", severity: "error", message: expect.stringContaining("inCombatMultiplier") }),
+    );
+  });
+
   // ─── Seasons & rare variants ─────────────────────────────────
   it("flags non-positive season cycle length", () => {
     const cfg = { ...BASE_CONFIG, season: { cycleLengthMs: 0 } };

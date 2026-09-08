@@ -496,6 +496,54 @@ ambonmud:
   });
 });
 
+describe("regen config", () => {
+  const withRegen = (regen: string) => `
+ambonmud:
+  server:
+    telnetPort: 4000
+    webPort: 8080
+  world:
+    startRoom: hub:square
+    resources: []
+  engine:
+    regen:
+${regen}
+`;
+
+  it("parses regen.model and mana.inCombatMultiplier and exports them unchanged", () => {
+    const config = parseAppConfigYaml(
+      withRegen(`      regenPercent: 0.1
+      inCombatMultiplier: 0.1
+      model: rate
+      mana:
+        regenPercent: 0.1
+        inCombatMultiplier: 0.05`),
+    );
+    expect(config.regen.model).toBe("rate");
+    expect(config.regen.mana.inCombatMultiplier).toBe(0.05);
+    expect(config.regen.inCombatMultiplier).toBe(0.1);
+
+    const out = buildMonolithicConfigObject(config) as { engine: { regen: AppConfig["regen"] } };
+    expect(out.engine.regen.model).toBe("rate");
+    expect(out.engine.regen.mana.inCombatMultiplier).toBe(0.05);
+  });
+
+  it("omits the optional regen keys when they are not authored", () => {
+    const config = parseAppConfigYaml(withRegen(`      regenPercent: 0.15`));
+    expect(config.regen.model).toBeUndefined();
+    expect(config.regen.mana.inCombatMultiplier).toBeUndefined();
+
+    const out = buildMonolithicConfigObject(config) as { engine: { regen: Record<string, unknown> & { mana: Record<string, unknown> } } };
+    expect("model" in out.engine.regen).toBe(false);
+    expect("inCombatMultiplier" in out.engine.regen.mana).toBe(false);
+  });
+
+  it("drops an unknown regen.model value rather than exporting it", () => {
+    const config = parseAppConfigYaml(withRegen(`      model: hybrid`));
+    expect(config.regen.model).toBeUndefined();
+  });
+});
+
 describe("akathavae config", () => {
   it("parses engine.akathavae overrides and fills defaults for missing keys", () => {
     const yaml = `

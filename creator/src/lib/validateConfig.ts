@@ -49,6 +49,24 @@ export function validateConfig(config: AppConfig): ValidationIssue[] {
     });
   }
 
+  // ─── Regen ────────────────────────────────────────────────────
+  // Mirrors AppConfig.validateEngineRegen for the keys the editor can set.
+  if (config.regen.model != null && config.regen.model !== "discrete" && config.regen.model !== "rate") {
+    issues.push({
+      severity: "error",
+      entity: "regen",
+      message: `model must be "discrete" or "rate" (got "${config.regen.model}")`,
+    });
+  }
+  const manaInCombat = config.regen.mana.inCombatMultiplier;
+  if (manaInCombat != null && (!Number.isFinite(manaInCombat) || manaInCombat < 0 || manaInCombat > 1)) {
+    issues.push({
+      severity: "error",
+      entity: "regen",
+      message: `mana.inCombatMultiplier must be between 0 and 1 (got ${manaInCombat})`,
+    });
+  }
+
   // ─── Stat bindings ────────────────────────────────────────────
   if (statIds.size > 0) {
     const b = config.stats.bindings;
