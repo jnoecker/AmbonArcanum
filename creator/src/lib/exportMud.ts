@@ -915,6 +915,7 @@ export function classToPlain(cls: AppConfig["classes"][string]): Record<string, 
   if (cls.description) obj.description = cls.description;
   if (cls.backstory) obj.backstory = cls.backstory;
   if (cls.primaryStat) obj.primaryStat = cls.primaryStat;
+  if (cls.offensiveStat) obj.offensiveStat = cls.offensiveStat;
   if (cls.statPriorities && cls.statPriorities.length > 0) {
     obj.statPriorities = cls.statPriorities;
   }

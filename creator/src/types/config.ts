@@ -91,7 +91,23 @@ export interface StatBindings {
   shieldLevelScalingRate?: number;
   /** Cap on the xpBonusStat multiplier bonus (0.25 = at most +25%); <= 0 or absent = uncapped. */
   xpBonusCap?: number;
+  /**
+   * D-20 stat model keys (engine defaults: additive / 0 / additive / 0 / false when omitted).
+   * statScalingMode "multiplicative" makes an anchor scale by (1 + points x *PercentPerPoint)
+   * instead of adding points x *StatMultiplier; poolStatMode "multiplicative" does the same for
+   * max HP/mana, counting equipment when poolsUseEquipment is true. Emitted only when present.
+   */
+  statScalingMode?: StatScalingMode;
+  meleePercentPerPoint?: number;
+  spellPercentPerPoint?: number;
+  healPercentPerPoint?: number;
+  shieldPercentPerPoint?: number;
+  poolStatMode?: StatScalingMode;
+  poolPercentPerPoint?: number;
+  poolsUseEquipment?: boolean;
 }
+
+export type StatScalingMode = "additive" | "multiplicative";
 
 /**
  * A single "school" of attack-shaped damage. Captures the curve and binding
@@ -972,6 +988,11 @@ export interface ClassDefinitionConfig {
   baseHpMultiplier?: number;
   baseManaMultiplier?: number;
   primaryStat?: string;
+  /**
+   * Stat that scales this class's ability damage and DoT ticks (D-20). Omitted = the global
+   * stats.bindings.spellDamageStat (INT), which is how every class behaved before.
+   */
+  offensiveStat?: string;
   /**
    * Ordered stat IDs from most to least valued for this class. Used to resolve
    * archetypal item stats (`PRIMARY`/`SECONDARY`/`TERTIARY` in a StatMap) at

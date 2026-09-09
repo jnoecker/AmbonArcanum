@@ -182,6 +182,32 @@ export function validateConfig(config: AppConfig): ValidationIssue[] {
         message: `xpBonusCap must be >= 0 — use 0 to disable the cap (got ${b.xpBonusCap})`,
       });
     }
+    // D-20 stat model keys — mirror AppConfig.validateStatsBindings.
+    for (const [field, mode] of [["statScalingMode", b.statScalingMode], ["poolStatMode", b.poolStatMode]] as const) {
+      if (mode != null && mode !== "additive" && mode !== "multiplicative") {
+        issues.push({
+          severity: "error",
+          entity: "stats.bindings",
+          message: `${field} must be "additive" or "multiplicative" (got "${mode}")`,
+        });
+      }
+    }
+    const percentKeys: [string, number | undefined][] = [
+      ["meleePercentPerPoint", b.meleePercentPerPoint],
+      ["spellPercentPerPoint", b.spellPercentPerPoint],
+      ["healPercentPerPoint", b.healPercentPerPoint],
+      ["shieldPercentPerPoint", b.shieldPercentPerPoint],
+      ["poolPercentPerPoint", b.poolPercentPerPoint],
+    ];
+    for (const [field, value] of percentKeys) {
+      if (value != null && (!Number.isFinite(value) || value < 0)) {
+        issues.push({
+          severity: "error",
+          entity: "stats.bindings",
+          message: `${field} must be >= 0 (got ${value})`,
+        });
+      }
+    }
     if (b.healVarianceMin <= 0 || b.healVarianceMax < b.healVarianceMin) {
       issues.push({
         severity: "error",
@@ -403,6 +429,13 @@ export function validateConfig(config: AppConfig): ValidationIssue[] {
 
   // ─── Classes ──────────────────────────────────────────────────
   for (const [id, cls] of Object.entries(config.classes)) {
+    if (cls.offensiveStat && statIds.size > 0 && !statIds.has(cls.offensiveStat)) {
+      issues.push({
+        severity: "error",
+        entity: `class:${id}`,
+        message: `Offensive stat "${cls.offensiveStat}" is not defined`,
+      });
+    }
     if (cls.primaryStat && statIds.size > 0 && !statIds.has(cls.primaryStat)) {
       issues.push({
         severity: "warning",

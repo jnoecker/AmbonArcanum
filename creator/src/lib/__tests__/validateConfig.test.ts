@@ -264,6 +264,46 @@ describe("validateConfig", () => {
     expect(validateConfig(cfg)).toEqual([]);
   });
 
+  it("flags an unknown stat scaling mode and a negative percent per point", () => {
+    const cfg = {
+      ...BASE_CONFIG,
+      stats: {
+        ...BASE_CONFIG.stats,
+        bindings: { ...BASE_CONFIG.stats.bindings, statScalingMode: "hybrid" as unknown as "additive", spellPercentPerPoint: -1 },
+      },
+    };
+    const issues = validateConfig(cfg);
+    expect(issues).toContainEqual(
+      expect.objectContaining({ entity: "stats.bindings", severity: "error", message: expect.stringContaining("statScalingMode") }),
+    );
+    expect(issues).toContainEqual(
+      expect.objectContaining({ entity: "stats.bindings", severity: "error", message: expect.stringContaining("spellPercentPerPoint") }),
+    );
+  });
+
+  it("accepts the multiplicative stat model and flags an undefined class offensive stat", () => {
+    const ok = {
+      ...BASE_CONFIG,
+      stats: {
+        ...BASE_CONFIG.stats,
+        bindings: {
+          ...BASE_CONFIG.stats.bindings,
+          statScalingMode: "multiplicative" as const,
+          meleePercentPerPoint: 0.0075,
+          poolStatMode: "multiplicative" as const,
+          poolPercentPerPoint: 0.0075,
+          poolsUseEquipment: true,
+        },
+      },
+      classes: { tank: { displayName: "Tank", hpScalingRate: 1.12, manaScalingRate: 1.1, offensiveStat: "STR" } },
+    };
+    expect(validateConfig(ok).filter((i) => i.entity === "stats.bindings" || i.entity === "class:tank")).toEqual([]);
+    const bad = { ...ok, classes: { tank: { ...ok.classes.tank, offensiveStat: "NOPE" } } };
+    expect(validateConfig(bad)).toContainEqual(
+      expect.objectContaining({ entity: "class:tank", severity: "error", message: expect.stringContaining("Offensive stat") }),
+    );
+  });
+
   it("flags an unknown regen model", () => {
     const cfg = { ...BASE_CONFIG, regen: { ...BASE_CONFIG.regen, model: "hybrid" as unknown as "rate" } };
     const issues = validateConfig(cfg);

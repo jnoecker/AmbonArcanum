@@ -544,6 +544,78 @@ ${regen}
   });
 });
 
+describe("D-20 stat model keys", () => {
+  const doc = (bindings: string, classExtra = "") => `
+ambonmud:
+  server:
+    telnetPort: 4000
+    webPort: 8080
+  world:
+    startRoom: hub:square
+    resources: []
+  engine:
+    stats:
+      definitions:
+        STR: { displayName: Strength, abbreviation: STR, description: "", baseStat: 10 }
+        INT: { displayName: Intelligence, abbreviation: INT, description: "", baseStat: 10 }
+      bindings:
+${bindings}
+    classes:
+      definitions:
+        bulwark:
+          displayName: Bulwark
+          hpScalingRate: 1.12
+          manaScalingRate: 1.12
+${classExtra}
+`;
+
+  it("parses and exports the stat model keys and the class offensive stat when authored", () => {
+    const config = parseAppConfigYaml(
+      doc(`        statScalingMode: multiplicative
+        meleePercentPerPoint: 0.0075
+        spellPercentPerPoint: 0.0075
+        healPercentPerPoint: 0.0075
+        shieldPercentPerPoint: 0.0075
+        dodgePerPoint: 0.5
+        poolStatMode: multiplicative
+        poolPercentPerPoint: 0.0075
+        poolsUseEquipment: true`, `          offensiveStat: STR`),
+    );
+    expect(config.stats.bindings.statScalingMode).toBe("multiplicative");
+    expect(config.stats.bindings.dodgePerPoint).toBe(0.5);
+    expect(config.stats.bindings.poolsUseEquipment).toBe(true);
+    expect(config.classes.bulwark.offensiveStat).toBe("STR");
+
+    const out = buildMonolithicConfigObject(config) as {
+      engine: { stats: { bindings: Record<string, unknown> }; classes: { definitions: Record<string, Record<string, unknown>> } };
+    };
+    expect(out.engine.stats.bindings.statScalingMode).toBe("multiplicative");
+    expect(out.engine.stats.bindings.meleePercentPerPoint).toBe(0.0075);
+    expect(out.engine.stats.bindings.poolStatMode).toBe("multiplicative");
+    expect(out.engine.stats.bindings.poolPercentPerPoint).toBe(0.0075);
+    expect(out.engine.stats.bindings.poolsUseEquipment).toBe(true);
+    expect(out.engine.classes.definitions.bulwark.offensiveStat).toBe("STR");
+  });
+
+  it("omits the optional keys when they are not authored", () => {
+    const config = parseAppConfigYaml(doc(`        dodgePerPoint: 2`));
+    expect(config.stats.bindings.statScalingMode).toBeUndefined();
+    expect(config.stats.bindings.poolStatMode).toBeUndefined();
+    expect(config.classes.bulwark.offensiveStat).toBeUndefined();
+    const out = buildMonolithicConfigObject(config) as {
+      engine: { stats: { bindings: Record<string, unknown> }; classes: { definitions: Record<string, Record<string, unknown>> } };
+    };
+    expect("statScalingMode" in out.engine.stats.bindings).toBe(false);
+    expect("poolsUseEquipment" in out.engine.stats.bindings).toBe(false);
+    expect("offensiveStat" in out.engine.classes.definitions.bulwark).toBe(false);
+  });
+
+  it("drops an unknown scaling mode rather than exporting it", () => {
+    const config = parseAppConfigYaml(doc(`        statScalingMode: hybrid`));
+    expect(config.stats.bindings.statScalingMode).toBeUndefined();
+  });
+});
+
 describe("akathavae config", () => {
   it("parses engine.akathavae overrides and fills defaults for missing keys", () => {
     const yaml = `
