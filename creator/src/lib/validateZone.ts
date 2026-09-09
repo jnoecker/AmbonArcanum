@@ -822,6 +822,29 @@ export function validateZone(
           `Stat override breaks tier curve: ${breakdown.join("; ")}. Prefer adjusting tier or level over hand-tuning numbers.`,
         );
       }
+
+      // D-25: the engine floors every damaging mob spell (default attack included) at the mob's own
+      // mitigated melee swing, so a range authored entirely below the swing at this level never
+      // reaches the wire. Nudge the author toward the swing, or toward dropping the spell.
+      if (resolved && mob.spells) {
+        const swingMin = resolved.minDamage.effective;
+        const swingMax = resolved.maxDamage.effective;
+        const level = mob.level ?? 1;
+        for (const [spellId, spell] of Object.entries(mob.spells)) {
+          if (spell.minDamage == null && spell.maxDamage == null) continue; // heal- or status-only
+          const spellMin = spell.minDamage ?? spell.maxDamage!;
+          const spellMax = spell.maxDamage ?? spell.minDamage!;
+          if (spellMax >= swingMin) continue;
+          const kind = mob.defaultAttack === spellId ? "Default attack" : "Spell";
+          addIssue(
+            issues,
+            "warning",
+            entity,
+            `${kind} "${spellId}" damage ${spellMin}-${spellMax} sits below the mob's swing ${swingMin}-${swingMax} at level ${level}; ` +
+              "the engine floors damaging spells at the mitigated swing, so author it at or above the swing or drop it.",
+          );
+        }
+      }
     }
 
     const resolvedDamage = resolveMobDamage(mob, mobTiers);
