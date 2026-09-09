@@ -391,6 +391,13 @@ ambonmud:
       types:
         npc_turn_in:
           displayName: NPC Turn-In
+    achievements:
+      challenger:
+        displayName: Challenger
+        category: combat
+        criteria: []
+        rewards:
+          skillPoints: 2
 `;
 
     const config = parseAppConfigYaml(yaml);
@@ -398,6 +405,7 @@ ambonmud:
     expect(config.achievementCategories.combat.displayName).toBe("Combat");
     expect(config.achievementCriterionTypes.kill.progressFormat).toBe("{current}/{required}");
     expect(config.questObjectiveTypes.collect.displayName).toBe("Collect");
+    expect(config.achievementDefs.challenger.rewards?.skillPoints).toBe(2);
     expect(config.questCompletionTypes.npc_turn_in.displayName).toBe("NPC Turn-In");
 
     const parsed = parse(yaml) as any;

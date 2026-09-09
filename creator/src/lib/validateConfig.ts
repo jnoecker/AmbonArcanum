@@ -625,6 +625,18 @@ export function validateConfig(config: AppConfig): ValidationIssue[] {
     }
   }
 
+  // ─── Achievement rewards ──────────────────────────────────────
+  for (const [id, def] of Object.entries(config.achievementDefs ?? {})) {
+    const skillPoints = def.rewards?.skillPoints;
+    if (skillPoints != null && (!Number.isInteger(skillPoints) || skillPoints < 0)) {
+      issues.push({
+        severity: "error",
+        entity: `achievement:${id}`,
+        message: "Skill point reward must be a whole number >= 0",
+      });
+    }
+  }
+
   // ─── Guild ranks ──────────────────────────────────────────────
   const seenLevels = new Map<number, string>();
   for (const [id, rank] of Object.entries(config.guildRanks)) {

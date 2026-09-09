@@ -875,6 +875,8 @@ export interface AchievementRewardsFile {
   xp?: number;
   gold?: number;
   title?: string;
+  /** Bonus skill points added to the player's supply while unlocked (D-05 post-cap income). */
+  skillPoints?: number;
 }
 
 export interface AchievementDefFile {

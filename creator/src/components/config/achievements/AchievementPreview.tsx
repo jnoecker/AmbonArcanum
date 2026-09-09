@@ -23,8 +23,9 @@ export function AchievementPreview({
   const rewards = def.rewards ?? {};
   const xp = rewards.xp ?? 0;
   const gold = rewards.gold ?? 0;
+  const skillPoints = rewards.skillPoints ?? 0;
   const title = rewards.title ?? "";
-  const hasRewards = xp > 0 || gold > 0 || title.length > 0;
+  const hasRewards = xp > 0 || gold > 0 || skillPoints > 0 || title.length > 0;
 
   return (
     <div className="space-y-2">
@@ -112,6 +113,9 @@ export function AchievementPreview({
             <div className="flex flex-wrap items-center justify-center gap-1.5">
               {xp > 0 && <RewardChip glyph="✦" label={`${xp} XP`} />}
               {gold > 0 && <RewardChip glyph="◈" label={`${gold} Gold`} />}
+              {skillPoints > 0 && (
+                <RewardChip glyph="✧" label={`${skillPoints} Skill Points`} />
+              )}
               {title.length > 0 && <RewardChip glyph="❦" label={`Title: ${title}`} />}
             </div>
           </div>

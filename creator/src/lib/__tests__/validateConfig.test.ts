@@ -255,6 +255,17 @@ describe("validateConfig", () => {
     expect(validateConfig(BASE_CONFIG)).toEqual([]);
   });
 
+  it("flags a negative achievement skill point reward and accepts a whole one", () => {
+    const withReward = (skillPoints: number) => ({
+      ...BASE_CONFIG,
+      achievementDefs: {
+        challenger: { displayName: "Challenger", category: "combat", criteria: [], rewards: { skillPoints } },
+      },
+    });
+    expect(validateConfig(withReward(-1)).some((i) => i.entity === "achievement:challenger")).toBe(true);
+    expect(validateConfig(withReward(2))).toEqual([]);
+  });
+
   // ─── Regen ───────────────────────────────────────────────────
   it("accepts the rate regen model with a mana in-combat override", () => {
     const cfg = {
