@@ -112,7 +112,10 @@ export function AchievementEditor({
     (field: keyof AchievementRewardsFile, value: string | number | undefined) => {
       const next: AchievementRewardsFile = { ...rewards, [field]: value };
       const hasReward =
-        (next.xp ?? 0) > 0 || (next.gold ?? 0) > 0 || (next.title ?? "").length > 0;
+        (next.xp ?? 0) > 0 ||
+        (next.gold ?? 0) > 0 ||
+        (next.skillPoints ?? 0) > 0 ||
+        (next.title ?? "").length > 0;
       onPatch({ rewards: hasReward ? next : undefined });
     },
     [rewards, onPatch],
@@ -543,11 +546,12 @@ interface RewardsCardProps {
 function RewardsCard({ rewards, onChange }: RewardsCardProps) {
   const xp = rewards.xp ?? 0;
   const gold = rewards.gold ?? 0;
+  const skillPoints = rewards.skillPoints ?? 0;
   const title = rewards.title ?? "";
 
   return (
     <SectionCard title="Rewards" className={EDITOR_CARD_CLASS}>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-3 gap-2">
         <FieldLabel label="XP">
           <NumberInput
             value={xp}
@@ -560,6 +564,14 @@ function RewardsCard({ rewards, onChange }: RewardsCardProps) {
           <NumberInput
             value={gold}
             onCommit={(v) => onChange("gold", v)}
+            min={0}
+            dense
+          />
+        </FieldLabel>
+        <FieldLabel label="Skill points">
+          <NumberInput
+            value={skillPoints}
+            onCommit={(v) => onChange("skillPoints", v)}
             min={0}
             dense
           />
