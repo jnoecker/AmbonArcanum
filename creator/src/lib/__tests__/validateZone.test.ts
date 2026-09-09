@@ -406,6 +406,37 @@ describe("validateZone", () => {
     expect(issues.some((i) => i.message.includes("tier curve"))).toBe(false);
   });
 
+  it("warns when a damaging mob spell sits below the tier swing at the mob's level (D-25 floor)", () => {
+    const world = makeValidWorld();
+    world.mobs!.rat.tier = "boss";
+    world.mobs!.rat.level = 10;
+    world.mobs!.rat.defaultAttack = "jab";
+    world.mobs!.rat.spells = {
+      jab: { displayName: "Jab", message: "The rat jabs you", minDamage: 2, maxDamage: 4 },
+      nova: { displayName: "Nova", message: "The rat detonates", minDamage: 60, maxDamage: 90 },
+      mend: { displayName: "Mend", message: "{mob} mends itself", healMin: 5, healMax: 9 },
+    };
+    const issues = warnings(validateZone(world, undefined, undefined, undefined, undefined, TEST_MOB_TIERS));
+    const below = issues.filter((i) => i.entity === "mob:rat" && i.message.includes("below the mob's swing"));
+    expect(below).toHaveLength(1);
+    expect(below[0].message).toContain('Default attack "jab" damage 2-4');
+    expect(below[0].message).toContain("at level 10");
+  });
+
+  it("does not warn about spell damage when mobTiers config is absent or the spell clears the swing", () => {
+    const world = makeValidWorld();
+    world.mobs!.rat.tier = "boss";
+    world.mobs!.rat.level = 10;
+    world.mobs!.rat.spells = {
+      jab: { displayName: "Jab", message: "The rat jabs you", minDamage: 2, maxDamage: 4 },
+    };
+    expect(warnings(validateZone(world)).some((i) => i.message.includes("below the mob's swing"))).toBe(false);
+    world.mobs!.rat.spells.jab.minDamage = 60;
+    world.mobs!.rat.spells.jab.maxDamage = 90;
+    const issues = warnings(validateZone(world, undefined, undefined, undefined, undefined, TEST_MOB_TIERS));
+    expect(issues.some((i) => i.message.includes("below the mob's swing"))).toBe(false);
+  });
+
   it("warns when a quest XP override breaks its difficulty tier", () => {
     const world = makeValidWorld();
     world.mobs!.giver = { name: "Giver", spawns: [{ room: "room1" }] };
