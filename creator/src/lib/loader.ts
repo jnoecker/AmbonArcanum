@@ -513,6 +513,29 @@ function parseStatsConfig(raw: unknown): AppConfig["stats"] {
         ? { shieldLevelScalingRate: asNumber(bindings.shieldLevelScalingRate, 1.3) }
         : {}),
       ...(bindings.xpBonusCap != null ? { xpBonusCap: asNumber(bindings.xpBonusCap, 0) } : {}),
+      // D-20 stat model keys: kept only when authored (engine defaults otherwise).
+      ...(bindings.statScalingMode === "additive" || bindings.statScalingMode === "multiplicative"
+        ? { statScalingMode: bindings.statScalingMode }
+        : {}),
+      ...(bindings.meleePercentPerPoint != null
+        ? { meleePercentPerPoint: asNumber(bindings.meleePercentPerPoint, 0) }
+        : {}),
+      ...(bindings.spellPercentPerPoint != null
+        ? { spellPercentPerPoint: asNumber(bindings.spellPercentPerPoint, 0) }
+        : {}),
+      ...(bindings.healPercentPerPoint != null
+        ? { healPercentPerPoint: asNumber(bindings.healPercentPerPoint, 0) }
+        : {}),
+      ...(bindings.shieldPercentPerPoint != null
+        ? { shieldPercentPerPoint: asNumber(bindings.shieldPercentPerPoint, 0) }
+        : {}),
+      ...(bindings.poolStatMode === "additive" || bindings.poolStatMode === "multiplicative"
+        ? { poolStatMode: bindings.poolStatMode }
+        : {}),
+      ...(bindings.poolPercentPerPoint != null
+        ? { poolPercentPerPoint: asNumber(bindings.poolPercentPerPoint, 0) }
+        : {}),
+      ...(typeof bindings.poolsUseEquipment === "boolean" ? { poolsUseEquipment: bindings.poolsUseEquipment } : {}),
     },
   };
 }
